@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Hội viên - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+
+<body class="app-page">
+
+<aside class="sidebar">
+
+    <a class="sidebar-brand"
+       href="/manager/dashboard">
+        <span class="brand-mark">G</span>
+        <span>GYMFIT</span>
+    </a>
+
+    <nav class="sidebar-nav">
+        <a class="nav-item"
+           href="/manager/dashboard">
+            Tổng quan
+        </a>
+
+        <a class="nav-item active"
+           href="/manager/members">
+            Hội viên
+        </a>
+
+        <a class="nav-item"
+           href="/manager/plans">
+            Gói tập
+        </a>
+
+        <a class="nav-item"
+           href="/manager/sales">
+            Bán hàng
+        </a>
+
+        <a class="nav-item"
+           href="/manager/bookings">
+            Đặt lịch
+        </a>
+
+        <a class="nav-item"
+           href="/manager/checkins">
+            Check-in
+        </a>
+    </nav>
+
+    <button id="logout-button"
+            class="sidebar-logout">
+        Đăng xuất
+    </button>
+
+</aside>
+
+<main class="app-content">
+
+    <header class="page-header">
+        <div>
+            <h1>Hội viên</h1>
+
+            <p class="muted">
+                Quản lý hội viên thuộc chi nhánh
+            </p>
+        </div>
+
+        <button id="create-member-button"
+                type="button"
+                class="button button-primary">
+            + Thêm hội viên
+        </button>
+    </header>
+
+    <div id="page-error"
+         class="alert alert-error hidden">
+    </div>
+
+    <div id="page-success"
+         class="alert alert-success hidden">
+    </div>
+
+    <section class="panel">
+
+        <div class="toolbar">
+
+            <input id="member-search"
+                   type="search"
+                   class="toolbar-search"
+                   placeholder="Mã, tên, SĐT, email...">
+
+            <select id="member-status-filter">
+
+                <option value="">
+                    Tất cả trạng thái
+                </option>
+
+                <option value="ACTIVE">
+                    Hoạt động
+                </option>
+
+                <option value="INACTIVE">
+                    Ngừng hoạt động
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+
+                <thead>
+                <tr>
+                    <th>Mã HV</th>
+                    <th>Hội viên</th>
+                    <th>Điện thoại</th>
+                    <th>Email</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody id="member-table-body">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+<div id="member-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <div>
+                <h2 id="member-modal-title">
+                    Thêm hội viên
+                </h2>
+
+                <p id="member-branch-text"
+                   class="muted">
+                    Chi nhánh
+                </p>
+            </div>
+
+            <button id="member-modal-close"
+                    type="button"
+                    class="icon-button">
+                ×
+            </button>
+
+        </div>
+
+        <form id="member-form"
+              class="form-grid">
+
+            <input id="member-id"
+                   type="hidden">
+
+            <label>
+                <span>Họ và tên</span>
+
+                <input id="member-name"
+                       maxlength="120"
+                       required>
+            </label>
+
+            <label>
+                <span>Số điện thoại</span>
+
+                <input id="member-phone"
+                       maxlength="20"
+                       required>
+            </label>
+
+            <label>
+                <span>Email</span>
+
+                <input id="member-email"
+                       type="email"
+                       maxlength="150">
+            </label>
+
+            <label>
+                <span>Ngày sinh</span>
+
+                <input id="member-dob"
+                       type="date">
+            </label>
+
+            <label id="member-status-field"
+                   class="hidden">
+                <span>Trạng thái</span>
+
+                <select id="member-status">
+
+                    <option value="ACTIVE">
+                        Hoạt động
+                    </option>
+
+                    <option value="INACTIVE">
+                        Ngừng hoạt động
+                    </option>
+
+                </select>
+            </label>
+
+            <div id="member-form-error"
+                 class="alert alert-error field-full hidden">
+            </div>
+
+            <div class="modal-actions field-full">
+
+                <button id="member-cancel-button"
+                        type="button"
+                        class="button button-secondary">
+                    Hủy
+                </button>
+
+                <button id="member-save-button"
+                        type="submit"
+                        class="button button-primary">
+                    Lưu
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<div id="membership-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card modal-large">
+
+        <div class="modal-header">
+
+            <div>
+                <h2 id="membership-title">
+                    Membership
+                </h2>
+            </div>
+
+            <button id="membership-close"
+                    type="button"
+                    class="icon-button">
+                ×
+            </button>
+
+        </div>
+
+        <div id="current-membership"
+             class="empty-state">
+            Đang tải...
+        </div>
+
+        <div class="table-wrap membership-manager-history">
+
+            <table class="data-table">
+
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Plan</th>
+                    <th>Bắt đầu</th>
+                    <th>Kết thúc</th>
+                    <th>Trạng thái</th>
+                </tr>
+                </thead>
+
+                <tbody id="membership-history">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/manager/members.js}"></script>
+
+</body>
+</html>

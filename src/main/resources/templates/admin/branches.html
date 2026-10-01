@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <title>Chi nhánh - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+<body class="app-page">
+
+<aside class="sidebar">
+    <a class="sidebar-brand"
+       href="/admin/dashboard">
+        <span class="brand-mark">G</span>
+        <span>GYMFIT</span>
+    </a>
+
+    <nav class="sidebar-nav">
+        <a class="nav-item"
+           href="/admin/dashboard">Tổng quan</a>
+
+        <a class="nav-item active"
+           href="/admin/branches">Chi nhánh</a>
+
+        <a class="nav-sub-item"
+           href="/admin/facilities">
+            Cơ sở vật chất
+        </a>
+
+        <a class="nav-item"
+           href="/admin/members">Hội viên</a>
+
+        <a class="nav-item"
+           href="/admin/plans">Gói tập</a>
+
+        <a class="nav-item"
+           href="/admin/sales">Bán hàng</a>
+
+        <a class="nav-item"
+           href="/admin/bookings">Đặt lịch</a>
+
+        <a class="nav-item"
+           href="/admin/checkins">Check-in</a>
+
+        <a class="nav-item"
+           href="/admin/reports">Báo cáo</a>
+
+        <a class="nav-item"
+           href="/admin/users">Người dùng</a>
+    </nav>
+
+    <button id="logout-button"
+            class="sidebar-logout">
+        Đăng xuất
+    </button>
+</aside>
+
+<main class="app-content">
+
+    <header class="page-header">
+        <div>
+            <h1>Chi nhánh</h1>
+            <p class="muted">
+                Quản lý hệ thống chi nhánh GYMFIT
+            </p>
+        </div>
+
+        <button id="create-branch-button"
+                class="button button-primary">
+            + Thêm chi nhánh
+        </button>
+    </header>
+
+    <div id="page-error"
+         class="alert alert-error hidden"></div>
+
+    <div id="page-success"
+         class="alert alert-success hidden"></div>
+
+    <section class="panel">
+
+        <div class="toolbar">
+            <input id="branch-search"
+                   class="toolbar-search"
+                   type="search"
+                   placeholder="Tìm mã, tên, địa chỉ...">
+
+            <select id="branch-status-filter">
+                <option value="">Tất cả trạng thái</option>
+                <option value="ACTIVE">Hoạt động</option>
+                <option value="INACTIVE">Ngừng hoạt động</option>
+            </select>
+        </div>
+
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Chi nhánh</th>
+                    <th>Địa chỉ</th>
+                    <th>Điện thoại</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody id="branch-table-body">
+                <tr>
+                    <td colspan="6"
+                        class="empty-cell">
+                        Đang tải...
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+</main>
+
+<div id="branch-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+            <div>
+                <h2 id="branch-modal-title">
+                    Thêm chi nhánh
+                </h2>
+                <p class="muted">
+                    Thông tin cơ bản của chi nhánh
+                </p>
+            </div>
+
+            <button id="branch-modal-close"
+                    class="icon-button"
+                    type="button">
+                ×
+            </button>
+        </div>
+
+        <form id="branch-form"
+              class="form-grid">
+
+            <input id="branch-id"
+                   type="hidden">
+
+            <label>
+                <span>Mã chi nhánh</span>
+                <input id="branch-code"
+                       maxlength="20"
+                       required>
+            </label>
+
+            <label>
+                <span>Tên chi nhánh</span>
+                <input id="branch-name"
+                       maxlength="120"
+                       required>
+            </label>
+
+            <label class="field-full">
+                <span>Địa chỉ</span>
+                <input id="branch-address"
+                       maxlength="255"
+                       required>
+            </label>
+
+            <label>
+                <span>Điện thoại</span>
+                <input id="branch-phone"
+                       maxlength="20">
+            </label>
+
+            <label>
+                <span>Múi giờ</span>
+                <input id="branch-timezone"
+                       maxlength="60"
+                       value="Asia/Ho_Chi_Minh"
+                       required>
+            </label>
+
+            <label id="branch-status-field">
+                <span>Trạng thái</span>
+
+                <select id="branch-status">
+                    <option value="ACTIVE">
+                        Hoạt động
+                    </option>
+
+                    <option value="INACTIVE">
+                        Ngừng hoạt động
+                    </option>
+                </select>
+            </label>
+
+            <div id="branch-form-error"
+                 class="alert alert-error field-full hidden">
+            </div>
+
+            <div class="modal-actions field-full">
+                <button id="branch-cancel-button"
+                        class="button button-secondary"
+                        type="button">
+                    Hủy
+                </button>
+
+                <button id="branch-save-button"
+                        class="button button-primary"
+                        type="submit">
+                    Lưu
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div id="config-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card modal-large">
+
+        <div class="modal-header">
+            <div>
+                <h2 id="config-title">
+                    Cấu hình chi nhánh
+                </h2>
+                <p class="muted">
+                    Dịch vụ và giờ hoạt động
+                </p>
+            </div>
+
+            <button id="config-close"
+                    class="icon-button"
+                    type="button">
+                ×
+            </button>
+        </div>
+
+        <section class="config-section">
+            <h3>Dịch vụ</h3>
+
+            <div id="service-config-list"
+                 class="service-config-list">
+            </div>
+
+            <button id="save-services-button"
+                    class="button button-primary"
+                    type="button">
+                Lưu dịch vụ
+            </button>
+        </section>
+
+        <section class="config-section">
+            <h3>Giờ hoạt động</h3>
+
+            <div id="operating-hours-list"
+                 class="hours-list">
+            </div>
+
+            <button id="save-hours-button"
+                    class="button button-primary"
+                    type="button">
+                Lưu giờ hoạt động
+            </button>
+        </section>
+
+        <div id="config-error"
+             class="alert alert-error hidden">
+        </div>
+
+    </div>
+</div>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/admin/branches.js}"></script>
+
+</body>
+</html>

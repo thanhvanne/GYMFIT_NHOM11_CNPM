@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Đặt lịch - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+
+<body class="app-page">
+
+<aside class="sidebar">
+
+    <a class="sidebar-brand"
+       href="/admin/dashboard">
+        <span class="brand-mark">G</span>
+        <span>GYMFIT</span>
+    </a>
+
+    <nav class="sidebar-nav">
+        <a class="nav-item"
+           href="/admin/dashboard">
+            Tổng quan
+        </a>
+
+        <a class="nav-item"
+           href="/admin/branches">
+            Chi nhánh
+        </a>
+
+        <a class="nav-item"
+           href="/admin/members">
+            Hội viên
+        </a>
+
+        <a class="nav-item"
+           href="/admin/plans">
+            Gói tập
+        </a>
+
+        <a class="nav-item"
+           href="/admin/sales">
+            Bán hàng
+        </a>
+
+        <a class="nav-item active"
+           href="/admin/bookings">
+            Đặt lịch
+        </a>
+
+        <a class="nav-item"
+           href="/admin/checkins">
+            Check-in
+        </a>
+
+        <a class="nav-item"
+           href="/admin/reports">
+            Báo cáo
+        </a>
+
+        <a class="nav-item"
+           href="/admin/users">
+            Người dùng
+        </a>
+    </nav>
+
+    <button id="logout-button"
+            class="sidebar-logout">
+        Đăng xuất
+    </button>
+
+</aside>
+
+<main class="app-content">
+
+    <header class="page-header">
+
+        <div>
+            <h1>Đặt lịch</h1>
+            <p class="muted">
+                Quản lý lịch tập toàn hệ thống
+            </p>
+        </div>
+
+        <button id="create-booking-button"
+                class="button button-primary"
+                type="button">
+            + Tạo booking
+        </button>
+
+    </header>
+
+    <div id="page-error"
+         class="alert alert-error hidden">
+    </div>
+
+    <div id="page-success"
+         class="alert alert-success hidden">
+    </div>
+
+    <section class="panel">
+
+        <div class="toolbar">
+
+            <input id="booking-search"
+                   class="toolbar-search"
+                   type="search"
+                   placeholder="Mã booking hoặc hội viên...">
+
+            <select id="booking-branch-filter">
+                <option value="">
+                    Tất cả chi nhánh
+                </option>
+            </select>
+
+            <select id="booking-status-filter">
+                <option value="">
+                    Tất cả trạng thái
+                </option>
+
+                <option value="CONFIRMED">
+                    Đã xác nhận
+                </option>
+
+                <option value="COMPLETED">
+                    Hoàn thành
+                </option>
+
+                <option value="CANCELLED">
+                    Đã hủy
+                </option>
+            </select>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+
+                <thead>
+                <tr>
+                    <th>Mã booking</th>
+                    <th>Hội viên</th>
+                    <th>Chi nhánh</th>
+                    <th>Dịch vụ</th>
+                    <th>Facility</th>
+                    <th>Thời gian</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody id="booking-table-body">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+<div id="booking-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card modal-large">
+
+        <div class="modal-header">
+
+            <div>
+                <h2>Tạo booking</h2>
+
+                <p class="muted">
+                    Backend sẽ kiểm tra membership,
+                    overlap và capacity
+                </p>
+            </div>
+
+            <button id="booking-modal-close"
+                    class="icon-button"
+                    type="button">
+                ×
+            </button>
+
+        </div>
+
+        <form id="booking-form"
+              class="form-grid">
+
+            <label>
+                <span>Hội viên</span>
+
+                <select id="booking-member"
+                        required>
+                </select>
+            </label>
+
+            <label>
+                <span>Chi nhánh</span>
+
+                <select id="booking-branch"
+                        required>
+                </select>
+            </label>
+
+            <label>
+                <span>Dịch vụ</span>
+
+                <select id="booking-service"
+                        required>
+                </select>
+            </label>
+
+            <label>
+                <span>Facility</span>
+
+                <select id="booking-facility"
+                        required>
+                </select>
+            </label>
+
+            <label>
+                <span>Ngày</span>
+
+                <input id="booking-date"
+                       type="date"
+                       required>
+            </label>
+
+            <label>
+                <span>Khung giờ</span>
+
+                <select id="booking-slot"
+                        required>
+                </select>
+            </label>
+
+            <div id="booking-form-error"
+                 class="alert alert-error field-full hidden">
+            </div>
+
+            <div class="modal-actions field-full">
+
+                <button id="booking-cancel-form-button"
+                        type="button"
+                        class="button button-secondary">
+                    Đóng
+                </button>
+
+                <button id="booking-save-button"
+                        type="submit"
+                        class="button button-primary">
+                    Tạo booking
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<div id="cancel-booking-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <div>
+                <h2>Hủy booking</h2>
+                <p class="muted">
+                    Lý do hủy sẽ được lưu lịch sử
+                </p>
+            </div>
+
+            <button id="cancel-booking-close"
+                    class="icon-button"
+                    type="button">
+                ×
+            </button>
+
+        </div>
+
+        <form id="cancel-booking-form"
+              class="form-stack">
+
+            <input id="cancel-booking-id"
+                   type="hidden">
+
+            <label>
+                <span>Lý do</span>
+
+                <textarea id="cancel-booking-reason"
+                          maxlength="200"
+                          required></textarea>
+            </label>
+
+            <div id="cancel-booking-error"
+                 class="alert alert-error hidden">
+            </div>
+
+            <div class="modal-actions">
+
+                <button type="submit"
+                        class="button button-danger">
+                    Xác nhận hủy
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/admin/bookings.js}"></script>
+
+</body>
+</html>

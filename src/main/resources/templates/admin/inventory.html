@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Sản phẩm & Kho - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+
+<body class="app-page">
+
+<aside class="sidebar">
+
+    <a class="sidebar-brand"
+       href="/admin/dashboard">
+        <span class="brand-mark">G</span>
+        <span>GYMFIT</span>
+    </a>
+
+    <nav class="sidebar-nav">
+
+        <a class="nav-item"
+           href="/admin/dashboard">
+            Tổng quan
+        </a>
+
+        <a class="nav-item"
+           href="/admin/branches">
+            Chi nhánh
+        </a>
+
+        <a class="nav-item"
+           href="/admin/members">
+            Hội viên
+        </a>
+
+        <a class="nav-item"
+           href="/admin/plans">
+            Gói tập
+        </a>
+
+        <a class="nav-item"
+           href="/admin/sales">
+            Bán hàng
+        </a>
+
+        <a class="nav-sub-item active"
+           href="/admin/inventory">
+            Sản phẩm & Kho
+        </a>
+
+        <a class="nav-item"
+           href="/admin/bookings">
+            Đặt lịch
+        </a>
+
+        <a class="nav-item"
+           href="/admin/checkins">
+            Check-in
+        </a>
+
+        <a class="nav-item"
+           href="/admin/reports">
+            Báo cáo
+        </a>
+
+        <a class="nav-item"
+           href="/admin/users">
+            Người dùng
+        </a>
+
+    </nav>
+
+    <button id="logout-button"
+            class="sidebar-logout">
+        Đăng xuất
+    </button>
+
+</aside>
+
+<main class="app-content">
+
+    <header class="page-header">
+
+        <div>
+            <h1>Sản phẩm & Kho</h1>
+
+            <p class="muted">
+                Quản lý catalog sản phẩm và tồn kho chi nhánh
+            </p>
+        </div>
+
+        <button id="create-product-button"
+                type="button"
+                class="button button-primary">
+            + Thêm sản phẩm
+        </button>
+
+    </header>
+
+    <div id="page-error"
+         class="alert alert-error hidden">
+    </div>
+
+    <div id="page-success"
+         class="alert alert-success hidden">
+    </div>
+
+    <div class="catalog-tabs">
+
+        <button id="products-tab"
+                class="catalog-tab active"
+                type="button">
+            Sản phẩm
+        </button>
+
+        <button id="stock-tab"
+                class="catalog-tab"
+                type="button">
+            Tồn kho
+        </button>
+
+        <button id="movements-tab"
+                class="catalog-tab"
+                type="button">
+            Biến động kho
+        </button>
+
+    </div>
+
+    <section id="products-section"
+             class="panel">
+
+        <div class="toolbar">
+
+            <input id="product-search"
+                   type="search"
+                   class="toolbar-search"
+                   placeholder="SKU, tên, danh mục...">
+
+            <select id="product-status-filter">
+                <option value="">
+                    Tất cả trạng thái
+                </option>
+
+                <option value="ACTIVE">
+                    Hoạt động
+                </option>
+
+                <option value="INACTIVE">
+                    Ngừng hoạt động
+                </option>
+            </select>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Sản phẩm</th>
+                    <th>Danh mục</th>
+                    <th>Giá</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody id="product-table-body">
+                </tbody>
+            </table>
+
+        </div>
+
+    </section>
+
+    <section id="stock-section"
+             class="panel hidden">
+
+        <div class="toolbar">
+
+            <select id="stock-branch-filter">
+                <option value="">
+                    Chọn chi nhánh
+                </option>
+            </select>
+
+            <input id="stock-search"
+                   type="search"
+                   class="toolbar-search"
+                   placeholder="SKU hoặc tên sản phẩm...">
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th>Cập nhật</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody id="stock-table-body">
+                </tbody>
+            </table>
+
+        </div>
+
+    </section>
+
+    <section id="movements-section"
+             class="panel hidden">
+
+        <div class="toolbar">
+
+            <select id="movement-branch-filter">
+                <option value="">
+                    Tất cả chi nhánh
+                </option>
+            </select>
+
+            <button id="refresh-movements"
+                    type="button"
+                    class="button button-secondary">
+                Làm mới
+            </button>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Chi nhánh</th>
+                    <th>Sản phẩm</th>
+                    <th>Thay đổi</th>
+                    <th>Lý do</th>
+                    <th>Thực hiện bởi</th>
+                </tr>
+                </thead>
+
+                <tbody id="movement-table-body">
+                </tbody>
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+<div id="product-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <div>
+                <h2 id="product-modal-title">
+                    Thêm sản phẩm
+                </h2>
+
+                <p class="muted">
+                    Thông tin catalog
+                </p>
+            </div>
+
+            <button id="product-modal-close"
+                    type="button"
+                    class="icon-button">
+                ×
+            </button>
+
+        </div>
+
+        <form id="product-form"
+              class="form-grid">
+
+            <input id="product-id"
+                   type="hidden">
+
+            <label>
+                <span>SKU</span>
+
+                <input id="product-sku"
+                       maxlength="40"
+                       required>
+            </label>
+
+            <label>
+                <span>Tên sản phẩm</span>
+
+                <input id="product-name"
+                       maxlength="140"
+                       required>
+            </label>
+
+            <label>
+                <span>Danh mục</span>
+
+                <input id="product-category"
+                       maxlength="60"
+                       required>
+            </label>
+
+            <label>
+                <span>Giá</span>
+
+                <input id="product-price"
+                       type="number"
+                       min="0"
+                       step="1000"
+                       required>
+            </label>
+
+            <label id="product-status-field"
+                   class="hidden">
+
+                <span>Trạng thái</span>
+
+                <select id="product-status">
+                    <option value="ACTIVE">
+                        Hoạt động
+                    </option>
+
+                    <option value="INACTIVE">
+                        Ngừng hoạt động
+                    </option>
+                </select>
+
+            </label>
+
+            <div id="product-form-error"
+                 class="alert alert-error field-full hidden">
+            </div>
+
+            <div class="modal-actions field-full">
+
+                <button id="product-cancel-button"
+                        type="button"
+                        class="button button-secondary">
+                    Hủy
+                </button>
+
+                <button id="product-save-button"
+                        type="submit"
+                        class="button button-primary">
+                    Lưu
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<div id="adjust-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <div>
+                <h2>Điều chỉnh tồn kho</h2>
+
+                <p id="adjust-product-name"
+                   class="muted">
+                    —
+                </p>
+            </div>
+
+            <button id="adjust-modal-close"
+                    type="button"
+                    class="icon-button">
+                ×
+            </button>
+
+        </div>
+
+        <form id="adjust-form"
+              class="form-stack">
+
+            <input id="adjust-product-id"
+                   type="hidden">
+
+            <label>
+                <span>Số lượng thay đổi</span>
+
+                <input id="adjust-delta"
+                       type="number"
+                       required
+                       placeholder="Ví dụ: 10 hoặc -3">
+            </label>
+
+            <p class="muted small">
+                Số dương để nhập thêm, số âm để giảm kho.
+            </p>
+
+            <label>
+                <span>Lý do</span>
+
+                <textarea id="adjust-reason"
+                          maxlength="200"
+                          required></textarea>
+            </label>
+
+            <div id="adjust-error"
+                 class="alert alert-error hidden">
+            </div>
+
+            <div class="modal-actions">
+
+                <button type="submit"
+                        class="button button-primary">
+                    Xác nhận
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/admin/inventory.js}"></script>
+
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Trang chủ - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+
+<body class="member-app">
+
+<div class="member-shell">
+
+    <header class="member-header">
+
+        <a href="/member/home"
+           class="member-brand">
+            <span class="brand-mark">G</span>
+            <span>GYMFIT</span>
+        </a>
+
+        <button id="logout-button"
+                type="button"
+                class="button button-secondary button-small">
+            Đăng xuất
+        </button>
+
+    </header>
+
+    <main class="member-main">
+
+        <header class="member-page-header">
+            <p class="muted">
+                Xin chào,
+            </p>
+
+            <h1 id="member-name">
+                Hội viên
+            </h1>
+
+            <div id="member-code"
+                 class="muted">
+                —
+            </div>
+        </header>
+
+        <div id="page-error"
+             class="alert alert-error hidden"></div>
+
+        <section class="member-membership-card">
+
+            <div class="member-membership-head">
+
+                <div>
+                    <div class="member-membership-title">
+                        MEMBERSHIP
+                    </div>
+
+                    <h2 id="membership-plan"
+                        class="member-membership-name">
+                        Đang tải...
+                    </h2>
+                </div>
+
+                <span id="membership-status"
+                      class="badge badge-success">
+                    ACTIVE
+                </span>
+
+            </div>
+
+            <div class="member-membership-dates">
+
+                <div>
+                    <span>Bắt đầu</span>
+                    <strong id="membership-start">
+                        —
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Hết hạn</span>
+                    <strong id="membership-end">
+                        —
+                    </strong>
+                </div>
+
+            </div>
+
+            <div id="membership-services"
+                 class="member-services">
+            </div>
+
+        </section>
+
+            <div style="margin-top: 14px;">
+                <a href="/member/plans"
+                   class="button button-primary">
+                    Xem & mua gói tập
+                </a>
+            </div>
+
+        <section class="member-home-stats">
+
+            <article class="stat-card">
+                <span>Lịch sắp tới</span>
+                <strong id="upcoming-count">0</strong>
+            </article>
+
+            <article class="stat-card">
+                <span>Check-in</span>
+                <strong id="checkin-count">0</strong>
+            </article>
+
+        </section>
+
+        <section class="member-section">
+
+            <div class="member-section-header">
+                <h2>Dịch vụ của bạn</h2>
+
+                <a class="button button-secondary button-small"
+                   href="/member/booking">
+                    Đặt lịch
+                </a>
+            </div>
+
+            <div id="service-grid"
+                 class="member-service-grid">
+            </div>
+
+        </section>
+
+        <section class="member-section">
+
+            <div class="member-section-header">
+                <h2>Lịch sắp tới</h2>
+
+                <a href="/member/history"
+                   class="muted">
+                    Xem tất cả
+                </a>
+            </div>
+
+            <div id="upcoming-list"
+                 class="member-list">
+            </div>
+
+        </section>
+
+    </main>
+
+    <nav class="member-bottom-nav">
+
+        <a class="member-nav-item active"
+           href="/member/home">
+            <span class="member-nav-icon">⌂</span>
+            <span>Trang chủ</span>
+        </a>
+
+        <a class="member-nav-item"
+           href="/member/booking">
+            <span class="member-nav-icon">＋</span>
+            <span>Đặt lịch</span>
+        </a>
+
+        <a class="member-nav-item member-qr-nav"
+           href="/member/qr">
+            <span class="member-nav-icon">▦</span>
+            <span>QR</span>
+        </a>
+
+        <a class="member-nav-item"
+           href="/member/history">
+            <span class="member-nav-icon">◷</span>
+            <span>Lịch sử</span>
+        </a>
+
+        <a class="member-nav-item"
+           href="/member/profile">
+            <span class="member-nav-icon">○</span>
+            <span>Hồ sơ</span>
+        </a>
+
+    </nav>
+
+</div>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/member/home.js}"></script>
+
+</body>
+</html>

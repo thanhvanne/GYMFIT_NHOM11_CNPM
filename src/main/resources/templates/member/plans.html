@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Gói tập - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+
+<body class="member-app">
+
+<div class="member-shell">
+
+    <header class="member-header">
+
+        <a href="/member/home"
+           class="member-brand">
+            <span class="brand-mark">G</span>
+            <span>GYMFIT</span>
+        </a>
+
+    </header>
+
+    <main class="member-main">
+
+        <header class="member-page-header">
+
+            <h1>Gói tập</h1>
+
+            <p class="muted">
+                Chọn gói tập phù hợp với bạn
+            </p>
+
+        </header>
+
+        <div id="page-error"
+             class="alert alert-error hidden">
+        </div>
+
+        <div id="page-success"
+             class="alert alert-success hidden">
+        </div>
+
+        <section class="panel">
+
+            <label>
+                <span>Chi nhánh</span>
+
+                <select id="plan-branch">
+                </select>
+            </label>
+
+        </section>
+
+        <section class="member-section">
+
+            <div id="member-plan-grid"
+                 class="manager-plan-grid">
+            </div>
+
+        </section>
+
+    </main>
+
+    <nav class="member-bottom-nav">
+
+        <a class="member-nav-item"
+           href="/member/home">
+            <span class="member-nav-icon">⌂</span>
+            <span>Trang chủ</span>
+        </a>
+
+        <a class="member-nav-item"
+           href="/member/booking">
+            <span class="member-nav-icon">＋</span>
+            <span>Đặt lịch</span>
+        </a>
+
+        <a class="member-nav-item member-qr-nav"
+           href="/member/qr">
+            <span class="member-nav-icon">▦</span>
+            <span>QR</span>
+        </a>
+
+        <a class="member-nav-item"
+           href="/member/history">
+            <span class="member-nav-icon">◷</span>
+            <span>Lịch sử</span>
+        </a>
+
+        <a class="member-nav-item"
+           href="/member/profile">
+            <span class="member-nav-icon">○</span>
+            <span>Hồ sơ</span>
+        </a>
+
+    </nav>
+
+</div>
+
+<div id="purchase-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card payment-card">
+
+        <div class="momo-logo">
+            MoMo
+        </div>
+
+        <h2 id="purchase-title">
+            Thanh toán gói tập
+        </h2>
+
+        <p class="muted">
+            Thanh toán thành công sẽ kích hoạt gói mới ngay.
+            Gói hiện tại sẽ chuyển sang REPLACED.
+        </p>
+
+        <dl class="payment-details">
+
+            <div>
+                <dt>Gói tập</dt>
+                <dd id="purchase-plan-name">—</dd>
+            </div>
+
+            <div>
+                <dt>Số tiền</dt>
+                <dd id="purchase-amount">—</dd>
+            </div>
+
+            <div>
+                <dt>Mã đơn</dt>
+                <dd id="purchase-order-code">—</dd>
+            </div>
+
+        </dl>
+
+        <div id="purchase-error"
+             class="alert alert-error hidden">
+        </div>
+
+        <div class="payment-actions">
+
+            <button id="purchase-failure-button"
+                    type="button"
+                    class="button button-danger">
+                Mô phỏng thất bại
+            </button>
+
+            <button id="purchase-success-button"
+                    type="button"
+                    class="button button-primary">
+                Thanh toán thành công
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/member/plans.js}"></script>
+
+</body>
+</html>

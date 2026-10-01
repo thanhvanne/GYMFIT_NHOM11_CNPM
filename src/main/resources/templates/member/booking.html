@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <title>Đặt lịch - GYMFIT</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<body class="member-app">
+
+<div class="member-shell">
+
+    <header class="member-header">
+        <a href="/member/home"
+           class="member-brand">
+            <span class="brand-mark">G</span>
+            <span>GYMFIT</span>
+        </a>
+    </header>
+
+    <main class="member-main">
+
+        <header class="member-page-header">
+            <h1>Đặt lịch</h1>
+
+            <p id="branch-name"
+               class="muted">
+                Chọn dịch vụ và thời gian
+            </p>
+        </header>
+
+        <div id="page-error"
+             class="alert alert-error hidden">
+        </div>
+
+        <div id="page-success"
+             class="alert alert-success hidden">
+        </div>
+
+        <section class="member-form-card">
+
+            <div class="form-stack">
+
+                <div>
+                    <strong>Dịch vụ</strong>
+
+                    <div id="service-selector"
+                         class="member-service-selector">
+                    </div>
+                </div>
+
+                <label>
+                    <span>Facility</span>
+                    <select id="facility-select"></select>
+                </label>
+
+                <label>
+                    <span>Ngày</span>
+                    <input id="booking-date"
+                           type="date">
+                </label>
+
+                <div>
+                    <strong>Khung giờ</strong>
+
+                    <div id="slot-grid"
+                         class="member-slot-grid">
+                    </div>
+                </div>
+
+                <button id="submit-booking"
+                        type="button"
+                        class="button button-primary"
+                        disabled>
+                    Xác nhận đặt lịch
+                </button>
+
+            </div>
+
+        </section>
+
+        <section class="member-section">
+
+            <div class="member-section-header">
+                <h2>Lịch sắp tới</h2>
+            </div>
+
+            <div id="upcoming-bookings"
+                 class="member-list">
+            </div>
+
+        </section>
+
+    </main>
+
+    <nav class="member-bottom-nav">
+
+        <a class="member-nav-item"
+           href="/member/home">
+            <span class="member-nav-icon">⌂</span>
+            <span>Trang chủ</span>
+        </a>
+
+        <a class="member-nav-item active"
+           href="/member/booking">
+            <span class="member-nav-icon">＋</span>
+            <span>Đặt lịch</span>
+        </a>
+
+        <a class="member-nav-item member-qr-nav"
+           href="/member/qr">
+            <span class="member-nav-icon">▦</span>
+            <span>QR</span>
+        </a>
+
+        <a class="member-nav-item"
+           href="/member/history">
+            <span class="member-nav-icon">◷</span>
+            <span>Lịch sử</span>
+        </a>
+
+        <a class="member-nav-item"
+           href="/member/profile">
+            <span class="member-nav-icon">○</span>
+            <span>Hồ sơ</span>
+        </a>
+
+    </nav>
+
+</div>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/member/booking.js}"></script>
+
+</body>
+</html>

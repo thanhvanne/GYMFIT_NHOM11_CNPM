@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <title>QR hội viên - GYMFIT</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<body class="member-app">
+
+<div class="member-shell">
+
+    <header class="member-header">
+        <a href="/member/home"
+           class="member-brand">
+            <span class="brand-mark">G</span>
+            <span>GYMFIT</span>
+        </a>
+    </header>
+
+    <main class="member-main">
+
+        <header class="member-page-header">
+            <h1>QR hội viên</h1>
+            <p class="muted">
+                QR động tự làm mới sau 60 giây
+            </p>
+        </header>
+
+        <div id="page-error"
+             class="alert alert-error hidden"></div>
+
+        <section class="panel member-qr-card">
+
+            <div>
+                <h2 id="qr-member-name">
+                    Hội viên
+                </h2>
+
+                <div id="qr-member-code"
+                     class="muted">
+                    —
+                </div>
+            </div>
+
+            <img id="qr-image"
+                 class="qr-visual"
+                 alt="QR check-in">
+
+            <div>
+                <strong id="qr-countdown">
+                    —
+                </strong>
+
+                <div class="muted small">
+                    giây trước khi QR làm mới
+                </div>
+            </div>
+
+            <div id="qr-membership"
+                 class="muted">
+                —
+            </div>
+
+        </section>
+
+    </main>
+
+    <nav class="member-bottom-nav">
+        <a class="member-nav-item" href="/member/home">
+            <span class="member-nav-icon">⌂</span><span>Trang chủ</span>
+        </a>
+
+        <a class="member-nav-item" href="/member/booking">
+            <span class="member-nav-icon">＋</span><span>Đặt lịch</span>
+        </a>
+
+        <a class="member-nav-item member-qr-nav active" href="/member/qr">
+            <span class="member-nav-icon">▦</span><span>QR</span>
+        </a>
+
+        <a class="member-nav-item" href="/member/history">
+            <span class="member-nav-icon">◷</span><span>Lịch sử</span>
+        </a>
+
+        <a class="member-nav-item" href="/member/profile">
+            <span class="member-nav-icon">○</span><span>Hồ sơ</span>
+        </a>
+    </nav>
+
+</div>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/member/qr.js}"></script>
+
+</body>
+</html>

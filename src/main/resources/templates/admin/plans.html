@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Gói tập - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+
+<body class="app-page">
+
+<aside class="sidebar">
+
+    <a class="sidebar-brand"
+       href="/admin/dashboard">
+        <span class="brand-mark">G</span>
+        <span>GYMFIT</span>
+    </a>
+
+    <nav class="sidebar-nav">
+
+        <a class="nav-item"
+           href="/admin/dashboard">
+            Tổng quan
+        </a>
+
+        <a class="nav-item"
+           href="/admin/branches">
+            Chi nhánh
+        </a>
+
+        <a class="nav-item"
+           href="/admin/members">
+            Hội viên
+        </a>
+
+        <a class="nav-item active"
+           href="/admin/plans">
+            Gói tập
+        </a>
+
+        <a class="nav-item"
+           href="/admin/sales">
+            Bán hàng
+        </a>
+
+        <a class="nav-item"
+           href="/admin/bookings">
+            Đặt lịch
+        </a>
+
+        <a class="nav-item"
+           href="/admin/checkins">
+            Check-in
+        </a>
+
+        <a class="nav-item"
+           href="/admin/reports">
+            Báo cáo
+        </a>
+
+        <a class="nav-item"
+           href="/admin/users">
+            Người dùng
+        </a>
+
+    </nav>
+
+    <button id="logout-button"
+            class="sidebar-logout">
+        Đăng xuất
+    </button>
+
+</aside>
+
+<main class="app-content">
+
+    <header class="page-header">
+
+        <div>
+            <h1>Gói tập</h1>
+
+            <p class="muted">
+                Quản lý gói membership của các chi nhánh
+            </p>
+        </div>
+
+        <button id="create-plan-button"
+                class="button button-primary"
+                type="button">
+            + Thêm gói tập
+        </button>
+
+    </header>
+
+    <div id="page-error"
+         class="alert alert-error hidden">
+    </div>
+
+    <div id="page-success"
+         class="alert alert-success hidden">
+    </div>
+
+    <section class="panel">
+
+        <div class="toolbar">
+
+            <input id="plan-search"
+                   class="toolbar-search"
+                   type="search"
+                   placeholder="Tìm tên hoặc mã gói...">
+
+            <select id="branch-filter">
+                <option value="">
+                    Tất cả chi nhánh
+                </option>
+            </select>
+
+            <select id="status-filter">
+                <option value="">
+                    Tất cả trạng thái
+                </option>
+
+                <option value="ACTIVE">
+                    Hoạt động
+                </option>
+
+                <option value="INACTIVE">
+                    Ngừng hoạt động
+                </option>
+            </select>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+
+                <thead>
+                <tr>
+                    <th>Mã gói</th>
+                    <th>Gói tập</th>
+                    <th>Chi nhánh</th>
+                    <th>Tier</th>
+                    <th>Thời hạn</th>
+                    <th>Giá</th>
+                    <th>Dịch vụ</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody id="plan-table-body">
+
+                <tr>
+                    <td colspan="9"
+                        class="empty-cell">
+                        Đang tải...
+                    </td>
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+<div id="plan-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card modal-large">
+
+        <div class="modal-header">
+
+            <div>
+                <h2 id="plan-modal-title">
+                    Thêm gói tập
+                </h2>
+
+                <p class="muted">
+                    Cấu hình membership plan
+                </p>
+            </div>
+
+            <button id="plan-modal-close"
+                    type="button"
+                    class="icon-button">
+                ×
+            </button>
+
+        </div>
+
+        <form id="plan-form"
+              class="form-grid">
+
+            <input id="plan-id"
+                   type="hidden">
+
+            <label id="plan-branch-field">
+                <span>Chi nhánh</span>
+
+                <select id="plan-branch"
+                        required>
+                </select>
+            </label>
+
+            <label>
+                <span>Mã gói</span>
+
+                <input id="plan-code"
+                       maxlength="40"
+                       required
+                       placeholder="Q1_GYM_1M">
+            </label>
+
+            <label>
+                <span>Tên gói</span>
+
+                <input id="plan-name"
+                       maxlength="120"
+                       required>
+            </label>
+
+            <label>
+                <span>Tier</span>
+
+                <select id="plan-tier"
+                        required>
+                    <option value="BASIC">
+                        Basic
+                    </option>
+
+                    <option value="STANDARD">
+                        Standard
+                    </option>
+
+                    <option value="PREMIUM">
+                        Premium
+                    </option>
+                </select>
+            </label>
+
+            <label>
+                <span>Thời hạn (ngày)</span>
+
+                <input id="plan-duration"
+                       type="number"
+                       min="1"
+                       required>
+            </label>
+
+            <label>
+                <span>Giá (VND)</span>
+
+                <input id="plan-price"
+                       type="number"
+                       min="0"
+                       step="1000"
+                       required>
+            </label>
+
+            <label id="plan-status-field">
+                <span>Trạng thái</span>
+
+                <select id="plan-status">
+                    <option value="ACTIVE">
+                        Hoạt động
+                    </option>
+
+                    <option value="INACTIVE">
+                        Ngừng hoạt động
+                    </option>
+                </select>
+            </label>
+
+            <label class="field-full">
+                <span>Mô tả</span>
+
+                <textarea id="plan-description"
+                          maxlength="500"
+                          rows="3"></textarea>
+            </label>
+
+            <div class="field-full">
+
+                <div class="form-label">
+                    Dịch vụ
+                </div>
+
+                <div id="plan-services"
+                     class="service-picker">
+
+                    <label class="service-option"
+                           data-service="GYM">
+                        <input type="checkbox"
+                               value="GYM">
+                        <span>GYM</span>
+                    </label>
+
+                    <label class="service-option"
+                           data-service="BOXING">
+                        <input type="checkbox"
+                               value="BOXING">
+                        <span>BOXING</span>
+                    </label>
+
+                    <label class="service-option"
+                           data-service="PICKLEBALL">
+                        <input type="checkbox"
+                               value="PICKLEBALL">
+                        <span>PICKLEBALL</span>
+                    </label>
+
+                </div>
+
+                <div class="muted small">
+                    Chỉ các dịch vụ được cấu hình tại chi nhánh
+                    mới có thể chọn.
+                </div>
+
+            </div>
+
+            <div id="plan-form-error"
+                 class="alert alert-error field-full hidden">
+            </div>
+
+            <div class="modal-actions field-full">
+
+                <button id="plan-cancel-button"
+                        type="button"
+                        class="button button-secondary">
+                    Hủy
+                </button>
+
+                <button id="plan-save-button"
+                        type="submit"
+                        class="button button-primary">
+                    Lưu
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/admin/plans.js}"></script>
+
+</body>
+</html>

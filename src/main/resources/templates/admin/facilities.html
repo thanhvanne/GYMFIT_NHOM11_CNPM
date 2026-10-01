@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Cơ sở vật chất - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+
+<body class="app-page">
+
+<aside class="sidebar">
+
+    <a class="sidebar-brand"
+       href="/admin/dashboard">
+        <span class="brand-mark">G</span>
+        <span>GYMFIT</span>
+    </a>
+
+    <nav class="sidebar-nav">
+
+        <a class="nav-item"
+           href="/admin/dashboard">
+            Tổng quan
+        </a>
+
+        <a class="nav-item active"
+           href="/admin/branches">
+            Chi nhánh
+        </a>
+
+        <a class="nav-sub-item active"
+           href="/admin/facilities">
+            Cơ sở vật chất
+        </a>
+
+        <a class="nav-item"
+           href="/admin/members">
+            Hội viên
+        </a>
+
+        <a class="nav-item"
+           href="/admin/plans">
+            Gói tập
+        </a>
+
+        <a class="nav-item"
+           href="/admin/sales">
+            Bán hàng
+        </a>
+
+        <a class="nav-item"
+           href="/admin/bookings">
+            Đặt lịch
+        </a>
+
+        <a class="nav-item"
+           href="/admin/checkins">
+            Check-in
+        </a>
+
+        <a class="nav-item"
+           href="/admin/reports">
+            Báo cáo
+        </a>
+
+        <a class="nav-item"
+           href="/admin/users">
+            Người dùng
+        </a>
+
+    </nav>
+
+    <button id="logout-button"
+            class="sidebar-logout">
+        Đăng xuất
+    </button>
+
+</aside>
+
+<main class="app-content">
+
+    <header class="page-header">
+
+        <div>
+            <h1>Cơ sở vật chất</h1>
+
+            <p class="muted">
+                Quản lý khu tập, phòng Boxing và sân Pickleball
+            </p>
+        </div>
+
+        <button id="create-facility-button"
+                class="button button-primary"
+                type="button">
+            + Thêm cơ sở
+        </button>
+
+    </header>
+
+    <div id="page-error"
+         class="alert alert-error hidden"></div>
+
+    <div id="page-success"
+         class="alert alert-success hidden"></div>
+
+    <section class="panel">
+
+        <div class="toolbar">
+
+            <select id="facility-branch-filter">
+                <option value="">
+                    Tất cả chi nhánh
+                </option>
+            </select>
+
+            <select id="facility-service-filter">
+                <option value="">
+                    Tất cả dịch vụ
+                </option>
+
+                <option value="GYM">GYM</option>
+                <option value="BOXING">BOXING</option>
+                <option value="PICKLEBALL">
+                    PICKLEBALL
+                </option>
+            </select>
+
+            <select id="facility-status-filter">
+                <option value="">
+                    Tất cả trạng thái
+                </option>
+
+                <option value="ACTIVE">
+                    Hoạt động
+                </option>
+
+                <option value="MAINTENANCE">
+                    Bảo trì
+                </option>
+
+                <option value="INACTIVE">
+                    Ngừng hoạt động
+                </option>
+            </select>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+
+                <thead>
+                <tr>
+                    <th>Tên</th>
+                    <th>Chi nhánh</th>
+                    <th>Dịch vụ</th>
+                    <th>Loại</th>
+                    <th>Sức chứa</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody id="facility-table-body"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+<div id="facility-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <div>
+                <h2 id="facility-modal-title">
+                    Thêm cơ sở vật chất
+                </h2>
+
+                <p class="muted">
+                    Resource vật lý được sử dụng khi booking
+                </p>
+            </div>
+
+            <button id="facility-modal-close"
+                    type="button"
+                    class="icon-button">
+                ×
+            </button>
+
+        </div>
+
+        <form id="facility-form"
+              class="form-grid">
+
+            <input id="facility-id"
+                   type="hidden">
+
+            <label id="facility-branch-field">
+                <span>Chi nhánh</span>
+
+                <select id="facility-branch"
+                        required>
+                </select>
+            </label>
+
+            <label>
+                <span>Dịch vụ</span>
+
+                <select id="facility-service"
+                        required>
+                </select>
+            </label>
+
+            <label>
+                <span>Loại cơ sở</span>
+
+                <select id="facility-type"
+                        required>
+                </select>
+            </label>
+
+            <label>
+                <span>Tên</span>
+
+                <input id="facility-name"
+                       maxlength="120"
+                       required>
+            </label>
+
+            <label>
+                <span>Sức chứa</span>
+
+                <input id="facility-capacity"
+                       type="number"
+                       min="1"
+                       required>
+            </label>
+
+            <label>
+                <span>Trạng thái</span>
+
+                <select id="facility-status"
+                        required>
+                    <option value="ACTIVE">
+                        Hoạt động
+                    </option>
+
+                    <option value="MAINTENANCE">
+                        Bảo trì
+                    </option>
+
+                    <option value="INACTIVE">
+                        Ngừng hoạt động
+                    </option>
+                </select>
+            </label>
+
+            <div id="facility-form-error"
+                 class="alert alert-error field-full hidden">
+            </div>
+
+            <div class="modal-actions field-full">
+
+                <button id="facility-cancel-button"
+                        type="button"
+                        class="button button-secondary">
+                    Hủy
+                </button>
+
+                <button id="facility-save-button"
+                        type="submit"
+                        class="button button-primary">
+                    Lưu
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/admin/facilities.js}"></script>
+
+</body>
+</html>

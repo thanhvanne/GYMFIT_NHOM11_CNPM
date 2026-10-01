@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <title>Bán hàng - GYMFIT</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="app-page">
+
+<aside class="sidebar">
+    <a class="sidebar-brand" href="/manager/dashboard">
+        <span class="brand-mark">G</span>
+        <span>GYMFIT</span>
+    </a>
+
+    <nav class="sidebar-nav">
+        <a class="nav-item" href="/manager/dashboard">Tổng quan</a>
+        <a class="nav-item" href="/manager/members">Hội viên</a>
+        <a class="nav-item" href="/manager/plans">Gói tập</a>
+        <a class="nav-item active" href="/manager/sales">Bán hàng</a>
+        <a class="nav-item" href="/manager/bookings">Đặt lịch</a>
+        <a class="nav-item" href="/manager/checkins">Check-in</a>
+    </nav>
+
+    <button id="logout-button"
+            class="sidebar-logout">
+        Đăng xuất
+    </button>
+</aside>
+
+<main class="app-content">
+
+    <header class="page-header">
+        <div>
+            <h1>Bán hàng</h1>
+            <p id="branch-name" class="muted">
+                Đang tải chi nhánh...
+            </p>
+        </div>
+    </header>
+
+    <div id="page-error"
+         class="alert alert-error hidden"></div>
+
+    <div id="page-success"
+         class="alert alert-success hidden"></div>
+
+    <div class="sales-layout">
+
+        <section class="panel">
+
+            <label class="manager-member-select">
+                <span>Hội viên</span>
+
+                <select id="sales-member">
+                    <option value="">
+                        Khách lẻ
+                    </option>
+                </select>
+            </label>
+
+            <div class="catalog-tabs">
+                <button id="plans-tab"
+                        type="button"
+                        class="catalog-tab active">
+                    Gói tập
+                </button>
+
+                <button id="products-tab"
+                        type="button"
+                        class="catalog-tab">
+                    Sản phẩm
+                </button>
+            </div>
+
+            <div id="plan-catalog"
+                 class="catalog-grid"></div>
+
+            <div id="product-catalog"
+                 class="catalog-grid hidden"></div>
+
+        </section>
+
+        <aside class="panel cart-panel">
+
+            <div class="panel-header">
+                <h2>Đơn hàng</h2>
+            </div>
+
+            <div id="cart-items"
+                 class="cart-items">
+                <div class="empty-state">
+                    Chưa có sản phẩm
+                </div>
+            </div>
+
+            <div class="cart-summary">
+
+                <div class="cart-total">
+                    <span>Tổng cộng</span>
+                    <strong id="cart-total">
+                        0 ₫
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="cart-actions">
+
+                <button id="clear-cart-button"
+                        type="button"
+                        class="button button-secondary">
+                    Xóa giỏ
+                </button>
+
+                <button id="checkout-button"
+                        type="button"
+                        class="button button-primary">
+                    Thanh toán MoMo
+                </button>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+    <section class="panel sales-history-panel">
+
+        <div class="panel-header">
+            <div>
+                <h2>Đơn gần đây</h2>
+                <p class="muted">
+                    Đơn hàng của chi nhánh
+                </p>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Hội viên</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thời gian</th>
+                </tr>
+                </thead>
+
+                <tbody id="orders-body"></tbody>
+            </table>
+        </div>
+
+    </section>
+
+</main>
+
+<div id="payment-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card payment-card">
+
+        <div class="momo-logo">MoMo</div>
+
+        <h2>MoMo Simulator</h2>
+
+        <dl class="payment-details">
+            <div>
+                <dt>Đơn hàng</dt>
+                <dd id="payment-order">—</dd>
+            </div>
+
+            <div>
+                <dt>Số tiền</dt>
+                <dd id="payment-amount">—</dd>
+            </div>
+        </dl>
+
+        <div id="payment-error"
+             class="alert alert-error hidden"></div>
+
+        <div class="payment-actions">
+
+            <button id="payment-failure"
+                    type="button"
+                    class="button button-danger">
+                Thất bại
+            </button>
+
+            <button id="payment-success"
+                    type="button"
+                    class="button button-primary">
+                Thành công
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/manager/sales.js}"></script>
+
+</body>
+</html>

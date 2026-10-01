@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Tổng quan chi nhánh - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+
+<body class="app-page">
+
+<aside class="sidebar">
+
+    <a class="sidebar-brand"
+       href="/manager/dashboard">
+        <span class="brand-mark">G</span>
+        <span>GYMFIT</span>
+    </a>
+
+    <nav class="sidebar-nav">
+
+        <a class="nav-item active"
+           href="/manager/dashboard">
+            Tổng quan
+        </a>
+
+        <a class="nav-item"
+           href="/manager/members">
+            Hội viên
+        </a>
+
+        <a class="nav-item"
+           href="/manager/plans">
+            Gói tập
+        </a>
+
+        <a class="nav-item"
+           href="/manager/sales">
+            Bán hàng
+        </a>
+
+        <a class="nav-item"
+           href="/manager/bookings">
+            Đặt lịch
+        </a>
+
+        <a class="nav-item"
+           href="/manager/checkins">
+            Check-in
+        </a>
+
+    </nav>
+
+    <button id="logout-button"
+            class="sidebar-logout">
+        Đăng xuất
+    </button>
+
+</aside>
+
+<main class="app-content">
+
+    <header class="page-header">
+
+        <div>
+            <h1>Tổng quan chi nhánh</h1>
+
+            <p id="manager-branch-name"
+               class="muted">
+                Đang tải...
+            </p>
+        </div>
+
+        <div class="user-chip">
+
+            <div id="manager-avatar"
+                 class="avatar">
+                M
+            </div>
+
+            <div>
+                <strong id="manager-name">
+                    Manager
+                </strong>
+
+                <div class="muted small">
+                    Quản lý chi nhánh
+                </div>
+            </div>
+
+        </div>
+
+    </header>
+
+    <div id="page-error"
+         class="alert alert-error hidden">
+    </div>
+
+    <section class="stats-grid">
+
+        <article class="stat-card">
+            <span>Doanh thu hôm nay</span>
+            <strong id="stat-revenue">—</strong>
+        </article>
+
+        <article class="stat-card">
+            <span>Check-in hôm nay</span>
+            <strong id="stat-checkins">—</strong>
+        </article>
+
+        <article class="stat-card">
+            <span>Booking hôm nay</span>
+            <strong id="stat-bookings">—</strong>
+        </article>
+
+        <article class="stat-card">
+            <span>Hội viên hoạt động</span>
+            <strong id="stat-members">—</strong>
+        </article>
+
+    </section>
+
+    <section class="dashboard-two-column">
+
+        <article class="panel">
+
+            <div class="panel-header dashboard-panel-header">
+
+                <div>
+                    <h2>Check-in gần đây</h2>
+
+                    <p class="muted">
+                        Hoạt động mới nhất
+                    </p>
+                </div>
+
+                <a href="/manager/checkins"
+                   class="button button-secondary button-small">
+                    Xem check-in
+                </a>
+
+            </div>
+
+            <div class="table-wrap">
+
+                <table class="data-table">
+
+                    <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Hội viên</th>
+                        <th>Dịch vụ</th>
+                        <th>Kết quả</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="recent-checkins">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </article>
+
+        <article class="panel">
+
+            <div class="panel-header">
+                <div>
+                    <h2>Membership</h2>
+
+                    <p class="muted">
+                        Đang hoạt động
+                    </p>
+                </div>
+            </div>
+
+            <div class="metric-large">
+                <strong id="stat-memberships">
+                    —
+                </strong>
+
+                <span>
+                    membership active
+                </span>
+            </div>
+
+        </article>
+
+    </section>
+
+    <section class="panel dashboard-section">
+
+        <div class="panel-header dashboard-panel-header">
+
+            <div>
+                <h2>Lịch sắp tới</h2>
+
+                <p class="muted">
+                    Booking gần nhất của chi nhánh
+                </p>
+            </div>
+
+            <a href="/manager/bookings"
+               class="button button-secondary button-small">
+                Xem booking
+            </a>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+
+                <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Hội viên</th>
+                    <th>Dịch vụ</th>
+                    <th>Facility</th>
+                    <th>Trạng thái</th>
+                </tr>
+                </thead>
+
+                <tbody id="upcoming-bookings">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/manager/dashboard.js}"></script>
+
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Check-in - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+
+<body class="app-page">
+
+<aside class="sidebar">
+
+    <a class="sidebar-brand"
+       href="/admin/dashboard">
+        <span class="brand-mark">G</span>
+        <span>GYMFIT</span>
+    </a>
+
+    <nav class="sidebar-nav">
+        <a class="nav-item"
+           href="/admin/dashboard">
+            Tổng quan
+        </a>
+
+        <a class="nav-item"
+           href="/admin/branches">
+            Chi nhánh
+        </a>
+
+        <a class="nav-item"
+           href="/admin/members">
+            Hội viên
+        </a>
+
+        <a class="nav-item"
+           href="/admin/plans">
+            Gói tập
+        </a>
+
+        <a class="nav-item"
+           href="/admin/sales">
+            Bán hàng
+        </a>
+
+        <a class="nav-item"
+           href="/admin/bookings">
+            Đặt lịch
+        </a>
+
+        <a class="nav-item active"
+           href="/admin/checkins">
+            Check-in
+        </a>
+
+        <a class="nav-item"
+           href="/admin/reports">
+            Báo cáo
+        </a>
+
+        <a class="nav-item"
+           href="/admin/users">
+            Người dùng
+        </a>
+    </nav>
+
+    <button id="logout-button"
+            class="sidebar-logout">
+        Đăng xuất
+    </button>
+
+</aside>
+
+<main class="app-content">
+
+    <header class="page-header">
+        <div>
+            <h1>Check-in</h1>
+            <p class="muted">
+                Check-in thủ công hoặc bằng QR động
+            </p>
+        </div>
+    </header>
+
+    <div id="page-error"
+         class="alert alert-error hidden"></div>
+
+    <div id="page-success"
+         class="alert alert-success hidden"></div>
+
+    <section class="checkin-actions-grid">
+
+        <article class="panel">
+
+            <h2>Check-in thủ công</h2>
+
+            <p class="muted">
+                Nhập mã hội viên hoặc số điện thoại.
+            </p>
+
+            <form id="manual-checkin-form"
+                  class="form-stack">
+
+                <label>
+                    <span>Chi nhánh</span>
+
+                    <select id="manual-branch"
+                            required>
+                    </select>
+                </label>
+
+                <label>
+                    <span>Mã HV / Số điện thoại</span>
+
+                    <input id="manual-member"
+                           maxlength="30"
+                           required
+                           placeholder="GF000001">
+                </label>
+
+                <label>
+                    <span>Dịch vụ</span>
+
+                    <select id="manual-service"
+                            required>
+                    </select>
+                </label>
+
+                <button type="submit"
+                        class="button button-primary">
+                    Check-in
+                </button>
+
+            </form>
+
+        </article>
+
+        <article class="panel">
+
+            <h2>Quét QR</h2>
+
+            <p class="muted">
+                Dán token QR được đọc từ mã QR của hội viên.
+            </p>
+
+            <form id="qr-checkin-form"
+                  class="form-stack">
+
+                <label>
+                    <span>Chi nhánh</span>
+
+                    <select id="qr-branch"
+                            required>
+                    </select>
+                </label>
+
+                <label>
+                    <span>QR Token</span>
+
+                    <textarea id="qr-token"
+                              rows="4"
+                              required></textarea>
+                </label>
+
+                <label>
+                    <span>Dịch vụ</span>
+
+                    <select id="qr-service"
+                            required>
+                    </select>
+                </label>
+
+                <button type="submit"
+                        class="button button-primary">
+                    Xác nhận QR
+                </button>
+
+            </form>
+
+        </article>
+
+    </section>
+
+    <section class="panel checkin-history">
+
+        <div class="panel-header">
+            <div>
+                <h2>Lịch sử check-in</h2>
+                <p class="muted">
+                    Các lượt check-in gần nhất
+                </p>
+            </div>
+
+            <button id="refresh-checkins"
+                    class="button button-secondary"
+                    type="button">
+                Làm mới
+            </button>
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+
+                <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Hội viên</th>
+                    <th>Chi nhánh</th>
+                    <th>Dịch vụ</th>
+                    <th>Phương thức</th>
+                    <th>Kết quả</th>
+                    <th>Lý do</th>
+                </tr>
+                </thead>
+
+                <tbody id="checkin-table-body">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/admin/checkins.js}"></script>
+
+</body>
+</html>

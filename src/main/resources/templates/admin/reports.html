@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Báo cáo - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+
+<body class="app-page">
+
+<aside class="sidebar">
+
+    <a class="sidebar-brand"
+       href="/admin/dashboard">
+        <span class="brand-mark">G</span>
+        <span>GYMFIT</span>
+    </a>
+
+    <nav class="sidebar-nav">
+
+        <a class="nav-item"
+           href="/admin/dashboard">
+            Tổng quan
+        </a>
+
+        <a class="nav-item"
+           href="/admin/branches">
+            Chi nhánh
+        </a>
+
+        <a class="nav-item"
+           href="/admin/members">
+            Hội viên
+        </a>
+
+        <a class="nav-item"
+           href="/admin/plans">
+            Gói tập
+        </a>
+
+        <a class="nav-item"
+           href="/admin/sales">
+            Bán hàng
+        </a>
+
+        <a class="nav-item"
+           href="/admin/bookings">
+            Đặt lịch
+        </a>
+
+        <a class="nav-item"
+           href="/admin/checkins">
+            Check-in
+        </a>
+
+        <a class="nav-item active"
+           href="/admin/reports">
+            Báo cáo
+        </a>
+
+        <a class="nav-item"
+           href="/admin/users">
+            Người dùng
+        </a>
+
+    </nav>
+
+    <button id="logout-button"
+            class="sidebar-logout">
+        Đăng xuất
+    </button>
+
+</aside>
+
+<main class="app-content">
+
+    <header class="page-header">
+        <div>
+            <h1>Báo cáo</h1>
+
+            <p class="muted">
+                Doanh thu, dịch vụ và audit log hệ thống
+            </p>
+        </div>
+    </header>
+
+    <div id="page-error"
+         class="alert alert-error hidden">
+    </div>
+
+    <section class="panel">
+
+        <div class="report-filters">
+
+            <label>
+                <span>Từ ngày</span>
+
+                <input id="report-from"
+                       type="date">
+            </label>
+
+            <label>
+                <span>Đến ngày</span>
+
+                <input id="report-to"
+                       type="date">
+            </label>
+
+            <label>
+                <span>Chi nhánh</span>
+
+                <select id="report-branch">
+                    <option value="">
+                        Toàn hệ thống
+                    </option>
+                </select>
+            </label>
+
+            <button id="load-report-button"
+                    type="button"
+                    class="button button-primary">
+                Xem báo cáo
+            </button>
+
+        </div>
+
+    </section>
+
+    <section class="stats-grid report-stats">
+
+        <article class="stat-card">
+            <span>Tổng doanh thu</span>
+
+            <strong id="gross-revenue">
+                —
+            </strong>
+        </article>
+
+        <article class="stat-card">
+            <span>Doanh thu gói tập</span>
+
+            <strong id="plan-revenue">
+                —
+            </strong>
+        </article>
+
+        <article class="stat-card">
+            <span>Doanh thu sản phẩm</span>
+
+            <strong id="product-revenue">
+                —
+            </strong>
+        </article>
+
+        <article class="stat-card">
+            <span>Đơn đã thanh toán</span>
+
+            <strong id="paid-orders">
+                —
+            </strong>
+        </article>
+
+    </section>
+
+    <section class="panel report-section">
+
+        <div class="panel-header">
+            <div>
+                <h2>Thống kê dịch vụ</h2>
+
+                <p class="muted">
+                    Booking và check-in theo loại hình
+                </p>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+
+                <thead>
+                <tr>
+                    <th>Dịch vụ</th>
+                    <th>Booking</th>
+                    <th>Check-in</th>
+                </tr>
+                </thead>
+
+                <tbody id="services-report-body">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <section class="panel report-section">
+
+        <div class="panel-header report-header">
+
+            <div>
+                <h2>Audit log</h2>
+
+                <p class="muted">
+                    Các hành động quan trọng trên hệ thống
+                </p>
+            </div>
+
+            <button id="refresh-audit-button"
+                    class="button button-secondary"
+                    type="button">
+                Làm mới
+            </button>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+
+                <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Entity</th>
+                    <th>Chi nhánh</th>
+                    <th>Chi tiết</th>
+                </tr>
+                </thead>
+
+                <tbody id="audit-table-body">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/admin/reports.js}"></script>
+
+</body>
+</html>

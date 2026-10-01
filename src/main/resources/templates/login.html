@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <title>Đăng nhập - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+<body class="login-page">
+
+<main class="login-card">
+    <div class="brand">
+        <div class="brand-mark">G</div>
+
+        <div>
+            <div class="brand-name">GYMFIT</div>
+            <div class="muted">
+                Gym Management System
+            </div>
+        </div>
+    </div>
+
+    <h1>Đăng nhập</h1>
+
+    <p class="muted">
+        Đăng nhập để tiếp tục vào hệ thống.
+    </p>
+
+    <form id="login-form"
+          class="form-stack">
+
+        <label>
+            <span>Email</span>
+            <input
+                    id="email"
+                    type="email"
+                    autocomplete="username"
+                    required
+                    placeholder="admin@gymfit.local">
+        </label>
+
+        <label>
+            <span>Mật khẩu</span>
+            <input
+                    id="password"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                    placeholder="••••••••">
+        </label>
+
+        <div id="login-error"
+             class="alert alert-error hidden"></div>
+
+        <button
+                id="login-button"
+                class="button button-primary"
+                type="submit">
+            Đăng nhập
+        </button>
+    </form>
+
+    <div class="demo-box">
+        <strong>Tài khoản demo</strong>
+        <div>Admin: admin@gymfit.local</div>
+        <div>Manager: manager.q1@gymfit.local</div>
+        <div>Member: member1@gymfit.local</div>
+        <div>Password: password</div>
+    </div>
+</main>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/login.js}"></script>
+
+</body>
+</html>
