@@ -42,9 +42,13 @@ public class TextNormalizer {
     private static final Pattern KEEP =
             Pattern.compile("[^a-z0-9 :/\\-.,?_]");
 
-    /** Ký tự lặp từ 3 lần trở lên → rút còn 2. */
+    /**
+ * Ký tự chữ lặp từ 3 lần trỡ lên → rút còn 2.
+ * <p>Chỉ áp dụng cho <b>chữ</b>: rút gọn chữ số sẽ phá hỏng số tiền và ngày
+ * ("600000" → "600", "500.000" → "500.00").
+ */
     private static final Pattern REPEATED =
-            Pattern.compile("(.)\\1{2,}");
+            Pattern.compile("([a-z])\\1{2,}");
 
     private static final Pattern SPACES =
             Pattern.compile("\\s+");
@@ -52,7 +56,7 @@ public class TextNormalizer {
     private Map<String, String> teencode = Map.of();
 
     @PostConstruct
-    void load() {
+    public void load() {
         this.teencode = loadTeencode(
                 RESOURCE
         );

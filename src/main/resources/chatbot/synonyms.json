@@ -36,7 +36,7 @@
     "ui": ""
   },
   "service": {
-    "GYM": ["gym", "tap gym", "phong gym", "tap ta", "fitness"],
+    "GYM": ["gym", "tap gym", "phong gym", "tap ta", "tap tai", "tap luyen", "fitness"],
     "BOXING": ["boxing", "dam boc", "box", "quyen anh"],
     "PICKLEBALL": ["pickleball", "pickle ball", "pickle", "san pickleball"]
   },

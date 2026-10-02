@@ -83,7 +83,43 @@ Subclass: `BadRequestException`, `ConflictException`, `ForbiddenException`, `Not
 
 6. **`application.yml` hiện có `gymfit.ai.*` với `model: gemini-3.8-flash`** → xoá ở T0 (tên model không tồn tại, nhưng cũng không dùng nữa).
 
-### 1.8 Vấn đề bảo mật ngoài phạm vi chatbot (phát hiện khi scan, chưa sửa)
+### 1.8 ⚠ Bug đã tìm ra khi làm T1–T2 (đã sửa, ghi lại để không tái phát)
+
+1. **`_` bị normalizer xoá** → mã `BOOK_0123…` thành `book 0123…`, hỏng entity `BOOKING_CODE`.
+   Đã thêm `_` vào bảng ký tự giữ lại.
+2. **Rút gọn ký tự lặp phá nát số tiền/ngày**: `600000` → `600`, `500.000` → `500.00`.
+   Đã giới hạn rút gọn **chỉ với chữ** (`([a-z])\1{2,}`).
+3. **"thứ 2" ≠ ISO 2.** `thứ 2` là Thứ Hai = `DayOfWeek.MONDAY` (ISO 1). Map sai làm
+   "thứ 2" ra thứ 3. Đã sửa `DayOfWeek.of(vietnamese - 1)`; `chủ nhật` → `SUNDAY` (7).
+4. **Điều kiện "buổi" bị đảo** trong `sessionAfter()`: `between.isEmpty()` lại trả `NONE`,
+   nên "7h tối" ra 07:00. Đã sửa (khoảng trắng rỗng = buổi nằm ngay sau giờ).
+5. **`toDate()` trả null khi thiếu tháng** → "ngày 5" không ra ngày. Đã tách nhánh
+   "chỉ có ngày" (dùng tháng hiện tại, đã qua thì lùi 1 tháng).
+6. **Lùi tháng/ngày áp nhầm lên khoảng báo cáo** → "từ 1/10 đến hôm nay" ra 11/01.
+   Đã thêm tham số `rollDayForward`/`rollToNextYear`: `dd/mm` tường minh thì giữ nguyên năm/tháng.
+7. `matcher.end()` gọi cả khi `find()` trả `false` → `IllegalStateException: No match available`.
+8. `BigDecimal` từ `1.5 * 1e6` ra scale 1 (`1500000.0`) → so sánh bằng `equals()` luôn fail.
+   Đã chuẩn hoá về scale 0 trong `Collector.money()`.
+9. `DayOfWeek.with(MONDAY)` lùi về đầu tuần ISO **cùng tuần** (thứ 7 → thứ 2 = 28/09),
+   nên "tuần này" luôn có range hợp lệ. Dùng `minusWeeks(1)` sẽ sai khi hôm nay là T7/CN.
+
+### 1.9 Quy ước đã chốt cho phần còn lại
+
+- **"1 triệu 5" = 1.500.000** (rút gọn "triệu rưỡi"), `"1.5 triệu"` cũng vậy.
+- **`"mot"` chỉ nhận khi có tiền tố "ngày"** ("ngày một" = ngày kia). `"mot"` trần bị bỏ qua
+  để tránh nhầm với số lượng.
+- Giờ ≤ 5 **không kèm buổi** → +12; giờ 6–11 không buổi → giữ nguyên (7h → 07:00).
+- `CN` trần chỉ hiểu là Chủ nhật khi có "thứ/vao/ngày" phía trước.
+- `DbGazetteerProvider` cần scheduler → thêm `nlu/ChatbotSchedulingConfig` với
+  `@EnableScheduling` (không sửa `GymFitApplication`). Khoá scheduler: `gymfit.chatbot.gazetteer-refresh-ms`.
+
+### 1.10 Thông tin môi trường (không hardcode vào code)
+
+SQL Server local: user `sa`. `application.yml` đang để mặc định `DB_PASSWORD:123456` —
+**không khớp** với instance thật. Khi chạy/test có DB phải truyền biến môi trường
+`DB_PASSWORD`, **không** sửa/hardcode mật khẩu vào repo.
+
+### 1.11 Vấn đề bảo mật ngoài phạm vi chatbot (phát hiện khi scan, chưa sửa)
 
 `SecurityConfig` đang `permitAll()` cho `/admin/**`, `/manager/**`, `/member/**`.
 `UiController` không có `@PreAuthorize` → ai cũng tải được HTML dashboard (dữ liệu thì vẫn chặn ở API).
