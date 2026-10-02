@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,12 +25,20 @@ public class BranchService {
     private final BranchServiceConfigRepository serviceConfigRepository;
     private final BranchOperatingHourRepository operatingHourRepository;
     private final AuditService auditService;
+    private final BranchOperatingHourJdbcRepository operatingHourJdbcRepository;
 
     @Transactional(readOnly = true)
-    public List<BranchResponse> list(BranchStatus status) {
-        List<Branch> branches = status == null
-                ? branchRepository.findAllByOrderByNameAsc()
-                : branchRepository.findAllByStatusOrderByNameAsc(status);
+    public List<BranchResponse> list(
+            BranchStatus status
+    ) {
+        List<Branch> branches =
+                status == null
+                        ? branchRepository
+                        .findAllByOrderByNameAsc()
+                        : branchRepository
+                        .findAllByStatusOrderByNameAsc(
+                                status
+                        );
 
         return branches.stream()
                 .map(this::toResponse)
@@ -37,7 +47,9 @@ public class BranchService {
 
     @Transactional(readOnly = true)
     public BranchResponse get(Long id) {
-        return toResponse(requireBranch(id));
+        return toResponse(
+                requireBranch(id)
+        );
     }
 
     @Transactional
@@ -45,31 +57,59 @@ public class BranchService {
             Long actorUserId,
             BranchCreateRequest request
     ) {
-        String code = request.code()
-                .trim()
-                .toUpperCase();
+        String code =
+                request.code()
+                        .trim()
+                        .toUpperCase();
 
-        if (branchRepository.existsByCodeIgnoreCase(code)) {
+        if (branchRepository
+                .existsByCodeIgnoreCase(code)) {
+
             throw new ConflictException(
                     "branch_code_exists",
                     "Mã chi nhánh đã tồn tại"
             );
         }
 
-        validateTimezone(request.timezone());
+        validateTimezone(
+                request.timezone()
+        );
 
-        Branch branch = Branch.builder()
-                .code(code)
-                .name(request.name().trim())
-                .address(request.address().trim())
-                .phone(normalizeNullable(request.phone()))
-                .status(BranchStatus.ACTIVE)
-                .timezone(request.timezone().trim())
-                .createdAtUtc(TimeUtil.now())
-                .updatedAtUtc(TimeUtil.now())
-                .build();
+        Branch branch =
+                Branch.builder()
+                        .code(code)
+                        .name(
+                                request.name()
+                                        .trim()
+                        )
+                        .address(
+                                request.address()
+                                        .trim()
+                        )
+                        .phone(
+                                normalizeNullable(
+                                        request.phone()
+                                )
+                        )
+                        .status(
+                                BranchStatus.ACTIVE
+                        )
+                        .timezone(
+                                request.timezone()
+                                        .trim()
+                        )
+                        .createdAtUtc(
+                                TimeUtil.now()
+                        )
+                        .updatedAtUtc(
+                                TimeUtil.now()
+                        )
+                        .build();
 
-        Branch saved = branchRepository.save(branch);
+        Branch saved =
+                branchRepository.save(
+                        branch
+                );
 
         auditService.record(
                 actorUserId,
@@ -78,8 +118,10 @@ public class BranchService {
                 saved.getId(),
                 saved.getId(),
                 Map.of(
-                        "code", saved.getCode(),
-                        "name", saved.getName()
+                        "code",
+                        saved.getCode(),
+                        "name",
+                        saved.getName()
                 )
         );
 
@@ -92,16 +134,20 @@ public class BranchService {
             Long id,
             BranchUpdateRequest request
     ) {
-        Branch branch = requireBranch(id);
+        Branch branch =
+                requireBranch(id);
 
-        String code = request.code()
-                .trim()
-                .toUpperCase();
+        String code =
+                request.code()
+                        .trim()
+                        .toUpperCase();
 
         branchRepository
                 .findByCodeIgnoreCase(code)
                 .ifPresent(existing -> {
-                    if (!existing.getId().equals(id)) {
+                    if (!existing.getId()
+                            .equals(id)) {
+
                         throw new ConflictException(
                                 "branch_code_exists",
                                 "Mã chi nhánh đã tồn tại"
@@ -109,19 +155,42 @@ public class BranchService {
                     }
                 });
 
-        validateTimezone(request.timezone());
+        validateTimezone(
+                request.timezone()
+        );
 
         branch.setCode(code);
-        branch.setName(request.name().trim());
-        branch.setAddress(request.address().trim());
-        branch.setPhone(
-                normalizeNullable(request.phone())
-        );
-        branch.setStatus(request.status());
-        branch.setTimezone(request.timezone().trim());
-        branch.setUpdatedAtUtc(TimeUtil.now());
 
-        Branch saved = branchRepository.save(branch);
+        branch.setName(
+                request.name().trim()
+        );
+
+        branch.setAddress(
+                request.address().trim()
+        );
+
+        branch.setPhone(
+                normalizeNullable(
+                        request.phone()
+                )
+        );
+
+        branch.setStatus(
+                request.status()
+        );
+
+        branch.setTimezone(
+                request.timezone().trim()
+        );
+
+        branch.setUpdatedAtUtc(
+                TimeUtil.now()
+        );
+
+        Branch saved =
+                branchRepository.save(
+                        branch
+                );
 
         auditService.record(
                 actorUserId,
@@ -130,8 +199,11 @@ public class BranchService {
                 saved.getId(),
                 saved.getId(),
                 Map.of(
-                        "code", saved.getCode(),
-                        "status", saved.getStatus().name()
+                        "code",
+                        saved.getCode(),
+                        "status",
+                        saved.getStatus()
+                                .name()
                 )
         );
 
@@ -144,14 +216,24 @@ public class BranchService {
             Long id,
             BranchStatusRequest request
     ) {
-        Branch branch = requireBranch(id);
+        Branch branch =
+                requireBranch(id);
 
-        BranchStatus oldStatus = branch.getStatus();
+        BranchStatus oldStatus =
+                branch.getStatus();
 
-        branch.setStatus(request.status());
-        branch.setUpdatedAtUtc(TimeUtil.now());
+        branch.setStatus(
+                request.status()
+        );
 
-        Branch saved = branchRepository.save(branch);
+        branch.setUpdatedAtUtc(
+                TimeUtil.now()
+        );
+
+        Branch saved =
+                branchRepository.save(
+                        branch
+                );
 
         auditService.record(
                 actorUserId,
@@ -160,9 +242,13 @@ public class BranchService {
                 saved.getId(),
                 saved.getId(),
                 Map.of(
-                        "code", saved.getCode(),
-                        "oldStatus", oldStatus.name(),
-                        "newStatus", saved.getStatus().name()
+                        "code",
+                        saved.getCode(),
+                        "oldStatus",
+                        oldStatus.name(),
+                        "newStatus",
+                        saved.getStatus()
+                                .name()
                 )
         );
 
@@ -209,7 +295,9 @@ public class BranchService {
         }
 
         serviceConfigRepository
-                .deleteAllByIdBranchId(branchId);
+                .deleteAllByIdBranchId(
+                        branchId
+                );
 
         serviceConfigRepository.flush();
 
@@ -217,7 +305,8 @@ public class BranchService {
                 request.services()
                         .stream()
                         .map(item ->
-                                BranchServiceConfig.builder()
+                                BranchServiceConfig
+                                        .builder()
                                         .id(
                                                 new BranchServiceConfigId(
                                                         branchId,
@@ -237,7 +326,8 @@ public class BranchService {
                         )
                         .toList();
 
-        serviceConfigRepository.saveAll(entities);
+        serviceConfigRepository
+                .saveAll(entities);
 
         auditService.record(
                 actorUserId,
@@ -260,10 +350,8 @@ public class BranchService {
     ) {
         requireBranch(branchId);
 
-        return operatingHourRepository
-                .findAllByBranchIdOrderByDayOfWeekAsc(
-                        branchId
-                )
+        return operatingHourJdbcRepository
+                .findAllByBranchId(branchId)
                 .stream()
                 .map(this::toOperatingHourResponse)
                 .toList();
@@ -279,51 +367,47 @@ public class BranchService {
 
         Set<Integer> days = new HashSet<>();
 
-        for (OperatingHourItemRequest item
-                : request.hours()) {
+        List<BranchOperatingHourJdbcRepository.OperatingHourValue>
+                values = request.hours()
+                .stream()
+                .map(item -> {
+                    if (!days.add(item.dayOfWeek())) {
+                        throw new ConflictException(
+                                "duplicate_operating_day",
+                                "Ngày hoạt động bị trùng"
+                        );
+                    }
 
-            if (!days.add(item.dayOfWeek())) {
-                throw new ConflictException(
-                        "duplicate_operating_day",
-                        "Ngày hoạt động bị trùng"
-                );
-            }
+                    LocalTime openTime =
+                            normalizeDatabaseTime(
+                                    item.openTime()
+                            );
 
-            if (!item.openTime()
-                    .isBefore(item.closeTime())) {
+                    LocalTime closeTime =
+                            normalizeDatabaseTime(
+                                    item.closeTime()
+                            );
 
-                throw new ConflictException(
-                        "invalid_operating_hours",
-                        "Giờ mở cửa phải trước giờ đóng cửa"
-                );
-            }
-        }
+                    if (!openTime.isBefore(closeTime)) {
+                        throw new ConflictException(
+                                "invalid_operating_hours",
+                                "Giờ mở cửa phải trước giờ đóng cửa"
+                        );
+                    }
 
-        operatingHourRepository
-                .deleteAllByBranchId(branchId);
+                    return new BranchOperatingHourJdbcRepository
+                            .OperatingHourValue(
+                            item.dayOfWeek(),
+                            openTime,
+                            closeTime
+                    );
+                })
+                .toList();
 
-        operatingHourRepository.flush();
-
-        List<BranchOperatingHour> entities =
-                request.hours()
-                        .stream()
-                        .map(item ->
-                                BranchOperatingHour.builder()
-                                        .branchId(branchId)
-                                        .dayOfWeek(
-                                                item.dayOfWeek()
-                                        )
-                                        .openTime(
-                                                item.openTime()
-                                        )
-                                        .closeTime(
-                                                item.closeTime()
-                                        )
-                                        .build()
-                        )
-                        .toList();
-
-        operatingHourRepository.saveAll(entities);
+        operatingHourJdbcRepository.replaceAll(
+                branchId,
+                values
+        );
 
         auditService.record(
                 actorUserId,
@@ -333,14 +417,20 @@ public class BranchService {
                 branchId,
                 Map.of(
                         "dayCount",
-                        entities.size()
+                        values.size()
                 )
         );
 
-        return getOperatingHours(branchId);
+        return operatingHourJdbcRepository
+                .findAllByBranchId(branchId)
+                .stream()
+                .map(this::toOperatingHourResponse)
+                .toList();
     }
 
-    public Branch requireBranch(Long id) {
+    public Branch requireBranch(
+            Long id
+    ) {
         return branchRepository
                 .findById(id)
                 .orElseThrow(() ->
@@ -351,11 +441,21 @@ public class BranchService {
                 );
     }
 
+    private LocalTime normalizeDatabaseTime(
+            LocalTime value
+    ) {
+        return value.truncatedTo(
+                ChronoUnit.SECONDS
+        );
+    }
+
     private void validateTimezone(
             String timezone
     ) {
         try {
-            ZoneId.of(timezone.trim());
+            ZoneId.of(
+                    timezone.trim()
+            );
         } catch (Exception exception) {
             throw new ConflictException(
                     "invalid_timezone",
@@ -371,7 +471,8 @@ public class BranchService {
             return null;
         }
 
-        String trimmed = value.trim();
+        String trimmed =
+                value.trim();
 
         return trimmed.isEmpty()
                 ? null
@@ -398,8 +499,10 @@ public class BranchService {
             BranchServiceConfig config
     ) {
         return new BranchServiceResponse(
-                config.getId().getBranchId(),
-                config.getId().getServiceCode(),
+                config.getId()
+                        .getBranchId(),
+                config.getId()
+                        .getServiceCode(),
                 config.getBookingDurationMinutes(),
                 config.getCapacity(),
                 config.getBookingEnabled()

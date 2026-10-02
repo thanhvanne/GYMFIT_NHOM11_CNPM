@@ -498,50 +498,39 @@ function buildOperatingHours() {
     const container = document.getElementById(
         "operating-hours-list"
     );
-
     container.replaceChildren();
 
     dayDefinitions.forEach(day => {
         const row = document.createElement("div");
-
         row.className = "hours-row";
         row.dataset.day = String(day.value);
 
         const enabledLabel =
             document.createElement("label");
-
         enabledLabel.className = "checkbox-field";
 
         const enabled =
             document.createElement("input");
-
         enabled.type = "checkbox";
         enabled.className = "day-enabled";
 
         const dayName =
             document.createElement("strong");
-
         dayName.textContent = day.label;
 
         enabledLabel.append(enabled, dayName);
 
         const open =
             document.createElement("input");
-
         open.type = "time";
         open.className = "day-open";
-        open.value = day.value === 7
-            ? "08:00"
-            : "06:00";
+        open.value = "05:00";
 
         const close =
             document.createElement("input");
-
         close.type = "time";
         close.className = "day-close";
-        close.value = day.value === 7
-            ? "20:00"
-            : "22:00";
+        close.value = "23:00";
 
         row.append(
             enabledLabel,
@@ -734,30 +723,62 @@ async function saveHours() {
     }
 
     const hours = [];
+    let validationError = null;
 
     document
         .querySelectorAll(".hours-row")
         .forEach(row => {
-            if (!row.querySelector(
-                ".day-enabled"
-            ).checked) {
+            if (validationError) {
+                return;
+            }
+
+            const enabled =
+                row.querySelector(
+                    ".day-enabled"
+                ).checked;
+
+            if (!enabled) {
+                return;
+            }
+
+            const openTime =
+                row.querySelector(
+                    ".day-open"
+                ).value;
+
+            const closeTime =
+                row.querySelector(
+                    ".day-close"
+                ).value;
+
+            if (!openTime || !closeTime) {
+                validationError =
+                    "Vui lòng nhập đầy đủ giờ mở và đóng cửa";
+                return;
+            }
+
+            if (openTime >= closeTime) {
+                validationError =
+                    "Giờ mở cửa phải trước giờ đóng cửa";
                 return;
             }
 
             hours.push({
-                dayOfWeek: Number(row.dataset.day),
-
-                openTime:
-                row.querySelector(
-                    ".day-open"
-                ).value,
-
-                closeTime:
-                row.querySelector(
-                    ".day-close"
-                ).value
+                dayOfWeek:
+                    Number(
+                        row.dataset.day
+                    ),
+                openTime,
+                closeTime
             });
         });
+
+    if (validationError) {
+        showConfigError(
+            validationError
+        );
+        return;
+    }
 
     if (hours.length === 0) {
         showConfigError(
@@ -769,14 +790,18 @@ async function saveHours() {
     try {
         await Api.put(
             `/api/v1/branches/${selectedBranchId}/operating-hours`,
-            { hours }
+            {
+                hours
+            }
+        );
+
+        hideElement(
+            "config-error"
         );
 
         showSuccess(
             "Đã lưu giờ hoạt động"
         );
-
-        hideElement("config-error");
     } catch (error) {
         showConfigError(
             formatApiError(error)
