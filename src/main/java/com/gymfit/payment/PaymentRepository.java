@@ -14,6 +14,11 @@ public interface PaymentRepository
             String idempotencyKey
     );
 
+    Optional<Payment> findFirstByOrderIdAndStatusOrderByPaidAtUtcDesc(
+            Long orderId,
+            PaymentStatus status
+    );
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
         select p

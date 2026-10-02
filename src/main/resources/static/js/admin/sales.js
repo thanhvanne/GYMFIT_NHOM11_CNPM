@@ -774,6 +774,42 @@ function renderOrders() {
             formatDateTime(order.createdAtUtc)
         );
 
+        const invoiceCell =
+            document.createElement("td");
+
+        invoiceCell.className =
+            "table-actions";
+
+        if (order.status === "PAID") {
+            const invoiceButton =
+                actionButton("Hóa đơn");
+
+            invoiceButton.addEventListener(
+                "click",
+                async () => {
+                    invoiceButton.disabled = true;
+
+                    try {
+                        await Invoice.download(order);
+                    } catch (error) {
+                        showError(
+                            formatApiError(error)
+                        );
+                    } finally {
+                        invoiceButton.disabled = false;
+                    }
+                }
+            );
+
+            invoiceCell.appendChild(
+                invoiceButton
+            );
+        } else {
+            invoiceCell.textContent = "—";
+        }
+
+        row.appendChild(invoiceCell);
+
         body.appendChild(row);
     });
 }
@@ -1003,4 +1039,18 @@ function formatApiError(error) {
     }
 
     return error.message || "Có lỗi xảy ra";
+}
+
+function actionButton(text) {
+    const button =
+        document.createElement("button");
+
+    button.type = "button";
+
+    button.className =
+        "button button-small button-secondary";
+
+    button.textContent = text;
+
+    return button;
 }

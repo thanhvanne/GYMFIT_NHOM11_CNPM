@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Hóa đơn GYMFIT</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 24mm 18mm;
+        }
+
+        body {
+            font-family: "Noto Sans";
+            color: #171717;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .header {
+            border-bottom: 3px solid #f5c518;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .brand span {
+            color: #d8aa00;
+        }
+
+        .invoice-title {
+            margin-top: 8px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .muted {
+            color: #666666;
+        }
+
+        .section {
+            margin-top: 22px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table td {
+            padding: 4px 0;
+        }
+
+        .label {
+            width: 150px;
+            color: #666666;
+        }
+
+        .items {
+            width: 100%;
+            margin-top: 12px;
+            border-collapse: collapse;
+        }
+
+        .items th {
+            background: #f5c518;
+            color: #111111;
+            padding: 9px 7px;
+            text-align: left;
+        }
+
+        .items td {
+            padding: 9px 7px;
+            border-bottom: 1px solid #dddddd;
+        }
+
+        .number {
+            text-align: right;
+        }
+
+        .totals {
+            width: 45%;
+            margin-left: 55%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        .totals td {
+            padding: 6px;
+        }
+
+        .grand-total {
+            font-size: 15px;
+            font-weight: bold;
+            border-top: 2px solid #171717;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 16px;
+            border-top: 1px solid #dddddd;
+            text-align: center;
+            color: #666666;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <div class="brand">
+        GYMFIT <span>●</span>
+    </div>
+
+    <div class="invoice-title">
+        HÓA ĐƠN THANH TOÁN
+    </div>
+
+    <div class="muted"
+         th:text="${invoice.branchName}">
+        GYMFIT
+    </div>
+</div>
+
+<table class="info-table">
+    <tr>
+        <td class="label">Mã đơn hàng</td>
+        <td th:text="${invoice.orderCode}">
+            ORD
+        </td>
+    </tr>
+
+    <tr>
+        <td class="label">Ngày thanh toán</td>
+        <td th:text="${paidAt}">
+            —
+        </td>
+    </tr>
+
+    <tr>
+        <td class="label">Khách hàng</td>
+        <td th:text="${invoice.customerName}">
+            —
+        </td>
+    </tr>
+
+    <tr th:if="${invoice.memberCode != null}">
+        <td class="label">Mã hội viên</td>
+        <td th:text="${invoice.memberCode}">
+            —
+        </td>
+    </tr>
+
+    <tr>
+        <td class="label">Chi nhánh</td>
+        <td th:text="${invoice.branchName}">
+            —
+        </td>
+    </tr>
+
+    <tr>
+        <td class="label">Địa chỉ</td>
+        <td th:text="${invoice.branchAddress}">
+            —
+        </td>
+    </tr>
+
+    <tr th:if="${invoice.branchPhone != null}">
+        <td class="label">Điện thoại</td>
+        <td th:text="${invoice.branchPhone}">
+            —
+        </td>
+    </tr>
+</table>
+
+<div class="section">
+    <strong>Chi tiết đơn hàng</strong>
+
+    <table class="items">
+        <thead>
+        <tr>
+            <th>Sản phẩm / Gói tập</th>
+            <th>Loại</th>
+            <th class="number">Đơn giá</th>
+            <th class="number">SL</th>
+            <th class="number">Thành tiền</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="item : ${invoice.items}">
+            <td th:text="${item.name}">
+                Item
+            </td>
+
+            <td th:text="${item.itemType}">
+                PRODUCT
+            </td>
+
+            <td class="number"
+                th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                0 VND
+            </td>
+
+            <td class="number"
+                th:text="${item.quantity}">
+                1
+            </td>
+
+            <td class="number"
+                th:text="${#numbers.formatDecimal(item.lineTotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                0 VND
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<table class="totals">
+    <tr>
+        <td>Tạm tính</td>
+        <td class="number"
+            th:text="${#numbers.formatDecimal(invoice.subtotal, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+            0 VND
+        </td>
+    </tr>
+
+    <tr class="grand-total">
+        <td>Tổng thanh toán</td>
+        <td class="number"
+            th:text="${#numbers.formatDecimal(invoice.total, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+            0 VND
+        </td>
+    </tr>
+</table>
+
+<div class="section">
+    <strong>Thanh toán</strong>
+
+    <table class="info-table">
+        <tr>
+            <td class="label">Phương thức</td>
+            <td th:text="${invoice.paymentMethod}">
+                MOMO
+            </td>
+        </tr>
+
+        <tr>
+            <td class="label">Mã thanh toán</td>
+            <td th:text="${invoice.paymentCode}">
+                —
+            </td>
+        </tr>
+
+        <tr th:if="${invoice.providerReference != null}">
+            <td class="label">Mã tham chiếu</td>
+            <td th:text="${invoice.providerReference}">
+                —
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="footer">
+    Cảm ơn bạn đã sử dụng dịch vụ GYMFIT.<br/>
+    Hóa đơn được tạo tự động bởi hệ thống GYMFIT.
+</div>
+
+</body>
+</html>

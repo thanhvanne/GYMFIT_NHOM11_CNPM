@@ -143,6 +143,7 @@ function renderCheckIns() {
 
 function renderOrders() {
     const container = content();
+
     container.replaceChildren();
 
     if (!orders.length) {
@@ -154,18 +155,108 @@ function renderOrders() {
     }
 
     orders.forEach(order => {
-        container.appendChild(
-            historyItem(
-                order.orderCode,
-                formatMoney(
-                    order.total
-                ),
-                formatDateTime(
-                    order.createdAtUtc
-                ),
-                order.status
-            )
+        const row =
+            document.createElement("div");
+
+        row.className =
+            "member-list-item";
+
+        const info =
+            document.createElement("div");
+
+        info.className =
+            "member-list-main";
+
+        const code =
+            document.createElement("strong");
+
+        code.textContent =
+            order.orderCode;
+
+        const amount =
+            document.createElement("span");
+
+        amount.className =
+            "muted small";
+
+        amount.textContent =
+            formatMoney(order.total);
+
+        const date =
+            document.createElement("span");
+
+        date.className =
+            "muted small";
+
+        date.textContent =
+            formatDateTime(
+                order.createdAtUtc
+            );
+
+        info.append(
+            code,
+            amount,
+            date
         );
+
+        const right =
+            document.createElement("div");
+
+        right.className =
+            "member-order-actions";
+
+        const badge =
+            document.createElement("span");
+
+        badge.className =
+            statusClass(order.status);
+
+        badge.textContent =
+            order.status;
+
+        right.appendChild(badge);
+
+        if (order.status === "PAID") {
+            const invoiceButton =
+                document.createElement("button");
+
+            invoiceButton.type = "button";
+
+            invoiceButton.className =
+                "button button-secondary button-small";
+
+            invoiceButton.textContent =
+                "Hóa đơn";
+
+            invoiceButton.addEventListener(
+                "click",
+                async () => {
+                    invoiceButton.disabled = true;
+
+                    try {
+                        await Invoice.download(order);
+                    } catch (error) {
+                        showError(
+                            error.message
+                            || "Không thể tải hóa đơn"
+                        );
+                    } finally {
+                        invoiceButton.disabled = false;
+                    }
+                }
+            );
+
+            right.appendChild(
+                invoiceButton
+            );
+        }
+
+        row.append(
+            info,
+            right
+        );
+
+        container.appendChild(row);
     });
 }
 

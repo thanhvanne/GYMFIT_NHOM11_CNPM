@@ -718,6 +718,48 @@ function renderOrders() {
                 )
             );
 
+            const invoiceCell =
+                document.createElement("td");
+
+            invoiceCell.className =
+                "table-actions";
+
+            if (order.status === "PAID") {
+                const button =
+                    document.createElement("button");
+
+                button.type = "button";
+
+                button.className =
+                    "button button-small button-secondary";
+
+                button.textContent =
+                    "Hóa đơn";
+
+                button.addEventListener(
+                    "click",
+                    async () => {
+                        button.disabled = true;
+
+                        try {
+                            await Invoice.download(order);
+                        } catch (error) {
+                            showError(
+                                formatApiError(error)
+                            );
+                        } finally {
+                            button.disabled = false;
+                        }
+                    }
+                );
+
+                invoiceCell.appendChild(button);
+            } else {
+                invoiceCell.textContent = "—";
+            }
+
+            row.appendChild(invoiceCell);
+
             body.appendChild(row);
         });
 }

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+<div th:fragment="chat">
+
+    <button
+            id="ai-chat-toggle"
+            type="button"
+            class="ai-chat-toggle"
+            aria-label="Mở GYMFIT AI">
+        AI
+    </button>
+
+    <section
+            id="ai-chat-panel"
+            class="ai-chat-panel hidden">
+
+        <header class="ai-chat-header">
+            <div>
+                <strong>GYMFIT AI</strong>
+                <div class="ai-chat-status">
+                    Trợ lý thông minh
+                </div>
+            </div>
+
+            <button
+                    id="ai-chat-close"
+                    type="button"
+                    class="ai-chat-close">
+                ×
+            </button>
+        </header>
+
+        <div
+                id="ai-chat-messages"
+                class="ai-chat-messages">
+        </div>
+
+        <form
+                id="ai-chat-form"
+                class="ai-chat-form">
+
+            <textarea
+                    id="ai-chat-input"
+                    maxlength="2000"
+                    rows="2"
+                    required
+                    placeholder="Hỏi GYMFIT AI..."></textarea>
+
+            <button
+                    id="ai-chat-send"
+                    type="submit"
+                    class="button button-primary">
+                Gửi
+            </button>
+
+        </form>
+
+    </section>
+
+</div>
+
+</body>
+</html>

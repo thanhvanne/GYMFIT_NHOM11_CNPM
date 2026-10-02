@@ -40,6 +40,10 @@ gymfit:
   qr:
     secret: ${QR_SECRET:GYMFITQrSecretKeyMustBeAtLeastThirtyTwoCharactersLong2026}
     ttl-seconds: 60
+  ai:
+    base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-3.8-flash}
 
 logging:
   level:
