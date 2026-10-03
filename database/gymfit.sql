@@ -2272,3 +2272,63 @@ SELECT
 FROM check_in
 ORDER BY created_at_utc DESC;
 GO
+-- ============================================================
+-- CHATBOT (T7): chat_session, chat_message, chat_training_candidate
+-- ============================================================
+
+CREATE TABLE chat_session (
+    id VARCHAR(36) NOT NULL,
+    user_id BIGINT NOT NULL,
+    state_json NVARCHAR(MAX) NULL,
+    created_at_utc DATETIME2(0) NOT NULL
+        CONSTRAINT DF_chat_session_created DEFAULT SYSUTCDATETIME(),
+    updated_at_utc DATETIME2(0) NOT NULL
+        CONSTRAINT DF_chat_session_updated DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_chat_session PRIMARY KEY (id),
+    CONSTRAINT FK_chat_session_user FOREIGN KEY (user_id) REFERENCES app_user(id)
+);
+GO
+
+CREATE INDEX IX_chat_session_user ON chat_session(user_id, updated_at_utc);
+GO
+
+CREATE TABLE chat_message (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    session_id VARCHAR(36) NOT NULL,
+    role VARCHAR(10) NOT NULL,
+    text NVARCHAR(2000) NOT NULL,
+    intent VARCHAR(40) NULL,
+    confidence DECIMAL(5,4) NULL,
+    feedback VARCHAR(10) NULL,
+    created_at_utc DATETIME2(0) NOT NULL
+        CONSTRAINT DF_chat_message_created DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT PK_chat_message PRIMARY KEY (id),
+    CONSTRAINT FK_chat_message_session FOREIGN KEY (session_id) REFERENCES chat_session(id),
+    CONSTRAINT CK_chat_message_role CHECK (role IN ('USER','BOT')),
+    CONSTRAINT CK_chat_message_feedback CHECK (feedback IS NULL OR feedback IN ('UP','DOWN'))
+);
+GO
+
+CREATE INDEX IX_chat_message_session ON chat_message(session_id, id);
+GO
+
+CREATE TABLE chat_training_candidate (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    message_id BIGINT NULL,
+    text NVARCHAR(2000) NOT NULL,
+    predicted_intent VARCHAR(40) NOT NULL,
+    confidence DECIMAL(5,4) NOT NULL,
+    label VARCHAR(40) NULL,
+    status VARCHAR(20) NOT NULL
+        CONSTRAINT DF_chat_cand_status DEFAULT 'PENDING',
+    created_at_utc DATETIME2(0) NOT NULL
+        CONSTRAINT DF_chat_cand_created DEFAULT SYSUTCDATETIME(),
+    labeled_by_user_id BIGINT NULL,
+    labeled_at_utc DATETIME2(0) NULL,
+    CONSTRAINT PK_chat_training_candidate PRIMARY KEY (id),
+    CONSTRAINT CK_chat_cand_status CHECK (status IN ('PENDING','LABELED','REJECTED'))
+);
+GO
+
+CREATE INDEX IX_chat_cand_status ON chat_training_candidate(status, created_at_utc);
+GO

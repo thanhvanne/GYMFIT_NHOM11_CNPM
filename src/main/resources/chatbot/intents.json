@@ -1,0 +1,188 @@
+{
+  "GREETING": {
+    "group": "SMALLTALK",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Chào hỏi"
+  },
+  "THANKS": {
+    "group": "SMALLTALK",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Cảm ơn"
+  },
+  "GOODBYE": {
+    "group": "SMALLTALK",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Tạm biệt"
+  },
+  "HELP": {
+    "group": "SMALLTALK",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Hỏi trợ lý làm được gì"
+  },
+  "OUT_OF_SCOPE": {
+    "group": "SMALLTALK",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Ngoài phạm vi hỗ trợ"
+  },
+  "CONFIRM_YES": {
+    "group": "SMALLTALK",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Đồng ý xác nhận"
+  },
+  "CONFIRM_NO": {
+    "group": "SMALLTALK",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Từ chối / huỷ bỏ"
+  },
+
+  "BRANCH_INFO": {
+    "group": "INFO",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Thông tin chi nhánh"
+  },
+  "OPERATING_HOURS": {
+    "group": "INFO",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Giờ mở cửa chi nhánh"
+  },
+  "LIST_SERVICES": {
+    "group": "INFO",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Các dịch vụ của chi nhánh"
+  },
+  "LIST_FACILITIES": {
+    "group": "INFO",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Cơ sở vật chất của chi nhánh"
+  },
+  "LIST_PLANS": {
+    "group": "INFO",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Danh sách gói tập"
+  },
+  "PLAN_DETAIL": {
+    "group": "INFO",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Chi tiết một gói cụ thể"
+  },
+  "PLAN_COMPARE": {
+    "group": "INFO",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "So sánh nhiều gói"
+  },
+  "PLAN_RECOMMEND": {
+    "group": "INFO",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Gợi ý gói phù hợp"
+  },
+  "LIST_PRODUCTS": {
+    "group": "INFO",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Danh sách sản phẩm bán lẻ"
+  },
+
+  "FAQ_CANCEL_POLICY": {
+    "group": "FAQ",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Chính sách hủy lịch"
+  },
+  "FAQ_BOOKING_RULES": {
+    "group": "FAQ",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Quy định khi đặt lịch"
+  },
+  "FAQ_CHECKIN_HOWTO": {
+    "group": "FAQ",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Cách check-in tại phòng tập"
+  },
+  "FAQ_BUY_PLAN_HOWTO": {
+    "group": "FAQ",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Cách mua gói tập"
+  },
+  "FAQ_CHECKIN_REJECTED": {
+    "group": "FAQ",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Vì sao check-in bị từ chối"
+  },
+  "FAQ_QR_HOWTO": {
+    "group": "FAQ",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Cách dùng mã QR"
+  },
+
+  "BOOKING_AVAILABILITY": {
+    "group": "SLOT",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Xem khung giờ trống"
+  },
+
+  "MY_MEMBERSHIP": {
+    "group": "MEMBER",
+    "roles": ["MEMBER"],
+    "desc": "Gói tập của tôi"
+  },
+  "MY_BOOKINGS": {
+    "group": "MEMBER",
+    "roles": ["MEMBER"],
+    "desc": "Lịch tập của tôi"
+  },
+  "MY_CHECKINS": {
+    "group": "MEMBER",
+    "roles": ["MEMBER"],
+    "desc": "Lịch sử check-in của tôi"
+  },
+  "MY_ORDERS": {
+    "group": "MEMBER",
+    "roles": ["MEMBER"],
+    "desc": "Đơn hàng của tôi"
+  },
+  "BOOKING_CREATE": {
+    "group": "MEMBER",
+    "roles": ["MEMBER"],
+    "desc": "Đặt lịch tập"
+  },
+  "BOOKING_CANCEL": {
+    "group": "MEMBER",
+    "roles": ["MEMBER"],
+    "desc": "Hủy lịch của tôi"
+  },
+
+  "REPORT_DASHBOARD": {
+    "group": "OPS",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "desc": "Tổng quan vận hành"
+  },
+  "REPORT_REVENUE": {
+    "group": "OPS",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "desc": "Doanh thu theo khoảng ngày"
+  },
+  "REPORT_SERVICE": {
+    "group": "OPS",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "desc": "Báo cáo theo dịch vụ"
+  },
+  "LOW_STOCK": {
+    "group": "OPS",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "desc": "Sản phẩm sắp hết hàng"
+  },
+  "BOOKINGS_TODAY": {
+    "group": "OPS",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "desc": "Lịch đặt hôm nay của chi nhánh"
+  },
+  "CHECKINS_REJECTED": {
+    "group": "OPS",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "desc": "Check-in bị từ chối"
+  },
+
+  "AUDIT_RECENT": {
+    "group": "ADMIN",
+    "roles": ["ADMIN"],
+    "desc": "Nhật ký hệ thống gần đây"
+  }
+}

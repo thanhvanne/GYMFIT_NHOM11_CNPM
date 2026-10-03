@@ -1,0 +1,26 @@
+{
+  "FAQ_CANCEL_POLICY": {
+    "answer": "Bạn chỉ hủy được lịch trước ít nhất 2 giờ so với giờ bắt đầu. Lịch đã bắt đầu, đã hoàn thành hoặc đã hủy thì không hủy lại được. Hủy trước hạn không mất phí.",
+    "link": "/member/booking"
+  },
+  "FAQ_BOOKING_RULES": {
+    "answer": "Lịch phải nằm trong tương lai, nằm trong giờ mở cửa của chi nhánh, không trùng với lịch khác của bạn và khung giờ phải còn chỗ. Gói tập gắn với đúng một chi nhánh và một tập dịch vụ — bạn chỉ đặt được dịch vụ có trong gói và tại chi nhánh của gói. Mỗi buổi tập theo đúng thời lượng cấu hình của chi nhánh.",
+    "link": "/member/booking"
+  },
+  "FAQ_CHECKIN_HOWTO": {
+    "answer": "Bạn mở trang QR, trình mã cho nhân viên quét tại quầy, hoặc nhờ nhân viên check-in thủ công bằng mã hội viên. Mỗi lần đến phòng tập nên check-in một lần cho mỗi dịch vụ.",
+    "link": "/member/qr"
+  },
+  "FAQ_BUY_PLAN_HOWTO": {
+    "answer": "Bạn vào trang Gói tập, chọn gói muốn mua, bấm mua và thanh toán qua MoMo. Gói sẽ được kích hoạt ngay sau khi thanh toán thành công. Mình không tự thanh toán giúp bạn được.",
+    "link": "/member/plans"
+  },
+  "FAQ_CHECKIN_REJECTED": {
+    "answer": "Có 5 lý do: (1) NO_ACTIVE_MEMBERSHIP — bạn chưa có gói đang hiệu lực; (2) SERVICE_NOT_INCLUDED — dịch vụ bạn check-in không có trong gói; (3) MEMBERSHIP_BRANCH_MISMATCH — bạn check-in ở khác chi nhánh của gói; (4) MEMBERSHIP_INVALID — gói chưa tới hạn hoặc đã kết thúc; (5) DUPLICATE_CHECKIN — bạn đã check-in thành công dịch vụ này trong khoảng thời gian gần nhất.",
+    "link": "/member/qr"
+  },
+  "FAQ_QR_HOWTO": {
+    "answer": "Bạn mở trang QR, mã có hiệu lực 60 giây rồi tự làm mới. Hết hạn thì chỉ cần tải lại trang. Nhân viên sẽ quét mã đó khi bạn đến.",
+    "link": "/member/qr"
+  }
+}

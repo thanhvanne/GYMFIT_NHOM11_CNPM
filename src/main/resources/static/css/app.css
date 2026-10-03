@@ -1839,6 +1839,84 @@ textarea {
     font-style: italic;
 }
 
+/* ---- Thẻ xác nhận / danh sách trong hội thoại ---- */
+
+.ai-chat-card {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.ai-chat-card-title {
+    font-weight: 600;
+}
+
+.ai-chat-card-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.ai-chat-card-line span {
+    color: var(--muted);
+}
+
+.ai-chat-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.ai-chat-card-actions .button {
+    flex: 1;
+}
+
+/* ---- Gợi ý nhanh + phản hồi ---- */
+
+.ai-chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.ai-chat-chip {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.ai-chat-chip:hover {
+    border-color: var(--yellow);
+}
+
+.ai-chat-feedback {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    align-items: center;
+}
+
+.ai-chat-feedback button {
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 8px;
+    padding: 2px 8px;
+    cursor: pointer;
+}
+
 .ai-chat-form {
     display: grid;
     grid-template-columns: 1fr auto;

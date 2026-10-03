@@ -1,0 +1,54 @@
+{
+  "teencode": {
+    "ko": "khong",
+    "k": "khong",
+    "hok": "khong",
+    "hong": "khong",
+    "dc": "duoc",
+    "đc": "duoc",
+    "dk": "duoc",
+    "đk": "duoc",
+    "hnay": "hom nay",
+    "ngmai": "ngay mai",
+    "ngày mai": "ngay mai",
+    "ngay mai": "ngay mai",
+    "hom nay": "hom nay",
+    "bn": "bao nhieu",
+    "bnhieu": "bao nhieu",
+    "bao nhiêu": "bao nhieu",
+    "j": "gi",
+    "ntn": "nhu the nao",
+    "mk": "minh",
+    "mik": "minh",
+    "sdt": "so dien thoai",
+    "vs": "voi",
+    "pls": "vui long",
+    "plz": "vui long",
+    "wa": "qua",
+    "ntn la gi": "dinh nghia la gi",
+    "a": "",
+    "ah": "",
+    "ạ": "",
+    "ak": "",
+    "nha": "",
+    "nhé": "",
+    "oi": "",
+    "ui": ""
+  },
+  "service": {
+    "GYM": ["gym", "tap gym", "phong gym", "tap ta", "tap tai", "tap luyen", "fitness"],
+    "BOXING": ["boxing", "dam boc", "box", "quyen anh"],
+    "PICKLEBALL": ["pickleball", "pickle ball", "pickle", "san pickleball"]
+  },
+  "tier": {
+    "BASIC": ["basic", "co ban"],
+    "STANDARD": ["standard", "tieu chuan"],
+    "PREMIUM": ["premium", "cao cap", "vip"]
+  },
+  "branch_static": {
+    "Q1": ["q1", "quan 1", "chi nhanh q1"],
+    "Q7": ["q7", "quan 7", "chi nhanh q7"],
+    "TD": ["td", "thu duc", "chi nhanh thu duc"],
+    "BT": ["bt", "binh thanh", "chi nhanh binh thanh"]
+  }
+}

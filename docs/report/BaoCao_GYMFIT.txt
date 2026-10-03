@@ -1,0 +1,106 @@
+TRƯỜNG ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT TP. HCM
+KHOA CÔNG NGHỆ THÔNG TIN
+༺ ❀ ༻
+MÔN HỌC: CÔNG NGHỆ PHẦN MỀM
+BÁO CÁO CUỐI KỲ
+HỆ THỐNG QUẢN LÝ PHÒNG TẬP GYM
+
+                                                                                   GVHD: Hoàng Công Trình
+                                                                                   NHÓM THỰC HIỆN: 11
+                                                                             Mã lớp học: SOEN330679_09
+
+                          1. Thạch Kim Đồng - 24110203
+                          2. Nguyễn Văn Trường Sa - 24110317
+                          3. Phạm Nhật Tân - 24110323
+                          4. Trần Thu Uyên - 24110378
+                          5. Nguyễn Thanh Vân - 24110379
+Thành phố Hồ Chí Minh, tháng 10 năm 2026
+
+MỤC LỤC
+DANH SÁCH HÌNH ẢNH
+LỜI MỞ ĐẦU
+Trong những năm gần đây, nhu cầu tập luyện thể dục thể thao ngày càng tăng, kéo theo sự phát triển của các phòng tập gym với quy mô và hình thức hoạt động đa dạng. Điều này đặt ra yêu cầu về việc tổ chức và quản lý hoạt động phòng tập một cách khoa học, từ quản lý hội viên, lịch đặt chỗ đến các gói dịch vụ và doanh thu. Nếu các công việc này chủ yếu được thực hiện thủ công, quá trình quản lý có thể mất nhiều thời gian, khó kiểm soát thông tin và dễ xảy ra sai sót.
+Xuất phát từ nhu cầu thực tế đó, nhóm lựa chọn đề tài “Xây dựng hệ thống quản lý phòng tập gym” nhằm vận dụng kiến thức về phân tích, thiết kế và phát triển phần mềm để xây dựng một hệ thống hỗ trợ quản lý hoạt động phòng tập. Hệ thống hướng đến việc tập trung hóa dữ liệu, đơn giản hóa các nghiệp vụ quản lý và nâng cao hiệu quả xử lý thông tin. Bên cạnh các chức năng quản lý cơ bản, đề tài còn nghiên cứu khả năng ứng dụng trí tuệ nhân tạo thông qua chatbot local (tự huấn luyện) tư vấn khách hàng và hỗ trợ đặt lịch tự động, góp phần nâng cao tính tiện lợi trong quá trình sử dụng.
+Thông qua quá trình thực hiện đề tài, nhóm có cơ hội củng cố kiến thức chuyên ngành, rèn luyện kỹ năng làm việc nhóm và vận dụng quy trình phát triển phần mềm vào một bài toán thực tế. Mặc dù đã có những nỗ lực trong quá trình nghiên cứu và xây dựng, hệ thống vẫn có thể tồn tại những hạn chế nhất định. Nhóm mong nhận được sự góp ý của quý thầy/cô để tiếp tục hoàn thiện đề tài.
+
+PHẦN 1: GIỚI THIỆU ĐỀ TÀI
+1.1. Lý do chọn đề tài
+Ngành công nghiệp fitness tại Việt Nam đang phát triển nhanh chóng trong những năm gần đây. Tuy nhiên, hầu hết các phòng tập gym hiện tại vẫn sử dụng các công cụ quản lý khá cơ bản. Một số phòng gym chỉ sử dụng Excel để lưu trữ thông tin thành viên, theo dõi lịch đặt chỗ, và quản lý thanh toán. Những phòng gym có quy mô lớn hơn có thể sử dụng một số phần mềm quản lý đơn giản, nhưng các phần mềm này cũng chỉ cung cấp những tính năng cơ bản và không được tối ưu hóa riêng cho ngành fitness.
+Việc sử dụng Excel hoặc những phần mềm không tối ưu này tạo ra nhiều khó khăn. Thứ nhất, dữ liệu thành viên nằm rải rác trong nhiều file, dễ bị trùng lặp hoặc không cập nhật kịp thời. Thứ hai, việc tư vấn cho khách hàng mới chỉ dựa vào kinh nghiệm của nhân viên, không có công cụ hỗ trợ. Thứ ba, đặt lịch tập luyện (booking) và check-in vẫn thủ công, dễ gây quá tải cho bộ phận lễ tân. Cuối cùng, lập báo cáo và theo dõi doanh thu rất mất thời gian vì phải tổng hợp dữ liệu từ nhiều file.
+Vì vậy, việc xây dựng một hệ thống quản lý phòng tập gym chuyên dụng là cần thiết. Hệ thống sẽ tập trung vào những nhu cầu chính: quản lý thông tin thành viên một cách tập trung và hiệu quả, cung cấp công cụ tự động để hỗ trợ khách hàng đăng ký các dịch vụ, và tạo báo cáo tự động để quản lý dễ dàng theo dõi doanh thu cũng như những chỉ số quan trọng khác. Hệ thống cũng sẽ tích hợp một số tính năng bổ sung như chatbot AI nội bộ (local) để trả lời các câu hỏi thường gặp và đặt lịch tự động, giúp giảm tải cho nhân viên.
+
+1.2. Mục tiêu nghiên cứu
+Mục tiêu chính của đề tài là xây dựng một hệ thống quản lý phòng tập gym để tự động hóa các quy trình quản lý, nâng cao chất lượng dịch vụ khách hàng, và hỗ trợ ra quyết định kinh doanh.
+Phạm vi và giới hạn: Cụ thể, hệ thống sẽ thực hiện các chức năng quản lý cơ bản: quản lý thông tin thành viên, quản lý gói tập, quản lý đặt lịch (Booking), quản lý check-in bằng mã QR và quản lý kho sản phẩm. Hệ thống KHÔNG bao gồm chức năng quản lý huấn luyện viên (PT), lớp học tập thể, hay tối ưu lịch học tự động.
+Ngoài ra, hệ thống sẽ tích hợp chatbot AI local (tự huấn luyện) để trả lời câu hỏi thường gặp, hướng dẫn thông tin gói tập cho khách hàng, hỗ trợ 24/7 và có khả năng thao tác tạo lịch đặt chỗ trực tiếp trên hệ thống thông qua đoạn hội thoại. Hệ thống cũng sẽ tạo báo cáo doanh thu, thống kê lượt check-in để hỗ trợ quản lý ra quyết định.
+
+1.3. Điểm mới của đề tài
+Đề tài này có những điểm mới so với các hệ thống quản lý phòng gym hiện tại. Thứ nhất, tích hợp chatbot AI local (tự huấn luyện bằng thuật toán Softmax Regression thuần Java) để tư vấn khách hàng 24/7 và thực hiện đặt lịch hoàn toàn tự động, thay vì phải phụ thuộc vào các API bên ngoài như OpenAI hay Gemini, qua đó đảm bảo an toàn dữ liệu khách hàng.
+Thứ hai, việc sử dụng mã QR thời gian thực (60 giây) để check-in tự động giúp quá trình kiểm soát phòng tập nhanh chóng và bảo mật hơn, tránh tình trạng chia sẻ thẻ tập.
+Thứ ba, tạo báo cáo doanh thu, thống kê thành viên tự động với cơ chế phân quyền (Role-Based Access Control) rõ ràng giữa Member, Branch Manager và Admin, giúp quản lý dễ dàng theo dõi hoạt động kinh doanh.
+
+1.4. Công nghệ sử dụng
+- Ngôn ngữ lập trình: Java 17, JavaScript, HTML, CSS.
+- Backend Framework: Spring Boot 3.3.4, Spring Data JPA, Spring Security.
+- Frontend: Thymeleaf, Vanilla JS.
+- Cơ sở dữ liệu: Microsoft SQL Server.
+- Bảo mật: JSON Web Token (JWT), Role-Based Access Control (RBAC).
+- Tính năng mở rộng: ZXing (Tạo QR Code), OpenPDF, Mô hình AI Softmax Regression thuần Java (Cho hệ thống Chatbot NLP).
+
+PHẦN 2: PHÂN TÍCH THIẾT KẾ HỆ THỐNG
+2.1. Lược đồ Use Case tổng quát
+Hệ thống gồm 3 tác nhân chính:
+- Member (Hội viên): Tra cứu gói tập, Đặt lịch (Booking), Hủy lịch, Lấy mã QR Check-in, Chat với AI.
+- Branch Manager (Quản lý chi nhánh): Quản lý gói tập, Quản lý đặt lịch, Xem báo cáo doanh thu/dịch vụ, Quản lý tồn kho.
+- Admin (Quản trị viên): Quản lý chi nhánh, Xem nhật ký hệ thống (Audit), Gán nhãn dữ liệu chatbot (Chatbot Admin).
+
+2.2. Đặc tả Use Case
+2.2.1. Use Case quản lí thành viên
+- Member đăng nhập, xem thông tin gói tập hiện tại của bản thân.
+- Admin và Branch Manager tra cứu danh sách các thành viên thuộc chi nhánh quản lý.
+2.2.2. Use Case quản lí đặt lịch (Booking)
+- Member chọn dịch vụ (Gym, Boxing, Pickleball), thời gian, chi nhánh và gửi yêu cầu đặt lịch. Hệ thống kiểm tra giờ mở cửa và sức chứa (facility capacity).
+- Member có thể hủy lịch trước ít nhất 2 giờ.
+2.2.3. Use Case Check-in
+- Member truy cập ứng dụng lấy mã QR động. Quét mã tại quầy lễ tân để ghi nhận ra vào cổng.
+2.2.4. Use Case Chatbot AI Local
+- Người dùng nhắn tin với Chatbot, mô hình AI (TextNormalizer + Intent Classifier) sẽ trích xuất thông tin (thực thể: thời gian, dịch vụ, chi nhánh) và phản hồi dựa trên kịch bản (Template). Hỗ trợ đặt lịch qua giao diện Chatbot.
+2.2.5. Use Case thống kê báo cáo
+- Branch Manager xem bảng điều khiển tổng quan về doanh thu ngày/tháng, số đơn hàng, số lịch đặt và hàng tồn kho sắp hết.
+
+2.3. Biểu đồ tuần tự ( Sequence Diagram )
+2.3.1. Sequence - Quản lý Thành viên
+Khách hàng đăng nhập qua API /api/v1/auth/login. Server xác thực bằng Spring Security và trả về chuỗi JWT.
+2.3.2. Sequence - Đăng ký Đặt lịch
+Khách hàng chọn dịch vụ và thời gian. Backend kiểm tra quyền AppPrincipal và sức chứa trong BookingService. Hợp lệ sẽ tiến hành lưu DB và trả về mã Booking Code.
+2.3.3. Sequence - Đặt lịch qua Chatbot
+Gửi câu chat "đặt lịch tập gym ngày mai". Chatbot phân tích, xác nhận lại giờ. Sau khi Member đồng ý (Confirm), DialogueManager gọi BookingService.create để tạo lịch trực tiếp.
+
+PHẦN 3: THIẾT KẾ CƠ SỞ DỮ LIỆU
+3.1. Entity Relationship Diagram (ERD)
+Cơ sở dữ liệu lưu trữ 20 bảng, chia làm 5 cụm chính: Cụm người dùng (app_user, member), Cụm cấu hình dịch vụ (branch, facility, membership_plan), Cụm kinh doanh (membership, booking, check_in), Cụm sản phẩm (product, stock_level, sales_order) và Cụm hệ thống Chatbot (chat_session, chat_message, chat_training_candidate).
+
+3.2. Các Bảng Chính
+- app_user: Lưu thông tin tài khoản (id, email, password_hash, role).
+- member: Lưu thông tin chi tiết hội viên (id, user_id, full_name, phone).
+- branch: Thông tin chi nhánh phòng tập.
+- booking: Lưu trữ lịch đặt chỗ (id, member_id, facility_id, starts_at_utc, status).
+- check_in: Ghi nhận lịch sử vào cổng bằng QR (ACCEPTED / REJECTED).
+- chat_session & chat_message: Lưu trữ phiên hội thoại và nội dung chat để huấn luyện AI định kỳ.
+
+PHẦN 4: GIAO DIỆN HỆ THỐNG
+Hệ thống sử dụng Server-side rendering (Thymeleaf) với giao diện trực quan, chia theo Role.
+- Trang Member: Hiển thị Thẻ thành viên, Lịch tập sắp tới và nút Lấy mã QR. Giao diện Chatbot thu gọn ở góc dưới màn hình.
+- Trang Manager: Bảng điều khiển (Dashboard) thống kê biểu đồ doanh thu, lượt check-in và bảng cảnh báo hàng sắp hết.
+- Trang Admin: Danh sách quản lý chi nhánh và luồng duyệt gán nhãn câu hỏi Chatbot cho quá trình học tiếp theo (Active Learning).
+
+KẾT LUẬN
+Đề tài đã xây dựng thành công một hệ thống quản lý phòng tập gym toàn diện với các chức năng quản lý chi tiết bao gồm quản lý thành viên, gói tập, đặt chỗ, sản phẩm và check-in QR. Hệ thống tập trung hóa dữ liệu vào một nền tảng duy nhất, giúp phòng gym thay thế cách quản lý thủ công bằng Excel. Điều này không chỉ giúp tránh dữ liệu rải rác và trùng lặp mà còn tiết kiệm thời gian quản lý hàng ngày.
+Bên cạnh đó, hệ thống tích hợp chatbot AI local tự huấn luyện để hỗ trợ tư vấn khách hàng 24/7, giúp thao tác đặt lịch trở nên nhanh chóng dưới dạng hội thoại. Ngoài ra, báo cáo doanh thu, thống kê tự động sẽ giúp quản lý dễ dàng theo dõi hoạt động kinh doanh mà không phải tốn thời gian tổng hợp dữ liệu từ nhiều file. Những tính năng này sẽ giúp giảm chi phí quản lý, tăng hiệu suất hoạt động, và nâng cao trải nghiệm khách hàng.
+Mặc dù vậy, hệ thống hiện tại vẫn còn một số hạn chế nhất định. Mô hình Chatbot Softmax Regression chỉ xử lý tốt những luồng hội thoại đơn giản, chưa xử lý được các truy vấn đa ngữ cảnh phức tạp. Chức năng thanh toán hiện tại đang giả lập thay vì tích hợp các cổng thật. Trong tương lai, hệ thống có thể được mở rộng bằng cách tích hợp cổng thanh toán trực tuyến hoàn toàn (như MoMo, VNPay), và làm thêm phiên bản Mobile App cho hội viên để tối ưu hóa tính năng Check-in.
+
+TÀI LIỆU THAM KHẢO
+[1] Spring Boot Documentation - Spring Framework.
+[2] Hibernate / JPA Reference Guide.
+[3] Tài liệu cơ sở về thuật toán Softmax Regression và Intent Classification.
+[4] Thymeleaf + Bootstrap 5 Frontend Development.

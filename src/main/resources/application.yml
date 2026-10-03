@@ -13,8 +13,8 @@ spring:
 
   datasource:
     url: ${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=gymfit;encrypt=true;trustServerCertificate=true}
-    username: ${DB_USERNAME:sa}
-    password: ${DB_PASSWORD:123456}
+    username: sa
+    password: 123
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
   jpa:
@@ -40,10 +40,15 @@ gymfit:
   qr:
     secret: ${QR_SECRET:GYMFITQrSecretKeyMustBeAtLeastThirtyTwoCharactersLong2026}
     ttl-seconds: 60
-  ai:
-    base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
-    api-key: ${GEMINI_API_KEY:}
-    model: ${GEMINI_MODEL:gemini-3.8-flash}
+  chatbot:
+    model-path: classpath:chatbot/model/intent-model.bin
+    threshold-accept: 0.70
+    threshold-clarify: 0.40
+    history-limit: 10
+    session-idle-minutes: 30
+    pending-action-ttl-minutes: 5
+    rate-limit-per-minute: 20
+    low-stock-threshold: 10
 
 logging:
   level:
