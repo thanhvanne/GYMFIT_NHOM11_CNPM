@@ -23,7 +23,6 @@ public class BranchService {
 
     private final BranchRepository branchRepository;
     private final BranchServiceConfigRepository serviceConfigRepository;
-    private final BranchOperatingHourRepository operatingHourRepository;
     private final AuditService auditService;
     private final BranchOperatingHourJdbcRepository operatingHourJdbcRepository;
 

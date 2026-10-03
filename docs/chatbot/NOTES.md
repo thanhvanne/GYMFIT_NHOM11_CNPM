@@ -157,3 +157,19 @@ Nếu muốn vá: bỏ `/admin/**`,`/manager/**`,`/member/**` khỏi `permitAll`
     Sửa luôn chuỗi mojibake cũ của `cancel.ask_pick`.
 11. **Frontend `chat.js` giữ `sessionId` trong `sessionStorage`** — nếu không, mỗi lượt là một
     phiên mới và toàn bộ slot/xác nhận mất tác dụng.
+12. **⚠ BUG thật tìm ra lúc demo (đã sửa): `BookingService` đọc giờ hoạt động qua JPA** →
+    Hibernate đọc cột `time` của SQL Server **lệch +8 giờ** (`06:00` trong DB ra `14:00`,
+    `22:00` ra `06:00`) → `open > close` → vòng lặp sinh slot chạy 0 lần → **`availability`
+    trả rỗng cho mọi facility/ngày**, và `create()` chê mọi lịch là
+    `booking_outside_operating_hours`. Trong khi đó `BranchService.getOperatingHours`
+    **đã** dùng `BranchOperatingHourJdbcRepository` (JDBC thuần) nên trang admin vẫn hiện đúng
+    06:00–22:00 → hai đường đọc lệch nhau, khó phát hiện.
+    **Cách sửa:** `BookingService` chuyển sang `BranchOperatingHourJdbcRepository`, xoá luôn
+    `BranchOperatingHourRepository` (JPA) để không ai dùng lại.
+    Test chống tái phát: `BookingAvailabilityTest` (giờ đọc được phải khớp DB + đặt lịch trong
+    giờ phải thành công). Chưa xác định được cơ chế chính xác (+8 giờ trong khi JVM là +7 và
+    `hibernate.jdbc.time_zone: UTC`) — **không** đụng `jdbc.time_zone` vì mọi cột `Instant`
+    (`created_at_utc`…) đang phụ thuộc nó.
+13. **Server đang chạy không tự nạp code mới** — `mvnw spring-boot:run`/IntelliJ nạp class lúc
+    khởi động; code compile sau đó không áp dụng. Dấu hiệu: chat trả đúng câu placeholder T0
+    *"Trợ lý GYMFIT đang được nâng cấp..."* dù code đã sửa → phải **restart** server.

@@ -36,7 +36,11 @@ public class BookingService {
     private final MemberRepository memberRepository;
     private final BranchRepository branchRepository;
     private final BranchServiceConfigRepository serviceConfigRepository;
-    private final BranchOperatingHourRepository operatingHourRepository;
+    /**
+     * Giờ hoạt động phải đọc qua JDBC: bản JPA đọc cột {@code time} bị lệch
+     * múi giờ (06:00 → 14:00) khiến không có khung giờ nào hợp lệ.
+     */
+    private final BranchOperatingHourJdbcRepository operatingHourRepository;
     private final FacilityRepository facilityRepository;
     private final MembershipService membershipService;
     private final BranchScopeGuard branchScopeGuard;

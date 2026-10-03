@@ -15,6 +15,38 @@ public class BranchOperatingHourJdbcRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * Đọc giờ hoạt động theo ngày.
+     *
+     * <p><b>Bắt buộc đi qua JDBC</b>: Hibernate đọc cột {@code time} của SQL
+     * Server bị lệch múi giờ (test thực tế: 06:00 trong DB đọc ra 14:00 →
+     * {@code open > close} → không sinh được khung giờ nào).
+     */
+    public java.util.Optional<BranchOperatingHour> findByBranchIdAndDayOfWeek(
+            Long branchId,
+            Integer dayOfWeek
+    ) {
+        return jdbcTemplate.query(
+                """
+                SELECT
+                    id,
+                    branch_id,
+                    day_of_week,
+                    open_time,
+                    close_time
+                FROM branch_operating_hour
+                WHERE branch_id = ?
+                  AND day_of_week = ?
+                """,
+                (rs, rowNum) ->
+                        mapOperatingHour(rs),
+                branchId,
+                dayOfWeek
+        )
+                .stream()
+                .findFirst();
+    }
+
     public List<BranchOperatingHour> findAllByBranchId(
             Long branchId
     ) {
@@ -31,25 +63,33 @@ public class BranchOperatingHourJdbcRepository {
                 ORDER BY day_of_week
                 """,
                 (rs, rowNum) ->
-                        BranchOperatingHour.builder()
-                                .id(rs.getLong("id"))
-                                .branchId(
-                                        rs.getLong("branch_id")
-                                )
-                                .dayOfWeek(
-                                        rs.getInt("day_of_week")
-                                )
-                                .openTime(
-                                        rs.getTime("open_time")
-                                                .toLocalTime()
-                                )
-                                .closeTime(
-                                        rs.getTime("close_time")
-                                                .toLocalTime()
-                                )
-                                .build(),
+                        mapOperatingHour(rs),
                 branchId
         );
+    }
+
+    private static BranchOperatingHour mapOperatingHour(
+            java.sql.ResultSet rs
+    ) throws java.sql.SQLException {
+        return BranchOperatingHour.builder()
+                .id(
+                        rs.getLong("id")
+                )
+                .branchId(
+                        rs.getLong("branch_id")
+                )
+                .dayOfWeek(
+                        rs.getInt("day_of_week")
+                )
+                .openTime(
+                        rs.getTime("open_time")
+                                .toLocalTime()
+                )
+                .closeTime(
+                        rs.getTime("close_time")
+                                .toLocalTime()
+                )
+                .build();
     }
 
     public void replaceAll(
