@@ -2,6 +2,7 @@ package com.gymfit.chat;
 
 import com.gymfit.chat.dto.ChatRequest;
 import com.gymfit.chat.dto.ChatResponse;
+import com.gymfit.chat.dto.FeedbackRequest;
 import com.gymfit.common.security.SecurityContextService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,21 @@ public class ChatController {
     ) {
         return chatService.chat(
                 securityContextService.principal(),
-                request.message()
+                request
+        );
+    }
+
+    /**
+     * Đánh giá 👍/👎 một tin nhắn của bot.
+     */
+    @PostMapping("/feedback")
+    @PreAuthorize("isAuthenticated()")
+    public ChatResponse feedback(
+            @Valid @RequestBody FeedbackRequest request
+    ) {
+        return chatService.feedback(
+                securityContextService.principal(),
+                request
         );
     }
 }

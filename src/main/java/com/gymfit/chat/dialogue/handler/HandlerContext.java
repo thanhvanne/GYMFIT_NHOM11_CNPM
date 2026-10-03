@@ -16,7 +16,9 @@ import java.time.LocalDate;
  * @param text      câu đã chuẩn hóa
  * @param raw       câu gõ thô
  * @param today     ngày theo múi giờ nghiệp vụ
- * @param slots     slot đã điền trong hội thoại
+ * @param slots     slot đã điền trong hội thoại (map <b>sống</b> của state)
+ * @param state     trạng thái hội thoại — handler ghi thẳng {@code awaiting}/
+ *                  {@code pending} vào đây (null khi dựng context trong test)
  */
 public record HandlerContext(
         AppPrincipal principal,
@@ -25,8 +27,31 @@ public record HandlerContext(
         NormalizedText text,
         String raw,
         LocalDate today,
-        java.util.Map<String, String> slots
+        java.util.Map<String, String> slots,
+        com.gymfit.chat.dialogue.ConversationState state
 ) {
+
+    /** Constructor ngắn cho test — không kèm trạng thái hội thoại. */
+    public HandlerContext(
+            AppPrincipal principal,
+            Intent intent,
+            Entities entities,
+            NormalizedText text,
+            String raw,
+            LocalDate today,
+            java.util.Map<String, String> slots
+    ) {
+        this(
+                principal,
+                intent,
+                entities,
+                text,
+                raw,
+                today,
+                slots,
+                null
+        );
+    }
 
     public HandlerContext withSlots(
             java.util.Map<String, String> values
@@ -38,7 +63,18 @@ public record HandlerContext(
                 text,
                 raw,
                 today,
-                values
+                values,
+                state
         );
+    }
+
+    /**
+     * Trạng thái hội thoại; nếu không truyền (test) thì dùng bản tạm
+     * để handler vẫn chạy được.
+     */
+    public com.gymfit.chat.dialogue.ConversationState stateOrNew() {
+        return state == null
+                ? new com.gymfit.chat.dialogue.ConversationState()
+                : state;
     }
 }

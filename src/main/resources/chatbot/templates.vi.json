@@ -60,7 +60,7 @@
   "booking.wrong_branch": "Gói của bạn chỉ áp dụng tại chi nhánh {branch}.",
   "booking.service_not_allowed": "Gói của bạn không gồm dịch vụ {service}. Gói hiện có: {services}.",
   "booking.time_not_available": "Khung giờ {time} đã kín. Các khung giờ gần nhất còn trống:\n{slots}",
-  "cancel.ask_pick": "B?n mu?n h?y l?ch nào?",
+  "cancel.ask_pick": "Bạn muốn hủy lịch nào?",
   "booking.ask_pick_again": "Bạn muốn hủy lịch nào? Chọn một mã lịch bên dưới.",
   "cancel.confirm": "Bạn xác nhận hủy lịch này chứ?",
   "cancel.done": "Đã hủy lịch thành công (mã {code}).",
@@ -82,5 +82,9 @@
   "audit.recent": "10 sự kiện gần nhất trên hệ thống:\n{items}",
   "audit.none": "Chưa có sự kiện nào được ghi nhận.",
   "pending.expired": "Yêu cầu xác nhận đã hết hạn, bạn nói lại giúp mình nhé.",
-  "pending.invalid": "Yêu cầu xác nhận không hợp lệ. Bạn thử lại giúp mình nhé."
+  "pending.invalid": "Yêu cầu xác nhận không hợp lệ. Bạn thử lại giúp mình nhé.",
+  "pending.cancelled": "Mình đã hủy thao tác này. Bạn cần gì cứ bảo mình nhé.",
+  "clarify.no": "Mình hiểu sai rồi. Bạn diễn đạt lại giúp mình nhé.",
+  "error.empty": "Bạn chưa nhập nội dung. Bạn muốn hỏi gì về GYMFIT nhé?",
+  "booking.no_member": "Tài khoản của bạn chưa liên kết hội viên nên chưa đặt lịch được. Bạn liên kết tại trang Hồ sơ nhé."
 }
