@@ -90,6 +90,29 @@ public class TextNormalizer {
     }
 
     /**
+     * Chuẩn hóa <b>giữ dấu</b>: NFC + chữ thường + gọn khoảng trắng.
+     * <p>Dùng cho rules guard — bỏ dấu sẽ làm "dừng" trùng "đúng".
+     */
+    public static String toSoft(
+            String text
+    ) {
+        if (text == null) {
+            return "";
+        }
+
+        return SPACES.matcher(
+                        Normalizer.normalize(
+                                        text,
+                                        Form.NFC
+                                )
+                                .trim()
+                                .toLowerCase(Locale.ROOT)
+                )
+                .replaceAll(" ")
+                .trim();
+    }
+
+    /**
      * Chuẩn hóa xong rồi bỏ dấu — dùng để khớp từ điển tĩnh khi tiền xử lý
      * dữ liệu huấn luyện.
      */

@@ -2,6 +2,7 @@ package com.gymfit.chat.training;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gymfit.chat.nlu.ChatPipeline;
 import com.gymfit.chat.nlu.DateTimeParser;
 import com.gymfit.chat.nlu.FeatureExtractor;
 import com.gymfit.chat.nlu.IntentModel;
@@ -811,78 +812,41 @@ public final class ChatbotTrainer {
      * <p>Giữ nguyên SERVICE / BRANCH / TIER vì chúng mang tín hiệu; chỉ thay
      * DATE, TIME, MONEY, BOOKING_CODE bằng placeholder.
      */
+    /**
+     * Chuẩn bị chuỗi cho mô hình — dùng CHUNG {@link ChatPipeline} với lúc dự đoán.
+     */
     public static String mask(
             String raw,
             TextNormalizer normalizer,
             EntityExtractor extractor
     ) {
-        NormalizedTextHolder holder =
-                new NormalizedTextHolder(
-                        normalizer.normalize(raw)
-                );
-
-        String plain =
-                holder.text()
-                        .plain();
-
-        var entities =
-                extractor.extract(
-                        holder.text(),
-                        java.time.LocalDate.parse(
-                                TRAINING_DAY
-                        )
-                );
-
-        List<Span> spans =
-                new ArrayList<>(
-                        entities.spans()
-                );
-
-        // Thay từ cuối về đầu để không làm lệch chỉ số.
-        spans.sort(
-                Comparator.comparingInt(
-                        (Span span) ->
-                                span.start()
-                ).reversed()
+        return PIPELINE.prepare(
+                normalizer.normalize(raw),
+                java.time.LocalDate.parse(
+                        TRAINING_DAY
+                )
         );
-
-        String masked =
-                plain;
-
-        for (Span span : spans) {
-
-            String token =
-                    switch (span.type()) {
-                        case DATE ->
-                                "<date>";
-                        case TIME ->
-                                "<time>";
-                        case MONEY ->
-                                "<money>";
-                        case BOOKING_CODE ->
-                                "<code>";
-                        default ->
-                                null;
-                    };
-
-            if (token == null) {
-                continue;
-            }
-
-            masked =
-                    masked.substring(
-                            0,
-                            span.start()
-                    )
-                            + token
-                            + masked.substring(
-                            span.end()
-                    );
-        }
-
-        return masked;
     }
 
+    /** Pipeline dùng chung; khởi tạo tĩnh vì không phụ thuộc Spring. */
+    private static final ChatPipeline PIPELINE =
+            buildPipeline();
+
+    private static ChatPipeline buildPipeline() {
+
+        TextNormalizer normalizer =
+                new TextNormalizer();
+
+        normalizer.load();
+
+        EntityExtractor extractor =
+                staticExtractor();
+
+        return new ChatPipeline(
+                normalizer,
+                extractor
+        );
+    }
     /** Wrapper nhỏ để tránh gọi normalize hai lần. */
     private record NormalizedTextHolder(
             com.gymfit.chat.nlu.NormalizedText text
