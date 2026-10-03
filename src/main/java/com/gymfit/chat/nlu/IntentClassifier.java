@@ -4,6 +4,7 @@ import com.gymfit.chat.nlu.entity.Entities;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
@@ -343,11 +344,22 @@ public class IntentClassifier {
                     )
                             : path;
 
+            // Dùng ClassPathResource trực tiếp: ResourceLoader của web app
+            // sẽ tìm trong ServletContext và không thấy file đóng gói trong jar.
+            org.springframework.core.io.Resource resource =
+                    new ClassPathResource(
+                            location
+                    );
+
+            if (!resource.exists()) {
+                resource =
+                        resourceLoader.getResource(
+                                location
+                        );
+            }
+
             try (InputStream input =
-                         resourceLoader.getResource(
-                                         location
-                                 )
-                                 .getInputStream()) {
+                         resource.getInputStream()) {
 
                 return IntentModel.load(
                         input
