@@ -1,5 +1,6 @@
 package com.gymfit.chat;
 
+import com.gymfit.chat.dto.ChatRequest;
 import com.gymfit.chat.dto.ChatResponse;
 import com.gymfit.common.security.AppPrincipal;
 import com.gymfit.common.util.TimeUtil;
@@ -18,9 +19,23 @@ public class ChatService {
             AppPrincipal principal,
             String message
     ) {
-        return new ChatResponse(
+        return ChatResponse.of(
+                null,
                 "Trợ lý GYMFIT đang được nâng cấp, bạn vui lòng tạm thời dùng các chức năng trên trang.",
-                TimeUtil.now()
+                null,
+                null
+        );
+    }
+
+    public ChatResponse chat(
+            AppPrincipal principal,
+            ChatRequest request
+    ) {
+        return chat(
+                principal,
+                request == null
+                        ? null
+                        : request.message()
         );
     }
 }
