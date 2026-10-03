@@ -626,11 +626,20 @@ public class PlanHandler
                 || wanted == plan.tier();
     }
 
+    /**
+     * Danh sách dịch vụ, sắp theo tên enum để câu trả lời ổn định
+     * ({@code Set} không có thứ tự → output có thể đổi giữa các lần chạy).
+     */
     private String services(
             PlanResponse plan
     ) {
         return plan.services()
                 .stream()
+                .sorted(
+                        Comparator.comparing(
+                                ServiceCode::name
+                        )
+                )
                 .map(
                         Fmt::service)
                 .collect(

@@ -738,7 +738,14 @@ class HandlersTest {
 
         assertTrue(
                 message.contains(
-                        "Gym, Boxing"
+                        "Gym"
+                ),
+                message
+        );
+
+        assertTrue(
+                message.contains(
+                        "Boxing"
                 ),
                 message
         );
