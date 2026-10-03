@@ -126,3 +126,34 @@ SQL Server local: user `sa`. `application.yml` đang để mặc định `DB_PAS
 **Không thuộc danh sách file cho phép sửa trong plan → ghi nhận, không tự ý đổi.**
 Nếu muốn vá: bỏ `/admin/**`,`/manager/**`,`/member/**` khỏi `permitAll` và thêm
 `@PreAuthorize("hasRole('ADMIN')")` … trên `UiController`.
+
+---
+
+## 2. Ghi nhận khi làm T9–T10 (đối chiếu với code thật)
+
+1. **DTO trả lời của service nằm ở package `*.dto`**: `com.gymfit.booking.dto.BookingResponse`,
+   `com.gymfit.checkin.dto.CheckInResponse`, `com.gymfit.order.dto.OrderResponse` — không phải
+   package mẹ. Import sai là lỗi compile hay gặp nhất khi viết handler.
+2. **`BranchResponse` là record** → dùng `name()`, `phone()`, `id()` (không có `getName()`).
+3. **`ConversationState` phải truyền vào handler** qua `HandlerContext` (component thứ 8,
+   constructor 7 tham số giữ nguyên cho test): handler tự đặt `awaiting`/`pending`/`slots`,
+   `DialogueManager` không biết chi tiết từng luồng.
+4. **Thao tác ghi dữ liệu chỉ đi qua `BookingActionExecutor`** — `BookingFlowHandler` *lập kế
+   hoạch* và trả thẻ `CONFIRM`; `DialogueManager` mới gọi executor khi nhận `CONFIRM:<uuid>`
+   (hoặc câu "đúng rồi"/"ok"). Nhầm intent ⇒ không thể nào ghi được dữ liệu.
+5. **`PendingAction` được dọn TRƯỚC khi thực thi** → bấm Xác nhận 2 lần không tạo 2 lịch.
+6. **Mã lịch chỉ nhận format `BOOK_<16HEX>`** (regex ở mục 1.2). Test dùng
+   `BOOK_1234567890ABCDEF`; `BK001` KHÔNG được trích ra → luồng hủy không chọn được lịch.
+7. **`app_user` có `CHECK CK_app_user_scope`**: `MEMBER` bắt buộc `branch_id` và `member_id`
+   khác NULL (FK `member`). Test tích hợp muốn tạo user nhanh → dùng `ADMIN`
+   (cả hai đều NULL), không phải `MEMBER`.
+8. **`application.yml`**: `threshold-accept: 0.70`, `threshold-clarify: 0.40`,
+   `rate-limit-per-minute: 20`, `pending-action-ttl-minutes: 5` — `DialogueManager` đọc qua
+   `@Value` rồi đẩy vào `RateLimiter.setLimit()` lúc `@PostConstruct`.
+9. **`ChatRequest.payload`** nhận `TEXT:<s>` | `CONFIRM:<uuid>` | `CANCEL:<uuid>`;
+   `FeedbackRequest` có thêm `sessionId` để không cho đánh giá tin nhắn của người khác.
+10. **Template mới thêm ở T10** (đã có test `requiredKeysExist` bỏ qua, chỉ kiểm `> 40` khoá):
+    `pending.cancelled`, `clarify.no`, `error.empty`, `booking.no_member`.
+    Sửa luôn chuỗi mojibake cũ của `cancel.ask_pick`.
+11. **Frontend `chat.js` giữ `sessionId` trong `sessionStorage`** — nếu không, mỗi lượt là một
+    phiên mới và toàn bộ slot/xác nhận mất tác dụng.
