@@ -14,6 +14,8 @@ import com.gymfit.member.dto.MemberCreateResponse;
 import com.gymfit.member.dto.AccountCredentialsResponse;
 import com.gymfit.member.dto.MemberResponse;
 import com.gymfit.member.dto.MemberUpdateRequest;
+import com.gymfit.user.AppUser;
+import com.gymfit.user.AppUserRepository;
 import com.gymfit.user.RoleCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ public class MemberService {
     private final BranchScopeGuard branchScopeGuard;
     private final AuditService auditService;
     private final MemberAccountService memberAccountService;
+    private final AppUserRepository appUserRepository;
 
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -77,7 +80,7 @@ public class MemberService {
                 ? ""
                 : query.trim().toLowerCase(Locale.ROOT);
 
-        return base.stream()
+        List<Member> filtered = base.stream()
                 .filter(member ->
                         status == null || member.getStatus() == status
                 )
@@ -88,7 +91,13 @@ public class MemberService {
                                 || contains(member.getMemberCode(), normalized)
                                 || contains(member.getEmail(), normalized)
                 )
-                .map(this::toResponse)
+                .toList();
+
+        // F5: một câu lệnh cho tất cả tài khoản (không N+1)
+        Map<Long, AppUser> accounts = accountsByMemberId(filtered);
+
+        return filtered.stream()
+                .map(member -> toResponse(member, accounts))
                 .toList();
     }
 
@@ -99,7 +108,7 @@ public class MemberService {
     ) {
         Member member = requireMember(memberId);
         requireReadScope(principal, member);
-        return toResponse(member);
+        return toResponse(member, accountsByMemberId(List.of(member)));
     }
 
     @Transactional
@@ -388,6 +397,24 @@ public class MemberService {
     }
 
     private MemberResponse toResponse(Member member) {
+        return toResponse(
+                member,
+                accountsByMemberId(List.of(member))
+        );
+    }
+
+    /**
+     * F5 – gắn cờ {@code hasAccount} + {@code accountUsername} (đã nạp sẵn
+     * bằng {@link #accountsByMemberId} để không query từng dòng).
+     */
+    private MemberResponse toResponse(
+            Member member,
+            Map<Long, AppUser> accounts
+    ) {
+        AppUser account = member.getId() == null
+                ? null
+                : accounts.get(member.getId());
+
         return new MemberResponse(
                 member.getId(),
                 member.getMemberCode(),
@@ -398,7 +425,35 @@ public class MemberService {
                 member.getDateOfBirth(),
                 member.getStatus(),
                 member.getCreatedAtUtc(),
-                member.getUpdatedAtUtc()
+                member.getUpdatedAtUtc(),
+                account != null,
+                account == null ? null : account.getEmail()
         );
+    }
+
+    /**
+     * Nạp tài khoản của N hội viên trong 1 câu lệnh.
+     */
+    private Map<Long, AppUser> accountsByMemberId(
+            List<Member> members
+    ) {
+        List<Long> memberIds = members.stream()
+                .map(Member::getId)
+                .filter(java.util.Objects::nonNull)
+                .toList();
+
+        if (memberIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return appUserRepository
+                .findAllByMemberIdIn(memberIds)
+                .stream()
+                .filter(user -> user.getMemberId() != null)
+                .collect(java.util.stream.Collectors.toMap(
+                        AppUser::getMemberId,
+                        user -> user,
+                        (first, second) -> first
+                ));
     }
 }

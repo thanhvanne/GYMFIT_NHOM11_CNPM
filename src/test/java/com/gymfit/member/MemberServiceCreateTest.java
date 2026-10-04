@@ -113,7 +113,8 @@ class MemberServiceCreateTest {
                 branchRepository,
                 new BranchScopeGuard(),
                 auditService,
-                accountService
+                accountService,
+                userRepository
         );
     }
 
