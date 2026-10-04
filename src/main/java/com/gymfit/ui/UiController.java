@@ -16,6 +16,15 @@ public class UiController {
         return "login";
     }
 
+    /**
+     * Trang đổi mật khẩu bắt buộc (F7) – dùng cho tài khoản
+     * {@code mustChangePassword=true} sau lần đăng nhập đầu tiên.
+     */
+    @GetMapping("/change-password")
+    public String changePassword() {
+        return "change-password";
+    }
+
     @GetMapping("/admin/dashboard")
     public String adminDashboard() {
         return "admin/dashboard";

@@ -43,6 +43,12 @@ const Auth = {
     },
 
     redirectByRole(user) {
+        // F7: còn nợ đổi mật khẩu ⇒ không cho vào trang nghiệp vụ
+        if (user.mustChangePassword) {
+            location.href = "/change-password";
+            return;
+        }
+
         switch (user.role) {
             case "ADMIN":
                 location.href = "/admin/dashboard";
@@ -66,6 +72,13 @@ const Auth = {
 
         if (!this.token() || !user) {
             location.href = "/login";
+            return null;
+        }
+
+        if (user.mustChangePassword
+            && location.pathname
+            !== "/change-password") {
+            location.href = "/change-password";
             return null;
         }
 

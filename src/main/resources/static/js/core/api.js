@@ -66,6 +66,16 @@ const Api = {
             error.code = body?.code;
             error.errors = body?.errors || {};
             error.body = body;
+
+            // F7: JWT filter chặn (F4) → đưa về trang đổi mật khẩu
+            if (response.status === 403
+                && error.code
+                === "password_change_required"
+                && location.pathname
+                !== "/change-password") {
+                location.href = "/change-password";
+            }
+
             throw error;
         }
 
