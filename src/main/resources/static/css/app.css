@@ -1949,3 +1949,123 @@ textarea {
         );
     }
 }
+
+/* ==================================================================
+   F6 – cấp tài khoản hội viên: checkbox + phiếu thông tin đăng nhập
+   ================================================================== */
+
+.checkbox-field {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.checkbox-label input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary, #2563eb);
+}
+
+.checkbox-field .small {
+    margin: 6px 0 0 28px;
+}
+
+.credentials-slip {
+    margin-bottom: 14px;
+    padding: 18px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+}
+
+.credentials-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.credentials-fields {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+}
+
+.credentials-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.credentials-row dt {
+    color: var(--muted);
+    font-size: .92rem;
+}
+
+.credentials-row dd {
+    margin: 0;
+    font-weight: 600;
+    text-align: right;
+    word-break: break-all;
+}
+
+.credentials-password {
+    font-family: ui-monospace, SFMono-Regular,
+        Menlo, Consolas, monospace;
+    font-size: 1.05rem;
+    letter-spacing: .08em;
+    color: #b45309;
+}
+
+.credentials-note {
+    margin: 14px 0 0;
+    padding: 10px;
+    border-radius: 8px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: .9rem;
+}
+
+/* In phiếu: chỉ in phần phiếu, ẩn toàn bộ giao diện còn lại */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #credentials-slip,
+    #credentials-slip * {
+        visibility: visible;
+    }
+
+    #credentials-slip {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 16mm;
+        border: 1px solid #000;
+        border-radius: 0;
+        background: #fff;
+    }
+
+    .modal-backdrop:not(.hidden) {
+        position: static !important;
+        background: #fff !important;
+        overflow: visible !important;
+    }
+}

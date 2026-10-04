@@ -1,6 +1,10 @@
 let members = [];
 let branches = [];
 
+// F6: thông tin đăng nhập chỉ nằm trong RAM – không ghi localStorage/log
+let credentialsPassword = null;
+let credentialsPayload = null;
+
 document.addEventListener(
     "DOMContentLoaded",
     async () => {
@@ -72,6 +76,35 @@ function bindEvents() {
         .addEventListener(
             "click",
             closeMembershipModal
+        );
+
+    // F6: hộp thoại Copy / In phiếu thông tin đăng nhập
+    document
+        .getElementById("credentials-modal-close")
+        .addEventListener(
+            "click",
+            closeCredentials
+        );
+
+    document
+        .getElementById("credentials-dismiss")
+        .addEventListener(
+            "click",
+            closeCredentials
+        );
+
+    document
+        .getElementById("credentials-copy")
+        .addEventListener(
+            "click",
+            copyCredentials
+        );
+
+    document
+        .getElementById("credentials-print")
+        .addEventListener(
+            "click",
+            printCredentials
         );
 }
 
@@ -173,7 +206,7 @@ function renderMembers() {
     if (filtered.length === 0) {
         appendEmptyRow(
             body,
-            6,
+            7,
             "Không tìm thấy hội viên"
         );
         return;
@@ -236,10 +269,26 @@ function renderMembers() {
 
         row.appendChild(statusCell);
 
+        // F6: cột trạng thái tài khoản đăng nhập
+        row.appendChild(accountCell(member));
+
         const actions =
             document.createElement("td");
 
         actions.className = "table-actions";
+
+        const accountButton = actionButton(
+            member.hasAccount
+                ? "Đặt lại mật khẩu"
+                : "Cấp tài khoản"
+        );
+
+        accountButton.addEventListener(
+            "click",
+            () => member.hasAccount
+                ? resetMemberAccount(member)
+                : issueMemberAccount(member)
+        );
 
         const membershipButton =
             actionButton("Membership");
@@ -258,6 +307,7 @@ function renderMembers() {
         );
 
         actions.append(
+            accountButton,
             membershipButton,
             editButton
         );
@@ -285,6 +335,9 @@ function openCreateMember() {
     document.getElementById(
         "member-status-field"
     ).classList.add("hidden");
+
+    // Chỉ khi tạo mới mới cho chọn có cấp tài khoản hay không
+    show("member-create-account-field");
 
     hide("member-form-error");
     show("member-modal");
@@ -327,12 +380,17 @@ function openEditMember(member) {
         "member-status-field"
     ).classList.remove("hidden");
 
+    // Sửa hội viên không đụng tới tài khoản (dùng nút Cấp/Đặt lại ở bảng)
+    hide("member-create-account-field");
+
     hide("member-form-error");
     show("member-modal");
 }
 
 async function saveMember(event) {
     event.preventDefault();
+
+    credentialsPayload = null;
 
     const id = document
         .getElementById("member-id")
@@ -390,18 +448,42 @@ async function saveMember(event) {
                 "Đã cập nhật hội viên"
             );
         } else {
-            await Api.post(
+            const created = await Api.post(
                 "/api/v1/members",
-                data
+                {
+                    ...data,
+
+                    createAccount: document
+                        .getElementById(
+                            "member-create-account"
+                        )
+                        .checked
+                }
             );
 
-            showSuccess(
-                "Đã tạo hội viên"
-            );
+            if (created && created.account) {
+                showSuccess(
+                    "Đã tạo hội viên và cấp tài khoản"
+                );
+            } else {
+                showSuccess(
+                    "Đã tạo hội viên"
+                );
+            }
+
+            credentialsPayload = created;
         }
 
         closeMemberModal();
         await loadMembers();
+
+        if (credentialsPayload
+            && credentialsPayload.account) {
+            showCredentials(
+                credentialsPayload.member,
+                credentialsPayload.account
+            );
+        }
     } catch (error) {
         const box = document.getElementById(
             "member-form-error"
@@ -799,4 +881,222 @@ function formatApiError(error) {
     }
 
     return error.message || "Có lỗi xảy ra";
+}
+
+// =====================================================================
+// F6 – cột "Tài khoản" + cấp / đặt lại mật khẩu + phiếu Copy / In
+// =====================================================================
+
+function accountCell(member) {
+    const cell = document.createElement("td");
+
+    const badge = document.createElement("span");
+
+    badge.className = member.hasAccount
+        ? "badge badge-success"
+        : "badge badge-muted";
+
+    badge.textContent = member.hasAccount
+        ? "Đã có"
+        : "Chưa có";
+
+    cell.appendChild(badge);
+
+    if (member.hasAccount && member.accountUsername) {
+        const username =
+            document.createElement("div");
+
+        username.className = "muted small";
+        username.textContent =
+            member.accountUsername;
+
+        cell.appendChild(username);
+    }
+
+    return cell;
+}
+
+async function issueMemberAccount(member) {
+    await requestAccountAction(
+        member,
+        `/api/v1/members/${member.id}/account`,
+        "Đã cấp tài khoản đăng nhập cho hội viên"
+    );
+}
+
+async function resetMemberAccount(member) {
+    const confirmed = window.confirm(
+        `Đặt lại mật khẩu của ${member.fullName}? `
+        + "Mật khẩu tạm cũ sẽ không dùng được nữa."
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    await requestAccountAction(
+        member,
+        `/api/v1/members/${member.id}/account/reset-password`,
+        "Đã đặt lại mật khẩu cho hội viên"
+    );
+}
+
+async function requestAccountAction(
+    member,
+    url,
+    successMessage
+) {
+    clearPageError();
+
+    try {
+        const account = await Api.post(url);
+
+        showSuccess(successMessage);
+
+        await loadMembers();
+
+        showCredentials(member, account);
+    } catch (error) {
+        showError(formatApiError(error));
+    }
+}
+
+function showCredentials(member, account) {
+    credentialsPassword =
+        account.temporaryPassword;
+
+    setText(
+        "credentials-name",
+        member.fullName || "—"
+    );
+
+    setText(
+        "credentials-member-code",
+        member.memberCode || "—"
+    );
+
+    setText(
+        "credentials-branch",
+        member.homeBranchId
+            ? branchName(member.homeBranchId)
+            : "—"
+    );
+
+    setText(
+        "credentials-login-url",
+        `${window.location.origin}/login`
+    );
+
+    setText(
+        "credentials-username",
+        account.username || "—"
+    );
+
+    setText(
+        "credentials-password",
+        credentialsPassword || "—"
+    );
+
+    hide("credentials-error");
+    show("credentials-modal");
+}
+
+function closeCredentials() {
+    credentialsPassword = null;
+
+    setText("credentials-password", "—");
+
+    hide("credentials-modal");
+}
+
+async function copyCredentials() {
+    if (!credentialsPassword) {
+        return;
+    }
+
+    const text = [
+        "GYMFIT - Thong tin dang nhap",
+        `Ho ten: ${textOf("credentials-name")}`,
+        `Ma hoi vien: ${textOf("credentials-member-code")}`,
+        `Chi nhanh: ${textOf("credentials-branch")}`,
+        `Dang nhap tai: ${textOf("credentials-login-url")}`,
+        `Ten dang nhap: ${textOf("credentials-username")}`,
+        `Mat khau tam: ${credentialsPassword}`,
+        "Luu y: doi mat khau sau lan dang nhap dau tien."
+    ].join("\n");
+
+    try {
+        if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            legacyCopy(text);
+        }
+
+        flashCopied();
+    } catch (error) {
+        showCredentialsError(
+            "Không sao chép được: "
+            + (error.message || "lỗi không rõ")
+            + ". Hãy bôi chọn và copy thủ công."
+        );
+    }
+}
+
+function printCredentials() {
+    window.print();
+}
+
+function legacyCopy(text) {
+    const area = document.createElement("textarea");
+
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+
+    document.body.appendChild(area);
+    area.select();
+
+    const copied = document.execCommand("copy");
+
+    document.body.removeChild(area);
+
+    if (!copied) {
+        throw new Error("trình duyệt không hỗ trợ");
+    }
+}
+
+function flashCopied() {
+    const button =
+        document.getElementById("credentials-copy");
+
+    const original = button.textContent;
+
+    button.textContent = "Đã sao chép";
+
+    setTimeout(
+        () => {
+            button.textContent = original;
+        },
+        2000
+    );
+}
+
+function showCredentialsError(message) {
+    const box = document.getElementById(
+        "credentials-error"
+    );
+
+    box.textContent = message;
+    box.classList.remove("hidden");
+}
+
+function setText(id, value) {
+    document.getElementById(id)
+        .textContent = value;
+}
+
+function textOf(id) {
+    return document.getElementById(id)
+        .textContent;
 }

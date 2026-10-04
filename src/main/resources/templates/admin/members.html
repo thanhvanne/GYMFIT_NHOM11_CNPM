@@ -139,6 +139,7 @@
                     <th>Liên hệ</th>
                     <th>Chi nhánh</th>
                     <th>Trạng thái</th>
+                    <th>Tài khoản</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -146,7 +147,7 @@
                 <tbody id="member-table-body">
 
                 <tr>
-                    <td colspan="6"
+                    <td colspan="7"
                         class="empty-cell">
                         Đang tải...
                     </td>
@@ -243,6 +244,24 @@
                     </option>
                 </select>
             </label>
+
+            <div id="member-create-account-field"
+                 class="field-full checkbox-field">
+
+                <label class="checkbox-label">
+                    <input id="member-create-account"
+                           type="checkbox"
+                           checked>
+
+                    <span>Cấp tài khoản đăng nhập cho hội viên</span>
+                </label>
+
+                <p class="muted small">
+                    Tên đăng nhập là email ở trên; nếu để trống email,
+                    hệ thống tự tạo theo mã hội viên. Mật khẩu tạm chỉ
+                    hiển thị một lần.
+                </p>
+            </div>
 
             <div id="member-form-error"
                  class="alert alert-error field-full hidden">
@@ -341,6 +360,112 @@
 
         <div id="membership-error"
              class="alert alert-error hidden">
+        </div>
+
+    </div>
+
+</div>
+
+<!-- F6: hộp thoại Copy / In phiếu thông tin đăng nhập (D5, không gửi email) -->
+<div id="credentials-modal"
+     class="modal-backdrop hidden">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <div>
+                <h2 id="credentials-title">
+                    Thông tin đăng nhập
+                </h2>
+
+                <p class="muted">
+                    Mật khẩu hiển thị MỘT lần cho nhân viên
+                </p>
+            </div>
+
+            <button id="credentials-modal-close"
+                    type="button"
+                    class="icon-button">
+                ×
+            </button>
+
+        </div>
+
+        <div id="credentials-slip"
+             class="credentials-slip">
+
+            <div class="credentials-brand">
+                <span class="brand-mark">G</span>
+                <span>GYMFIT</span>
+            </div>
+
+            <dl class="credentials-fields">
+
+                <div class="credentials-row">
+                    <dt>Họ và tên</dt>
+                    <dd id="credentials-name">—</dd>
+                </div>
+
+                <div class="credentials-row">
+                    <dt>Mã hội viên</dt>
+                    <dd id="credentials-member-code">—</dd>
+                </div>
+
+                <div class="credentials-row">
+                    <dt>Chi nhánh</dt>
+                    <dd id="credentials-branch">—</dd>
+                </div>
+
+                <div class="credentials-row">
+                    <dt>Đăng nhập tại</dt>
+                    <dd id="credentials-login-url">—</dd>
+                </div>
+
+                <div class="credentials-row">
+                    <dt>Tên đăng nhập</dt>
+                    <dd id="credentials-username">—</dd>
+                </div>
+
+                <div class="credentials-row">
+                    <dt>Mật khẩu tạm</dt>
+                    <dd id="credentials-password"
+                        class="credentials-password">—</dd>
+                </div>
+
+            </dl>
+
+            <p class="credentials-note">
+                Mật khẩu chỉ hiển thị một lần. Hãy trao cho hội viên ngay
+                và yêu cầu đổi mật khẩu ở lần đăng nhập đầu tiên.
+            </p>
+
+        </div>
+
+        <div id="credentials-error"
+             class="alert alert-error field-full hidden">
+        </div>
+
+        <div class="modal-actions field-full">
+
+            <button id="credentials-copy"
+                    type="button"
+                    class="button button-secondary">
+                Sao chép
+            </button>
+
+            <button id="credentials-print"
+                    type="button"
+                    class="button button-secondary">
+                In phiếu
+            </button>
+
+            <button id="credentials-dismiss"
+                    type="button"
+                    class="button button-primary">
+                Đóng
+            </button>
+
         </div>
 
     </div>
