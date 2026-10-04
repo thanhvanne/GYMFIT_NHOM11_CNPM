@@ -23,6 +23,12 @@ public record MemberCreateRequest(
         @NotNull
         Long homeBranchId,
 
-        LocalDate dateOfBirth
+        LocalDate dateOfBirth,
+
+        /**
+         * Mặc định bật: tạo luôn tài khoản đăng nhập cho hội viên (D2).
+         * {@code null} ⇒ {@code true}.
+         */
+        Boolean createAccount
 ) {
 }

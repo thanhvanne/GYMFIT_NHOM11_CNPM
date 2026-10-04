@@ -169,6 +169,93 @@ public class UserService {
         return toResponse(saved);
     }
 
+    /**
+     * Tạo tài khoản {@code MEMBER} cho một hội viên đã lưu (F3).
+     *
+     * <p>Nguyên tắc: kiểm trùng email + kiểm hội viên (ACTIVE, chưa có tài khoản)
+     * <b>trước</b> khi băm mật khẩu/lưu; lỗi ném ra để transaction của
+     * {@code MemberService.create} rollback toàn bộ.
+     *
+     * @param rawPassword mật khẩu thô – chỉ được băm, không ghi log/audit
+     */
+    @Transactional
+    public AppUser createForMember(
+            Long actorUserId,
+            Member member,
+            String username,
+            String rawPassword
+    ) {
+        ensureEmailAvailable(username, null);
+
+        Scope scope = validateScope(
+                RoleCode.MEMBER,
+                null,
+                member.getId(),
+                null
+        );
+
+        AppUser user = AppUser.builder()
+                .fullName(member.getFullName())
+                .email(username)
+                .passwordHash(passwordEncoder.encode(rawPassword))
+                .roleCode(RoleCode.MEMBER)
+                .status(UserStatus.ACTIVE)
+                .branchId(null)
+                .memberId(scope.memberId())
+                .mustChangePassword(true)
+                .createdAtUtc(TimeUtil.now())
+                .updatedAtUtc(TimeUtil.now())
+                .build();
+
+        AppUser saved = userRepository.save(user);
+
+        // Chỉ ghi định danh – KHÔNG đưa mật khẩu vào details_json.
+        auditService.record(
+                actorUserId,
+                "USER_CREATED",
+                "APP_USER",
+                saved.getId(),
+                member.getHomeBranchId(),
+                Map.of(
+                        "email", saved.getEmail(),
+                        "role", "MEMBER"
+                )
+        );
+
+        return saved;
+    }
+
+    /**
+     * Đặt lại mật khẩu tài khoản đã có: băm mật khẩu mới, bật cờ bắt buộc đổi
+     * mật khẩu lần đầu (D3) và ghi audit {@code PASSWORD_RESET} (không có mật khẩu).
+     */
+    @Transactional
+    public void resetPassword(
+            Long actorUserId,
+            AppUser user,
+            String rawPassword,
+            Long branchId
+    ) {
+        user.setPasswordHash(
+                passwordEncoder.encode(rawPassword)
+        );
+        user.setMustChangePassword(true);
+        user.setUpdatedAtUtc(TimeUtil.now());
+
+        AppUser saved = userRepository.save(user);
+
+        auditService.record(
+                actorUserId,
+                "PASSWORD_RESET",
+                "APP_USER",
+                saved.getId(),
+                branchId,
+                Map.of(
+                        "email", saved.getEmail()
+                )
+        );
+    }
+
     private Scope validateScope(
             RoleCode role,
             Long branchId,

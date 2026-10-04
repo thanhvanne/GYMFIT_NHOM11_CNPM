@@ -10,6 +10,8 @@ import com.gymfit.common.security.AppPrincipal;
 import com.gymfit.common.security.BranchScopeGuard;
 import com.gymfit.common.util.TimeUtil;
 import com.gymfit.member.dto.MemberCreateRequest;
+import com.gymfit.member.dto.MemberCreateResponse;
+import com.gymfit.member.dto.AccountCredentialsResponse;
 import com.gymfit.member.dto.MemberResponse;
 import com.gymfit.member.dto.MemberUpdateRequest;
 import com.gymfit.user.RoleCode;
@@ -31,6 +33,7 @@ public class MemberService {
     private final BranchRepository branchRepository;
     private final BranchScopeGuard branchScopeGuard;
     private final AuditService auditService;
+    private final MemberAccountService memberAccountService;
 
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -100,7 +103,7 @@ public class MemberService {
     }
 
     @Transactional
-    public MemberResponse create(
+    public MemberCreateResponse create(
             AppPrincipal principal,
             MemberCreateRequest request
     ) {
@@ -123,8 +126,22 @@ public class MemberService {
         ensurePhoneAvailable(request.phone(), null);
         ensureEmailAvailable(request.email(), null);
 
+        boolean wantAccount = request.createAccount() == null
+                || request.createAccount();
+
+        String memberCode = generateMemberCode();
+
+        // Kiểm trùng tên đăng nhập TRƯỚC khi lưu hội viên:
+        // nếu trùng (user_email_exists) thì chưa có gì được ghi vào DB.
+        if (wantAccount) {
+            memberAccountService.assertUsernameAvailable(
+                    request.email(),
+                    memberCode
+            );
+        }
+
         Member member = Member.builder()
-                .memberCode(generateMemberCode())
+                .memberCode(memberCode)
                 .fullName(request.fullName().trim())
                 .phone(request.phone().trim())
                 .email(normalizeEmail(request.email()))
@@ -149,7 +166,49 @@ public class MemberService {
                 )
         );
 
-        return toResponse(saved);
+        // Cùng transaction: lỗi ở bước cấp tài khoản ⇒ rollback cả hội viên.
+        AccountCredentialsResponse account = wantAccount
+                ? memberAccountService.issue(principal, saved)
+                : null;
+
+        return new MemberCreateResponse(
+                toResponse(saved),
+                account
+        );
+    }
+
+    /**
+     * {@code POST /api/v1/members/{id}/account} – cấp tài khoản cho hội viên
+     * đã có (F6 mục 5). Quyền ADMIN/BRANCH_MANAGER + kiểm chi nhánh ở service.
+     */
+    @Transactional
+    public AccountCredentialsResponse issueAccount(
+            AppPrincipal principal,
+            Long memberId
+    ) {
+        Member member = requireMember(memberId);
+
+        return memberAccountService.issue(
+                principal,
+                member
+        );
+    }
+
+    /**
+     * {@code POST /api/v1/members/{id}/account/reset-password} – sinh mật khẩu
+     * tạm mới, bật cờ bắt buộc đổi mật khẩu lần đầu (D3).
+     */
+    @Transactional
+    public AccountCredentialsResponse resetAccountPassword(
+            AppPrincipal principal,
+            Long memberId
+    ) {
+        Member member = requireMember(memberId);
+
+        return memberAccountService.resetPassword(
+                principal,
+                member
+        );
     }
 
     @Transactional

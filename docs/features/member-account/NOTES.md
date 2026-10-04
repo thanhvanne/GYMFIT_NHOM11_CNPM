@@ -197,6 +197,8 @@ git ls-files src/test | measure   # → 18 file *.java
 | N8 | Filter JWT hiện **không** ghi JSON nào (403 mặc định của Spring, đo được ở F0.4) | F4 phải tự dựng `ApiError` JSON; **không** dùng `AuthenticationEntryPoint` mặc định vì định dạng khác (`error` vs `code`). |
 | N9 | `SecurityConfig` `permitAll` cho `/admin/**`, `/manager/**`, `/member/**` (lỗ hổng đã ghi nhận từ T10) | F7 thêm `/change-password` vào danh sách này cho **nhất quán** với các trang khác; không sửa lỗ hổng có sẵn (ngoài phạm vi). |
 | N10 | `MemberResponse` là `record` 10 field, **1 chỗ** `new` | F5 chỉ sửa `toResponse` + thêm param; kiểm bằng test list/get. |
+| N11 | Thứ tự kiểm tra trong `MemberService.create`: `ensureEmailAvailable` (bảng `member`) chạy **trước** `assertUsernameAvailable` (bảng `app_user`) | E2E: email trùng **hội viên khác** trả `member_email_exists` (409), không phải `user_email_exists`. `user_email_exists` chỉ nảy sinh khi email đã thuộc **tài khoản** khác mà chưa có hội viên nào dùng (đã có test C4). Cả hai đều 409 + không tạo hội viên rác ⇒ đạt AC F6-(d), nhưng plan viết "message gợi ý" là `user_email_exists` → ghi rõ tại đây. |
+| N12 | `issue()` kiểm `findByMemberId` **trước** khi sinh mật khẩu (thêm trong F3) | Nếu chỉ dựa vào `validateScope` bên trong `UserService.createForMember` thì lỗi sẽ là `user_email_exists` (đúng email mới trùng) hoặc `member_account_exists` ở bước sau; kiểm sớm cho mã lỗi ổn định `member_account_exists` (test C6) và tránh sinh/ băm mật khẩu vô ích. |
 
 ---
 
@@ -210,10 +212,26 @@ git ls-files src/test | measure   # → 18 file *.java
 - **D5** hộp thoại Sao chép / In phiếu, không gửi email.
 - **D6** (P2) đồng bộ `INACTIVE` ↔ `DISABLED` ở F8.
 
+## E2E F3 – kết quả đo thật (app tạm cổng 8081, đã dọn sạch sau kiểm)
+
+| # | Kịch bản | Kết quả |
+|---|---|---|
+| 1 | `POST /api/v1/members` (admin, `createAccount=true`) | **201**, `Cache-Control: no-store`, `member.id=13`, `account.username=e2e.membera@test.local`, mật khẩu tạm **10** ký tự, `mustChangePassword=true` |
+| 2 | Đăng nhập hội viên bằng mật khẩu tạm | **OK** → chứng minh hash BCrypt khớp |
+| 3 | Tạo hội viên **trùng email** | **409** `member_email_exists` (xem N11), số hội viên **13 → 13** (nguyên tử) |
+| 4 | `createAccount=false` | `account = null`, không có `app_user` mới |
+| 5 | `POST /members/{id}/account` (hội viên chưa có) | **200**, `no-store`, username đúng, mật khẩu tạm 10 ký tự |
+| 6 | Gọi lại endpoint trên | **409** `member_account_exists` |
+| 7 | `POST /members/{id}/account/reset-password` | **200**, mật khẩu mới ≠ cũ; **mật khẩu cũ bị từ chối**, mật khẩu mới đăng nhập được |
+| 8 | `MEMBER` gọi endpoint cấp tài khoản | **403** |
+| 9 | Dọn dữ liệu | `12 hội viên / 8 tài khoản / 0 must_change=1` – đúng như trước kiểm |
+
 ## Trạng thái các task
 
 | Task | Trạng thái | Ghi chú |
 |---|---|---|
-| F0 | ✅ hoàn thành 2026-10-04 | đủ 7 mục, chưa sửa code |
-| F1 | ⬜ | bỏ qua mục 5 (N6) |
-| F2–F9 | ⬜ | |
+| F0 | ✅ hoàn thành 2026-10-04 | đủ 7 mục, chưa sửa code (`c05f8af`) |
+| F1 | ✅ hoàn thành 2026-10-04 | bỏ qua mục 5 (N6); migration đã chạy trên DB thật (`fd81bf5`) |
+| F2 | ✅ hoàn thành 2026-10-04 | 8 test (`d9800ba`) |
+| F3 | ✅ hoàn thành 2026-10-04 | 12 test Mockito pass + E2E HTTP qua app tạm 8081 (đã dọn dữ liệu test) |
+| F4–F9 | ⬜ | |
