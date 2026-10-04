@@ -271,6 +271,25 @@ git ls-files src/test | measure   # → 18 file *.java
 đã thay bằng kiểm markup/JS/CSS/API; logic Copy (clipboard + fallback `execCommand`) và In (`window.print` + CSS)
 chỉ được kiểm tĩnh.
 
+## E2E F7 – kết quả đo thật (app tạm 8081, đã dọn sạch)
+
+| # | Kịch bản | Kết quả |
+|---|---|---|
+| 1 | `GET /change-password` **không token** | **200** → `permitAll` đúng (N9); có form 3 ô, `change-password-notice`, nút Đăng xuất, gắn `/js/change-password.js` |
+| 2 | `GET /login` | có nhãn `Mật khẩu (hoặc mật khẩu tạm)` + lưu ý "Lần đăng nhập đầu tiên…" |
+| 3 | 4 file JS trả về đủ (đoại guard) | `change-password.js` gọi đúng endpoint + `/auth/me` + `redirectByRole`, **không** ghi mật khẩu vào `localStorage`; `auth.js` kiểm `mustChangePassword` ở cả `requireRole` và `redirectByRole`; `api.js` bắt 403 `password_change_required`; `login.js` nhận `mustChangePassword` **sau** `Auth.save` |
+| 4 | Chéo ID `change-password.js` ↔ HTML | 8/8 `getElementById` đều có trong trang |
+| 5 | Tạo hội viên tạm (mật khẩu tạm 10 ký tự) → login | `mustChangePassword=true` |
+| 6 | `GET /api/v1/members` bằng token đó | **403** `password_change_required`, body 212 bytes (đo bằng **curl**) → đoạn `api.js` sẽ redirect `/change-password` |
+| 7 | `GET /api/v1/auth/me` (allowlist) | **200**, `mustChangePassword=true` |
+| 8 | `POST /api/v1/auth/change-password` (giống form gửi) | **204** |
+| 9 | `/auth/me` sau khi đổi | `mustChangePassword=false` → `redirectByRole` đưa về trang theo vai trò |
+| 10 | `GET /api/v1/members` sau khi đổi | **200** |
+| 11 | Dọn dữ liệu | `12 hội viên / 8 tài khoản / 0 must_change=1` – đúng như trước kiểm |
+
+> **Lưu ý N14 tái xác nhận:** đọc body 403 qua `Invoke-RestMethod`/`GetResponseStream()` của PowerShell
+> vẫn cho chuỗi rỗng → kiểm định dạng lỗi bằng `curl`; script E2E đánh `FAIL` giả ở mục 6 (đã sửa kết luận bằng curl).
+
 ## Trạng thái các task
 
 | Task | Trạng thái | Ghi chú |
@@ -283,4 +302,5 @@ chỉ được kiểm tĩnh.
 | F5 | ✅ hoàn thành 2026-10-04 | `hasAccount`/`accountUsername` + `accountsByMemberId` (1 query) + 3 test; E2E GET `/members` khớp DB (`1f629d7`) |
 | — | 🔧 sửa test pre-existing 2026-10-04 | 4 test fail **trước** F0–F6: N16 (bom thời gian) + N17 (data lệch) → `e74ad1c` + sửa data |
 | F6 | ✅ hoàn thành 2026-10-04 | 2 trang Admin/Manager: checkbox, cột Tài khoản, 2 nút, phiếu Copy/In + `@media print` (`9713b6a`) |
-| F7–F9 | ⬜ | |
+| F7 | ✅ hoàn thành 2026-10-04 | trang `/change-password` + `permitAll`, guard `mustChangePassword` ở `auth.js`/`api.js`/`login.js`; 3 test MockMvc + E2E HTTP (418/418) (`17a98af`) |
+| F8–F9 | ⬜ | |
