@@ -206,6 +206,8 @@ git ls-files src/test | measure   # → 18 file *.java
 | N17 | `BookingAvailabilityTest` là test tích hợp **phụ thuộc DB**: hội viên 1 phải có đúng 1 gói `ACTIVE` ở **chi nhánh 1** gồm dịch vụ `GYM`. DB lệch do thao tác thật 03/10 15:29–15:30 (mua gói Boxing@cn1 → bị thay bằng gói@cn4) ⇒ `membership_branch_mismatch` (pre-existing) | Đã sửa **dữ liệu** (không sửa test): `membership id 6` → `plan_id=3` (Premium 1 tháng, cn1, 30 ngày), `branch_id=1`, access = `GYM/BOXING/PICKLEBALL`. **Cảnh báo:** test vẫn phụ thuộc dữ liệu – nếu mua gói khác cho hội viên 1, hoặc sau **2026-11-01** (hết hạn) sẽ fail lại; seed `membership id 1` còn hạn tới 26/10. SQL sửa lại nếu tái diễn:<br>`UPDATE membership SET plan_id=3, branch_id=1 WHERE id=6;`<br>`DELETE FROM membership_service_access WHERE membership_id=6;`<br>`INSERT INTO membership_service_access VALUES(6,'GYM'),(6,'BOXING'),(6,'PICKLEBALL');` |
 | N18 | Mục 3 F8 (grep `temporaryPassword`/`rawPassword`) liệt kê **4 chỗ** được phép, nhưng code thật có thêm `UserService.java` (6 chỗ, tham số `rawPassword` của `createForMember`/`resetPassword`) | **Tin code** (theo N1): `UserService` phải giữ 2 method này vì dùng private helpers (`generateMemberCode`, `normalizeEmail`). Toàn bộ chỉ truyền vào `passwordEncoder.encode(...)`; **không** có câu `log.`/`System.out` nào chứa `temporaryPassword`/`rawPassword` (grep 2 mẫu `log\.\w+\(.*[Pp]assword` → 0 match) ⇒ AC mục 3 đạt. `PasswordGenerator` để tên biến là `password` nên không hiện trong grep. |
 | N19 | Seed hiện có **sự lệch sẵn**: `member2` (ACTIVE) ↔ user `DISABLED`, `member3` (ACTIVE) ↔ user `LOCKED`, `member10` INACTIVE (không có tài khoản) | F8.1 chỉ đồng bộ khi trạng thái **đổi** (test `khongDoiTrangThaiKhongDongTaiKhoan`), không tự sửa dữ liệu cũ — giữ nguyên 2 tài khoản demo `DISABLED`/`LOCKED`. Muốn nhất quán toàn bộ thì chạy đối soát một lần riêng. |
+| N20 | **PLAN F9.2 yêu cầu "Cập nhật báo cáo theo `GYMFIT_REPORT_PLAN.md`"** (5 ý: use case 2.2.1/2.2.4, SEQ-2 + COM, từ điển `app_user`, phần 4 giao diện, mục hạn chế) | ⚠️ **Chưa làm**: (a) file `GYMFIT_REPORT_PLAN.md` **không tồn tại** trong repo (đã glob `**/GYMFIT_REPORT_PLAN*` → 0 kết quả); (b) đích cập nhật là `docs/report/BaoCao_GYMFIT.md` — nằm trong `docs/report/` mà người dùng **cấm sửa** (yêu cầu: nếu plan bảo sửa thì phải ghi nhận và hỏi lại). ⇒ Đợi người dùng phê duyệt trước khi sửa; 5 ý cần làm đã được chép nguyên văn tại mục **F9.2 – Việc còn lại** bên dưới. |
+| N21 | `MemberCreateRequest.createAccount` là `Boolean` với quy tắc **`null ⇒ true`** (plan dòng 202, dòng 53 "mặc định bật") ⇒ **bỏ hẳn trường** khỏi body vẫn **tạo tài khoản**; muốn không tạo thì phải gửi `createAccount:false` (đúng như JS `createAccount: checkbox.checked`) | Lần chạy script hồi quy F9 thứ nhất fail 3/19 chỉ vì gửi body **thiếu** trường này (lỗi của script, **không** là lỗi code) — bổ sung `createAccount:$false` ⇒ 19/19 PASS. Ai gọi API tay cần lưu ý. |
 
 ---
 
@@ -308,6 +310,43 @@ chỉ được kiểm tĩnh.
 > kết luận F8.2 lấy từ test JUnit (UTF-8), E2E chỉ dùng để đối chiếu hành vi thật trên app.
 > Sai URL `/{id}/reset-password` (đúng là `/{id}/account/reset-password`) cũng chỉ là lỗi của script, không phải lỗi code.
 
+## E2E F9 – hồi quy toàn bộ (app tạm 8081, script `f9_regression.ps1`, đã dọn sạch)
+
+**19/19 PASS** (lần 2; lần 1 fail 3 mục do script thiếu `createAccount:false` — xem N21):
+
+| # | Kịch bản | Kết quả |
+|---|---|---|
+| 0a–0c | Đăng nhập seed: `admin` (ADMIN), `manager.q1` (BRANCH_MANAGER, cn 1), `member1` (MEMBER) | 3/3 **PASS** |
+| 0d | Tài khoản seed `member2` (`DISABLED`) đăng nhập | bị từ chối — **PASS** |
+| 1a–1c | Thêm hội viên **không tick** (`createAccount:false`) → `account=null`, `hasAccount=false`, `accountUsername=null`; **sửa** hội viên (`PUT` đổi SĐT) → 200 và vẫn **không** sinh tài khoản | 3/3 **PASS** |
+| 2a | Thêm hội viên **có tick** → `temporaryPassword` đủ 10 ký tự | **PASS** (`id=21`) |
+| 2b | Đăng nhập lần đầu → `mustChangePassword=true` | **PASS** |
+| 2c | Trước khi đổi: `GET /api/v1/bookings` → **403** `password_change_required` (đo bằng `curl`) | **PASS** |
+| 2d–2e | `POST /auth/change-password` → **204**; `GET /bookings` → **200** (hết chặn) | **PASS** |
+| 3a–3d | Mua gói (plan 1 – Gym 1 tháng @cn1): tạo đơn → thanh toán momo `PENDING` → `simulate-success` = `SUCCEEDED` → `GET .../memberships/current` = **ACTIVE**, hạn tới 2026-11-02 | 4/4 **PASS** |
+| 4a–4b | `GET /facilities?branchId=1&serviceCode=GYM` → `GET /bookings/availability` (hôm nay, còn suất) → `POST /bookings` → **201**, `bookingId=18`, `2026-10-04T06:00:00Z` | **PASS** |
+| 5a–5b | Hội viên `POST /member/qr` → lấy token + ảnh QR; admin `POST /checkins/qr` → `result=ACCEPTED`, `checkInId=5` | **PASS** |
+| 99 | Dọn dữ liệu | `12 hội viên / 8 tài khoản / 0 must_change=1 / 0 dữ liệu test còn lại` — đúng baseline |
+
+Kết luận: luồng hiện có (đăng nhập seed, thêm/sửa hội viên, mua gói, thanh toán, đặt lịch, check-in QR)
+**không hỏng** sau F0–F8 ⇒ AC mục "hồi quy F9" đạt.
+
+---
+
+## F9.2 – Việc còn lại: CẬP NHẬT BÁO CÁO *(chưa làm — chờ phê duyệt, xem N20)*
+
+Plan yêu cầu cập nhật báo cáo theo `GYMFIT_REPORT_PLAN.md` (file **không có** trong repo) với 5 ý,
+đích là `docs/report/BaoCao_GYMFIT.md` — **ngoài phạm vi được phép sửa** nên chưa đụng vào:
+
+1. 2.2.1 Use case *Quản lí hội viên*: thêm luồng "cấp tài khoản", ngoại lệ `user_email_exists`, `member_account_exists`;
+   mục 2.2.4: luồng đổi mật khẩu lần đầu, `password_change_required`.
+2. SEQ-2 (Quản lý hội viên) và COM tương ứng: thêm lifeline `MemberAccountService`, `UserService`, `PasswordGenerator`, `PasswordEncoder`.
+3. Từ điển dữ liệu `app_user`: thêm cột `must_change_password`.
+4. Phần 4 giao diện: ảnh form thêm hội viên (có checkbox), hộp thoại thông tin đăng nhập, trang đổi mật khẩu, phiếu in.
+5. Mục hạn chế/hướng phát triển: chưa gửi email/SMS, chưa có quên mật khẩu tự phục vụ, chưa giới hạn số lần đăng nhập sai.
+
+---
+
 ## Trạng thái các task
 
 | Task | Trạng thái | Ghi chú |
@@ -315,11 +354,11 @@ chỉ được kiểm tĩnh.
 | F0 | ✅ hoàn thành 2026-10-04 | đủ 7 mục, chưa sửa code (`c05f8af`) |
 | F1 | ✅ hoàn thành 2026-10-04 | bỏ qua mục 5 (N6); migration đã chạy trên DB thật (`fd81bf5`) |
 | F2 | ✅ hoàn thành 2026-10-04 | 8 test (`d9800ba`) |
-| F3 | ✅ hoàn thành 2026-10-04 | 12 test Mockito pass + E2E HTTP qua app tạm 8081 (đã dọn dữ liệu test) |
+| F3 | ✅ hoàn thành 2026-10-04 | 12 test Mockito pass + E2E HTTP qua app tạm 8081 (đã dọn dữ liệu test) (`adb78c7`) |
 | F4 | ✅ hoàn thành 2026-10-04 | 15 test pass + E2E HTTP/curl (đã dọn dữ liệu test) (`7ba92f7`) |
 | F5 | ✅ hoàn thành 2026-10-04 | `hasAccount`/`accountUsername` + `accountsByMemberId` (1 query) + 3 test; E2E GET `/members` khớp DB (`1f629d7`) |
 | — | 🔧 sửa test pre-existing 2026-10-04 | 4 test fail **trước** F0–F6: N16 (bom thời gian) + N17 (data lệch) → `e74ad1c` + sửa data |
 | F6 | ✅ hoàn thành 2026-10-04 | 2 trang Admin/Manager: checkbox, cột Tài khoản, 2 nút, phiếu Copy/In + `@media print` (`9713b6a`) |
 | F7 | ✅ hoàn thành 2026-10-04 | trang `/change-password` + `permitAll`, guard `mustChangePassword` ở `auth.js`/`api.js`/`login.js`; hoàn thiện theo plan: nhãn đăng nhập "Email hoặc mã hội viên" + mục Đổi mật khẩu ở hồ sơ; 5 test MockMvc + E2E HTTP (`17a98af`, `12d9434`) |
 | F8 | ✅ hoàn thành 2026-10-04 | `MemberService.syncAccountStatus` (D6: INACTIVE↔DISABLED) + 4 test đồng bộ + 1 test chatbot không trả mật khẩu; grep mục 3 sạch; E2E HTTP (425/425) (`4452d22`) |
-| F9 | ⬜ hồi quy toàn bộ | |
+| F9 | 🟡 hồi quy **19/19 PASS** 2026-10-04; **F9.2 "cập nhật báo cáo" chưa làm — chờ phê duyệt (N20)** | đăng nhập seed (admin/manager/member), thêm & sửa hội viên **không tick**, hội viên mới: đổi mật khẩu → mua gói → đặt lịch → check-in QR `ACCEPTED`; full suite **425/425** (`mvn test` exit=0); đã dọn sạch dữ liệu test |
