@@ -17,6 +17,7 @@ import com.gymfit.member.dto.MemberUpdateRequest;
 import com.gymfit.user.AppUser;
 import com.gymfit.user.AppUserRepository;
 import com.gymfit.user.RoleCode;
+import com.gymfit.user.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -252,6 +253,9 @@ public class MemberService {
         ensurePhoneAvailable(request.phone(), memberId);
         ensureEmailAvailable(request.email(), memberId);
 
+        // F8.1 – nhớ trạng thái trước khi đổi để đồng bộ tài khoản (D6)
+        MemberStatus previousStatus = member.getStatus();
+
         member.setFullName(request.fullName().trim());
         member.setPhone(request.phone().trim());
         member.setEmail(normalizeEmail(request.email()));
@@ -274,7 +278,60 @@ public class MemberService {
                 )
         );
 
+        syncAccountStatus(principal, saved, previousStatus);
+
         return toResponse(saved);
+    }
+
+    /**
+     * F8.1 – Đồng bộ tài khoản đăng nhập với trạng thái hội viên (D6):
+     * hội viên {@code INACTIVE} ⇒ tài khoản {@code DISABLED};
+     * hội viên trở lại {@code ACTIVE} ⇒ mở lại tài khoản.
+     *
+     * <p>Chỉ chạy khi trạng thái thực sự đổi, để không vô tình bật lại
+     * tài khoản đã bị khóa riêng. Hội viên chưa có tài khoản thì bỏ qua.
+     */
+    private void syncAccountStatus(
+            AppPrincipal principal,
+            Member member,
+            MemberStatus previousStatus
+    ) {
+        if (previousStatus == member.getStatus()) {
+            return;
+        }
+
+        AppUser user = appUserRepository
+                .findByMemberId(member.getId())
+                .orElse(null);
+
+        if (user == null) {
+            return;
+        }
+
+        UserStatus target =
+                member.getStatus() == MemberStatus.INACTIVE
+                        ? UserStatus.DISABLED
+                        : UserStatus.ACTIVE;
+
+        if (user.getStatus() == target) {
+            return;
+        }
+
+        user.setStatus(target);
+        user.setUpdatedAtUtc(TimeUtil.now());
+        appUserRepository.save(user);
+
+        auditService.record(
+                principal.getUserId(),
+                "USER_UPDATED",
+                "APP_USER",
+                user.getId(),
+                member.getHomeBranchId(),
+                Map.of(
+                        "memberId", member.getId(),
+                        "status", target.name()
+                )
+        );
     }
 
     public Member requireMember(Long id) {
