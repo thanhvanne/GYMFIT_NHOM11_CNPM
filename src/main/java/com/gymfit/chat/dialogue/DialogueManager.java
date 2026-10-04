@@ -1,11 +1,13 @@
 package com.gymfit.chat.dialogue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gymfit.chat.dialogue.handler.FaqHandler;
 import com.gymfit.chat.dialogue.handler.HandlerContext;
 import com.gymfit.chat.dialogue.handler.IntentHandler;
 import com.gymfit.chat.dto.ChatRequest;
 import com.gymfit.chat.dto.ChatResponse;
 import com.gymfit.chat.dto.ChatSuggestion;
+import com.gymfit.chat.knowledge.FaqRetriever;
 import com.gymfit.chat.nlg.ResponseTemplates;
 import com.gymfit.chat.nlu.ChatPipeline;
 import com.gymfit.chat.nlu.Intent;
@@ -69,6 +71,8 @@ public class DialogueManager {
     private final RateLimiter rateLimiter;
 
     private final ResponseTemplates templates;
+
+    private final com.gymfit.chat.knowledge.FaqRetriever faqRetriever;
 
     private final BookingActionExecutor executor;
 
@@ -734,6 +738,16 @@ public class DialogueManager {
         if (outOfScope
                 || confidence < thresholdClarify) {
 
+            Draft rescued =
+                    faqRescue(
+                            message,
+                            role
+                    );
+
+            if (rescued != null) {
+                return rescued;
+            }
+
             recordCandidate(
                     message,
                     intent,
@@ -749,6 +763,16 @@ public class DialogueManager {
         }
 
         if (confidence < thresholdAccept) {
+
+            Draft rescued =
+                    faqRescue(
+                            message,
+                            role
+                    );
+
+            if (rescued != null) {
+                return rescued;
+            }
 
             state.setAwaiting(
                     Awaiting.CONFIRM
@@ -787,6 +811,53 @@ public class DialogueManager {
         }
 
         return null;
+    }
+
+    /**
+     * Chuỗi cứu hộ FAQ (plan 5.3): trước khi rơi vào làm rõ/fallback, thử truy
+     * vấn {@link FaqRetriever} bằng chính câu người dùng.
+     *
+     * @return {@code null} nếu kho không có mục đủ điểm — trả về {@code null}
+     * để {@link #gate} chạy tiếp hành vi cũ
+     */
+    private Draft faqRescue(
+            String message,
+            RoleCode role
+    ) {
+
+        if (message == null
+                || message.isBlank()) {
+            return null;
+        }
+
+        FaqRetriever.Result result =
+                faqRetriever.retrieve(
+                        message,
+                        role
+                );
+
+        // Chỉ cứu khi TRÚNG chắc (điểm ≥ THRESHOLD_ANSWER). Ở mức gợi ý
+        // [THRESHOLD_SUGGEST, THRESHOLD_ANSWER) mà cũng ưu tiên thì bot sẽ
+        // đưa chip "Có phải bạn muốn hỏi:" thay cho luồng làm rõ/fallback -
+        // ví dụ "mai tôi có lịch không" bị chặn trước khi xem lịch.
+        if (result == null
+                || !result.hit()) {
+            return null;
+        }
+
+        FaqHandler.Reply reply =
+                FaqHandler.render(
+                        templates,
+                        result
+                );
+
+        return reply(
+                Intent.FAQ_GENERAL,
+                result.score(),
+                reply.message(),
+                reply.card(),
+                reply.suggestions()
+        );
     }
 
     // ------------------------------------------------------------------

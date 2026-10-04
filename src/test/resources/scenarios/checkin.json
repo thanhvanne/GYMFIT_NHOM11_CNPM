@@ -8,8 +8,8 @@
       {
         "say": "vì sao tôi quét QR bị từ chối",
         "expect": {
-          "intent": "FAQ_CHECKIN_REJECTED",
-          "contains": ["Vì sao check-in bị từ chối"],
+          "intent": "FAQ_GENERAL",
+          "contains": ["QR báo không hợp lệ"],
           "notContains": ["Exception", "null"]
         }
       }
@@ -25,8 +25,8 @@
       {
         "say": "vì sao tôi quét QR bị từ chối",
         "expect": {
-          "intent": "FAQ_CHECKIN_REJECTED",
-          "contains": ["Vì sao check-in bị từ chối"],
+          "intent": "FAQ_GENERAL",
+          "contains": ["QR báo không hợp lệ"],
           "notContains": ["Exception", "null"]
         }
       }
@@ -42,8 +42,8 @@
       {
         "say": "vì sao tôi quét QR bị từ chối",
         "expect": {
-          "intent": "FAQ_CHECKIN_REJECTED",
-          "contains": ["Vì sao check-in bị từ chối"],
+          "intent": "FAQ_GENERAL",
+          "contains": ["QR báo không hợp lệ"],
           "notContains": ["Exception", "null"]
         }
       }
@@ -59,8 +59,8 @@
       {
         "say": "vì sao tôi quét QR bị từ chối",
         "expect": {
-          "intent": "FAQ_CHECKIN_REJECTED",
-          "contains": ["Vì sao check-in bị từ chối"],
+          "intent": "FAQ_GENERAL",
+          "contains": ["QR báo không hợp lệ"],
           "notContains": ["Exception", "null"]
         }
       }
@@ -76,7 +76,7 @@
       {
         "say": "QR hết hạn thì làm sao tạo lại",
         "expect": {
-          "intent": "FAQ_QR_HOWTO",
+          "intent": "FAQ_GENERAL",
           "contains": ["60 giây"],
           "notContains": ["Exception", "null"]
         }
@@ -121,7 +121,7 @@
     "status": "PENDING",
     "note": "check-in hộ qua chat chưa có (plan V2-8)",
     "turns": [
-      {"say": "check-in cho hội viên GF00000123 môn boxing", "expect": {"intent": "FAQ_CHECKIN_HOWTO"}}
+      {"say": "check-in cho hội viên GF00000123 môn boxing", "expect": {"intent": "FAQ_GENERAL"}}
     ],
     "tags": ["checkin", "staff_manual"]
   }

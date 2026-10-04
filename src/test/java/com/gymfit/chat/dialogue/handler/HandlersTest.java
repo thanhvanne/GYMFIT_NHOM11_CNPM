@@ -14,6 +14,9 @@ import com.gymfit.branch.dto.BranchServiceResponse;
 import com.gymfit.branch.dto.OperatingHourResponse;
 import com.gymfit.checkin.CheckInService;
 import com.gymfit.checkin.dto.CheckInResponse;
+import com.gymfit.chat.knowledge.FaqKnowledgeBase;
+import com.gymfit.chat.knowledge.FaqRetriever;
+import com.gymfit.chat.dto.ChatResponse;
 import com.gymfit.chat.nlu.Intent;
 import com.gymfit.chat.nlu.NormalizedText;
 import com.gymfit.chat.nlu.TextNormalizer;
@@ -60,6 +63,8 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -90,6 +95,7 @@ class HandlersTest {
     private InventoryService inventoryService;
     private AuditService auditService;
     private ResponseTemplates templates;
+    private FaqRetriever faqRetriever;
     private ChatPipelineHolder holder;
 
     /** Giữ pipeline dùng chung để dựng context. */
@@ -138,6 +144,16 @@ class HandlersTest {
                 new ResponseTemplates();
 
         templates.load();
+
+        FaqKnowledgeBase knowledgeBase =
+                new FaqKnowledgeBase();
+
+        knowledgeBase.load();
+
+        faqRetriever =
+                new FaqRetriever(knowledgeBase);
+
+        faqRetriever.load();
 
         TextNormalizer normalizer =
                 new TextNormalizer();
@@ -1889,5 +1905,155 @@ class HandlersTest {
         );
 
         return handler;
+    }
+
+    // ==================================================================
+    // FAQ (V2-3)
+    // ==================================================================
+
+    private FaqHandler faqHandler() {
+
+        return new FaqHandler(
+                templates,
+                faqRetriever
+        );
+    }
+
+    @Test
+    @DisplayName("FAQ_GENERAL khớp kho → trả lời + thẻ nguồn")
+    void faqGeneralHitHasCard() {
+
+        ChatResponse response =
+                faqHandler()
+                        .handle(
+                                context(
+                                        principal(
+                                                RoleCode.MEMBER,
+                                                null,
+                                                1L
+                                        ),
+                                        Intent.FAQ_GENERAL,
+                                        "gói tập có những cấp nào"
+                                )
+                        );
+
+        assertEquals(
+                Intent.FAQ_GENERAL.name(),
+                response.intent()
+        );
+
+        assertTrue(
+                response.message().length() > 0
+                        && !templates.get("faq.no_match")
+                        .equals(response.message()),
+                "Phải trả lời được, got: " + response.message()
+        );
+
+        assertNotNull(
+                response.card(),
+                "Trúng kho phải có thẻ nguồn/chi tiết"
+        );
+    }
+
+    @Test
+    @DisplayName("FAQ_GENERAL mục NOT_SUPPORTED → thêm tiền tố \"chưa hỗ trợ\"")
+    void faqGeneralNotSupportedPrefix() {
+
+        ChatResponse response =
+                faqHandler()
+                        .handle(
+                                context(
+                                        principal(
+                                                RoleCode.MEMBER,
+                                                null,
+                                                1L
+                                        ),
+                                        Intent.FAQ_GENERAL,
+                                        "tôi muốn lấy lại tiền gói"
+                                )
+                        );
+
+        assertTrue(
+                response.message().startsWith(
+                        "Hiện hệ thống chưa hỗ trợ tính năng này."
+                ),
+                "Got: " + response.message()
+        );
+
+        assertNotNull(
+                response.card()
+        );
+    }
+
+    @Test
+    @DisplayName("FAQ_GENERAL ngoài kho → câu \"chưa tìm thấy\", không có thẻ")
+    void faqGeneralOutOfScopeHasNoCard() {
+
+        ChatResponse response =
+                faqHandler()
+                        .handle(
+                                context(
+                                        principal(
+                                                RoleCode.MEMBER,
+                                                null,
+                                                1L
+                                        ),
+                                        Intent.FAQ_GENERAL,
+                                        "con mèo nhà tôi hay ngủ trên ghế sofa"
+                                )
+                        );
+
+        assertEquals(
+                templates.get("faq.no_match"),
+                response.message()
+        );
+
+        assertNull(
+                response.card(),
+                "Ngoài kho không được dựng thẻ"
+        );
+    }
+
+    @Test
+    @DisplayName("6 intent FAQ cũ deprecated vẫn trả lời tĩnh theo faq.json")
+    void deprecatedFaqIntentsStillAnswer() {
+
+        List<Intent> legacy =
+                List.of(
+                        Intent.FAQ_CANCEL_POLICY,
+                        Intent.FAQ_BOOKING_RULES,
+                        Intent.FAQ_CHECKIN_HOWTO,
+                        Intent.FAQ_BUY_PLAN_HOWTO,
+                        Intent.FAQ_CHECKIN_REJECTED,
+                        Intent.FAQ_QR_HOWTO
+                );
+
+        for (Intent intent : legacy) {
+
+            assertTrue(
+                    intent.isMergedFaq(),
+                    intent + " phải được đánh dấu đã gộp"
+            );
+
+            ChatResponse response =
+                    faqHandler()
+                            .handle(
+                                    context(
+                                            principal(
+                                                    RoleCode.MEMBER,
+                                                    null,
+                                                    1L
+                                            ),
+                                            intent,
+                                            "hỏi nhanh"
+                                    )
+                            );
+
+            assertEquals(
+                    templates.faqAnswer(intent.name()),
+                    response.message(),
+                    intent + " phải trả lời tĩnh"
+            );
+        }
     }
 }

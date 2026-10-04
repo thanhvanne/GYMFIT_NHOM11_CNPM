@@ -807,8 +807,10 @@ public final class ChatbotTrainer {
         for (JsonNode node : holdout) {
 
             String intent =
-                    node.path("intent")
-                            .asText("");
+                    IntentAliases.map(
+                            node.path("intent")
+                                    .asText("")
+                    );
 
             Integer index =
                     labelIndex.get(intent);

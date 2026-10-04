@@ -112,8 +112,8 @@
       {
         "say": "mua gói mới được không khi còn gói cũ",
         "expect": {
-          "intent": "FAQ_BUY_PLAN_HOWTO",
-          "contains": ["chưa hiểu"],
+          "intent": "FAQ_GENERAL",
+          "contains": ["đã thay thế"],
           "notContains": ["Exception", "null"]
         }
       }
@@ -128,7 +128,7 @@
     "status": "PENDING",
     "note": "luồng hoàn tiền theo code chưa có (plan V2-11)",
     "turns": [
-      {"say": "tôi muốn hoàn tiền gói", "expect": {"intent": "FAQ_CANCEL_POLICY"}}
+      {"say": "tôi muốn hoàn tiền gói", "expect": {"intent": "FAQ_GENERAL"}}
     ],
     "tags": ["plan", "refund"]
   },

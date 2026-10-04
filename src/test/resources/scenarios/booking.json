@@ -27,7 +27,7 @@
   },
   {
     "id": "BK-02",
-    "title": "Nói chung chung \"đặt lịch\" → làm rõ nhãn, chưa tạo gì",
+    "title": "Nói chung chung \"đặt lịch\" → hỏi dịch vụ, chưa tạo giao dịch",
     "role": "MEMBER",
     "fixture": "member1_gym_q1_active",
     "turns": [
@@ -36,7 +36,7 @@
         "expect": {
           "intent": "BOOKING_CREATE",
           "card": false,
-          "contains": ["Đặt lịch tập"],
+          "contains": ["Bạn muốn tập dịch vụ nào"],
           "services_never": ["BookingService.create"]
         }
       }

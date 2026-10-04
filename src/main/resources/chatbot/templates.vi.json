@@ -86,5 +86,8 @@
   "pending.cancelled": "Mình đã hủy thao tác này. Bạn cần gì cứ bảo mình nhé.",
   "clarify.no": "Mình hiểu sai rồi. Bạn diễn đạt lại giúp mình nhé.",
   "error.empty": "Bạn chưa nhập nội dung. Bạn muốn hỏi gì về GYMFIT nhé?",
-  "booking.no_member": "Tài khoản của bạn chưa liên kết hội viên nên chưa đặt lịch được. Bạn liên kết tại trang Hồ sơ nhé."
+  "booking.no_member": "Tài khoản của bạn chưa liên kết hội viên nên chưa đặt lịch được. Bạn liên kết tại trang Hồ sơ nhé.",
+  "faq.suggest": "Có phải bạn muốn hỏi:",
+  "faq.no_match": "Mình chưa tìm thấy câu trả lời phù hợp. Bạn thử diễn đạt lại, hoặc chọn một chủ đề ở danh sách gợi ý nhé.",
+  "faq.not_supported": "Hiện hệ thống chưa hỗ trợ tính năng này. {answer}"
 }

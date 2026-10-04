@@ -164,7 +164,7 @@ class ChatbotAdminEndpointTest {
     }
 
     @Test
-    @DisplayName("Lấy 36 intent làm nhãn -> 200, có nhóm và mô tả")
+    @DisplayName("Lấy 37 intent làm nhãn -> 200, có nhóm và mô tả")
     void layDanhSachNhan() throws Exception {
 
         mockMvc.perform(
@@ -172,7 +172,7 @@ class ChatbotAdminEndpointTest {
                                 .header("Authorization", "Bearer " + token("admin@gymfit.local"))
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(36))
+                .andExpect(jsonPath("$.length()").value(37))
                 .andExpect(jsonPath("$[0].name").isNotEmpty())
                 .andExpect(jsonPath("$[0].group").isNotEmpty())
                 .andExpect(jsonPath("$[0].desc").isNotEmpty());

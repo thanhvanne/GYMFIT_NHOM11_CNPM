@@ -1,0 +1,11 @@
+{
+  "_doc": "V2-3: 6 intent FAQ cũ được gộp vào FAQ_GENERAL. DatasetGenerator + evaluator áp file này khi đọc nhãn, nên holdout/dataset cũ giữ nguyên nhãn gốc nhưng vẫn đánh giá đúng.",
+  "aliases": {
+    "FAQ_CANCEL_POLICY": "FAQ_GENERAL",
+    "FAQ_BOOKING_RULES": "FAQ_GENERAL",
+    "FAQ_CHECKIN_HOWTO": "FAQ_GENERAL",
+    "FAQ_BUY_PLAN_HOWTO": "FAQ_GENERAL",
+    "FAQ_CHECKIN_REJECTED": "FAQ_GENERAL",
+    "FAQ_QR_HOWTO": "FAQ_GENERAL"
+  }
+}

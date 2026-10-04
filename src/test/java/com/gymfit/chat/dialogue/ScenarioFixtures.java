@@ -253,7 +253,8 @@ final class ScenarioFixtures {
                                     templates
                             ),
                             new FaqHandler(
-                                    templates
+                                    templates,
+                                    retriever()
                             ),
                             new AuditHandler(
                                     auditService,
@@ -270,6 +271,7 @@ final class ScenarioFixtures {
                             sessions,
                             new RateLimiter(),
                             templates,
+                            retriever(),
                             new BookingActionExecutor(
                                     bookingService,
                                     templates,
@@ -1229,6 +1231,38 @@ final class ScenarioFixtures {
                 102L,
                 "Đỗ Thị G"
         );
+    }
+
+    // ------------------------------------------------------------------
+    // Kho FAQ (chia sẻ 1 instance cho mọi fixture - dựng chỉ mục 1 lần)
+    // ------------------------------------------------------------------
+
+    private static volatile com.gymfit.chat.knowledge.FaqRetriever SHARED_RETRIEVER;
+
+    static com.gymfit.chat.knowledge.FaqRetriever retriever() {
+
+        if (SHARED_RETRIEVER == null) {
+
+            synchronized (ScenarioFixtures.class) {
+
+                if (SHARED_RETRIEVER == null) {
+
+                    com.gymfit.chat.knowledge.FaqKnowledgeBase kb =
+                            new com.gymfit.chat.knowledge.FaqKnowledgeBase();
+
+                    kb.load();
+
+                    com.gymfit.chat.knowledge.FaqRetriever built =
+                            new com.gymfit.chat.knowledge.FaqRetriever(kb);
+
+                    built.load();
+
+                    SHARED_RETRIEVER = built;
+                }
+            }
+        }
+
+        return SHARED_RETRIEVER;
     }
 
     // ------------------------------------------------------------------

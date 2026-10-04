@@ -2,9 +2,12 @@ package com.gymfit.chat.nlu;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gymfit.chat.knowledge.FaqKnowledgeBase;
+import com.gymfit.chat.knowledge.FaqRetriever;
 import com.gymfit.chat.nlu.entity.Entities;
 import com.gymfit.chat.nlu.entity.GazetteerProvider;
 import com.gymfit.chat.training.Evaluator;
+import com.gymfit.user.RoleCode;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -266,12 +269,13 @@ class IntentClassifierTest {
                 Arguments.of("gợi ý gói dưới 600k cho tôi", Intent.PLAN_RECOMMEND),
                 Arguments.of("cửa hàng bán những sản phẩm gì", Intent.LIST_PRODUCTS),
                 Arguments.of("có bán nước suối không", Intent.LIST_PRODUCTS),
-                Arguments.of("chính sách hủy lịch thế nào", Intent.FAQ_CANCEL_POLICY),
-                Arguments.of("quy định đặt lịch là gì", Intent.FAQ_BOOKING_RULES),
-                Arguments.of("làm sao để check-in", Intent.FAQ_CHECKIN_HOWTO),
-                Arguments.of("mua gói tập thế nào", Intent.FAQ_BUY_PLAN_HOWTO),
-                Arguments.of("vì sao tôi quét QR bị từ chối", Intent.FAQ_CHECKIN_REJECTED),
-                Arguments.of("QR của tôi ở đâu", Intent.FAQ_QR_HOWTO),
+                // 6 câu FAQ cũ → nay cùng là FAQ_GENERAL (gộp nhãn V2-3)
+                Arguments.of("chính sách hủy lịch thế nào", Intent.FAQ_GENERAL),
+                Arguments.of("quy định đặt lịch là gì", Intent.FAQ_GENERAL),
+                Arguments.of("làm sao để check-in", Intent.FAQ_GENERAL),
+                Arguments.of("mua gói tập thế nào", Intent.FAQ_GENERAL),
+                Arguments.of("vì sao tôi quét QR bị từ chối", Intent.FAQ_GENERAL),
+                Arguments.of("QR của tôi ở đâu", Intent.FAQ_GENERAL),
                 Arguments.of("hôm nay có lịch đặt bao nhiêu", Intent.BOOKINGS_TODAY),
                 Arguments.of("cho tôi xem lịch hôm nay", Intent.BOOKINGS_TODAY),
                 Arguments.of("doanh thu tháng này", Intent.REPORT_REVENUE),
@@ -453,8 +457,11 @@ class IntentClassifierTest {
                     new HoldoutRow(
                             node.path("text")
                                     .asText(),
-                            node.path("intent")
-                                    .asText(),
+                            // alias: 6 FAQ cũ → FAQ_GENERAL
+                            com.gymfit.chat.training.IntentAliases.map(
+                                    node.path("intent")
+                                            .asText()
+                            ),
                             node.path("tier")
                                     .asText(""),
                             tags
@@ -536,6 +543,11 @@ class IntentClassifierTest {
     private static final double GATE_OOS_RECALL = 0.92;
     private static final double GATE_OOS_PRECISION = 0.88;
     private static final double GATE_NATURAL_FALLBACK = 0.12;
+
+    /** Cổng đo kho FAQ (plan 4.5 / V2-3) - đo trực tiếp trên faq_queries.jsonl. */
+    private static final double GATE_FAQ_RECALL_AT_1 = 0.85;
+
+    private static final double GATE_FAQ_RECALL_AT_3 = 0.95;
 
     /** Ngưỡng fallback của {@code DialogueManager} (application.yml). */
     private static final double THRESHOLD_CLARIFY = 0.40;
@@ -727,15 +739,23 @@ class IntentClassifierTest {
                         "CHƯA ĐO"
                 )
         );
-        table.append(
-                String.format(
-                        java.util.Locale.ROOT,
-                        "%-46s %8s %8s %s%n",
-                        "FAQ recall@1 / recall@3",
-                        "—",
-                        "0.85/0.95",
-                        "CHƯA ĐO (V2-3)"
-                )
+        // Đo trực tiếp kho FAQ (V2-3) thay cho dòng "CHƯA ĐO".
+        double[] faqRecall =
+                measureFaqRecall();
+
+        appendGate(
+                table,
+                "FAQ recall@1 (300 truy vấn)",
+                faqRecall[0],
+                GATE_FAQ_RECALL_AT_1,
+                ">="
+        );
+        appendGate(
+                table,
+                "FAQ recall@3 (300 truy vấn)",
+                faqRecall[1],
+                GATE_FAQ_RECALL_AT_3,
+                ">="
         );
         table.append(
                 String.format(
@@ -764,11 +784,131 @@ class IntentClassifierTest {
 
         System.out.println(table);
 
+        // V2-3: cổng kho FAQ - fail build nếu recall@1 < 0.85 hoặc recall@3 < 0.95.
+        assertTrue(
+                faqRecall[0] >= GATE_FAQ_RECALL_AT_1,
+                String.format(
+                        "FAQ recall@1 = %.4f < %.2f",
+                        faqRecall[0],
+                        GATE_FAQ_RECALL_AT_1
+                )
+        );
+
+        assertTrue(
+                faqRecall[1] >= GATE_FAQ_RECALL_AT_3,
+                String.format(
+                        "FAQ recall@3 = %.4f < %.2f",
+                        faqRecall[1],
+                        GATE_FAQ_RECALL_AT_3
+                )
+        );
+
         // V2-2: KHÔNG fail build – giữ lại assert tối thiểu để test có ý nghĩa.
         assertTrue(
                 result.samples() > 0,
                 "Holdout không có mẫu nào được đánh giá"
         );
+    }
+
+    /**
+     * Chạy {@link FaqRetriever} trên {@code /faq_queries.jsonl} và trả về
+     * {@code [recall@1, recall@3]} cho các truy vấn có nhãn (V2-3).
+     */
+    private static double[] measureFaqRecall() {
+
+        FaqKnowledgeBase knowledgeBase =
+                new FaqKnowledgeBase();
+
+        knowledgeBase.load();
+
+        FaqRetriever retriever =
+                new FaqRetriever(knowledgeBase);
+
+        retriever.load();
+
+        ObjectMapper mapper =
+                new ObjectMapper();
+
+        int total =
+                0;
+
+        int hit1 =
+                0;
+
+        int hit3 =
+                0;
+
+        try (InputStream input =
+                     IntentClassifierTest.class.getResourceAsStream(
+                             "/faq_queries.jsonl"
+                     )) {
+
+            assertNotNull(
+                    input,
+                    "Không tìm thấy /faq_queries.jsonl"
+            );
+
+            for (String line : new String(
+                    input.readAllBytes(),
+                    StandardCharsets.UTF_8
+            ).split("\n")) {
+
+                if (line.isBlank()) {
+                    continue;
+                }
+
+                JsonNode node =
+                        mapper.readTree(line);
+
+                if (node.path("entryId").isNull()) {
+                    continue;
+                }
+
+                String expected =
+                        node.path("entryId").asText();
+
+                var top =
+                        retriever.top(
+                                node.path("q").asText(),
+                                RoleCode.ADMIN,
+                                3
+                        );
+
+                total++;
+
+                if (!top.isEmpty()
+                        && expected.equals(top.get(0).id())) {
+
+                    hit1++;
+                }
+
+                if (top.stream().anyMatch(
+                        entry -> expected.equals(entry.id())
+                )) {
+
+                    hit3++;
+                }
+            }
+
+        } catch (RuntimeException exception) {
+            throw exception;
+        } catch (Exception exception) {
+
+            throw new IllegalStateException(
+                    "Không đọc được faq_queries.jsonl",
+                    exception
+            );
+        }
+
+        assertTrue(
+                total > 0,
+                "faq_queries.jsonl không có truy vấn có nhãn nào"
+        );
+
+        return new double[]{
+                hit1 / (double) total,
+                hit3 / (double) total
+        };
     }
 
     private static void appendGate(
@@ -805,7 +945,7 @@ class IntentClassifierTest {
         );
 
         assertEquals(
-                Intent.values().length,
+                Intent.activeCount(),
                 classifier.model()
                         .labelCount()
         );

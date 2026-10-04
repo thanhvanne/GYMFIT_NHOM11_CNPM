@@ -81,6 +81,11 @@
     "desc": "Danh sách sản phẩm bán lẻ"
   },
 
+  "FAQ_GENERAL": {
+    "group": "FAQ",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "desc": "Hỏi đáp thường gặp (kho FAQ)"
+  },
   "FAQ_CANCEL_POLICY": {
     "group": "FAQ",
     "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],

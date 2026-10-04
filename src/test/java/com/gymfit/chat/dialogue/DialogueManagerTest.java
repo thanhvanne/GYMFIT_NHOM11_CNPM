@@ -127,6 +127,9 @@ class DialogueManagerTest {
                         sessions,
                         rateLimiter,
                         templates,
+                        new com.gymfit.chat.knowledge.FaqRetriever(
+                                new com.gymfit.chat.knowledge.FaqKnowledgeBase()
+                        ),
                         new BookingActionExecutor(
                                 bookingService,
                                 templates,

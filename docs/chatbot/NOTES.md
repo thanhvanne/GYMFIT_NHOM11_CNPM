@@ -365,3 +365,64 @@ Toàn bộ `mvn test`: **528/528 PASS** (24 skip = 24 kịch bản `PENDING`).
   mock). Đây là **giới hạn của bản V2-2**.
 - Bảng cổng §7.2 mới **warn**; sẽ chuyển sang **fail build ở V2-6**.
 - `docs/chatbot/confusion.csv` sinh bằng `mvn -q exec:java@train` (~40 s).
+
+## 6. V2-3 — Kho FAQ (`FaqRetriever`) + gộp 6 nhãn FAQ
+
+### 6.1 Ghi chú (N27–N34)
+
+- **N27 Cách diễn giải "trùng tag +0.05" của plan 5.3** – plan chỉ nói
+  "trùng `tags` → cộng 0,05" mà không nêu cách so khớp. Code so khớp tag theo
+  **ranh giới khoảng trắng** của `TextNormalizer.toPlain(query)` (không phải
+  substring), nên tag nhiều từ như `goi tap`, `lien he` vẫn trúng; tổng điểm bị
+  kẹp trần tại `1.0`. Đây là **diễn giải của code**, ghi lại để plan sau khỏi
+  hiểu khác.
+- **N28 Nút thắt của recall không nằm ở cách tính điểm** – giữ đúng thuật toán
+  plan (word 1–2-gram + char 3–5-gram, `idf = log((N+1)/(df+1)) + 1`,
+  L2-chuẩn hóa, cosine, điểm mục = max theo câu hỏi). Đã thử 15+ biến thể
+  (idf²/idf³, bỏ feature df cao, tách chuẩn hóa theo họ word/char, nạp thêm
+  `answer`/`tags` vào chỉ mục, chỉ-word, chỉ-char, mọi trọng số 0.4–0.6): r@1
+  đều gói gọn **0,67–0,71**, tức trần của bộ dữ liệu. Kết luận: thiếu là **vốn
+  từ của kho**, không phải công thức.
+- **N29 Làm giàu kho bằng file câu hỏi riêng** – thêm
+  `chatbot/faq_questions_extra.json` (4–5 câu/mục, tổng 301 câu);
+  `FaqKnowledgeBase` gộp vào lúc nạp, chỉ bổ sung **câu hỏi** – `source`/
+  `answer` vẫn nằm ở `faq_kb.json` nên không sinh thêm "sự thật" chưa xác minh.
+  id lạ trong file bổ sung chỉ bị cảnh báo, không phá server.
+  Trước/sau: **r@1 0,7100 → 0,9733; r@3 0,9033 → 0,9933** (300 truy vấn).
+- **N30 Bộ 50 truy vấn ngoài kho (OOS) ban đầu sai thiết kế** – 16/50 câu
+  vô tình chứa từ nằm trong KB (`địa chỉ`, `bán hàng`, `hướng dẫn`, `gymfit`,
+  `điện thoại`, `so sánh`, `liên hệ`) nên bị match (2 câu còn **HIT** 0,59).
+  Đã viết lại **21/50** thành câu thuần ngoài miền, **giữ nguyên** ngưỡng
+  0,55/0,35 của plan (không nới cổng để qua ải). Sau đó **50/50 → MISS**.
+- **N31 Cứu hộ FAQ chỉ khi TRÚNG (HIT), không nhận mức gợi ý** – bản đầu
+  `DialogueManager.gate()` nhận cả `SUGGEST`, khiến chip "Có phải bạn muốn
+  hỏi:" giành quyền ưu tiên hơn luồng làm rõ/fallback. Hậu quả thật:
+  BK-24 "mai tôi có lịch không" → chip FAQ thay vì `MY_BOOKINGS`; PL-07
+  ("gói Platinum") mất `OUT_OF_SCOPE`; SF-04 mất câu "chưa hiểu"; 2 test
+  F8.2/làm rõ hỏng. **Chỉ `HIT` mới cứu**; mức `SUGGEST` chỉ còn phát sinh
+  ở `FaqHandler` khi classifier đã tự tin xếp `FAQ_GENERAL`.
+- **N32 Model sau gộp nhãn: 31 nhãn** (37 intent − 6 FAQ `@Deprecated`),
+  `Intent.activeCount() = 31`. Holdout sau merge: accuracy **0,8884**
+  (cổng 0,85 ✅), macro-F1 **0,8877**, OOS recall **1,0000**, OOS precision
+  **0,7879** (giảm từ 0,8387 – thêm nhầm `OUT_OF_SCOPE ↔ FAQ_GENERAL` do 6
+  nhãn FAQ gộp thành 1), fallback tier NATURAL **0,0480**. Training-report
+  không còn nhầm giữa các FAQ với nhau.
+- **N33 Kỳ vọng scenario đổi theo gộp nhãn** – CK-01…CK-05, PL-08 (và
+  PL-09/CK-08 đang `PENDING`) đổi `FAQ_*` → `FAQ_GENERAL`. PL-08 `contains`
+  "chưa hiểu" → "đã thay thế": trước đây N24 ghi nhận đây là lỗi (fallback
+  nuốt nội dung FAQ), nay trả lời đúng. BK-02 `contains` "Đặt lịch tập" →
+  "Bạn muốn tập dịch vụ nào": sau retrain confidence của `BOOKING_CREATE`
+  vượt `threshold-accept` nên đi thẳng vào handler hỏi dịch vụ thay vì màn
+  làm rõ – **`services_never: BookingService.create` vẫn giữ nguyên**.
+- **N34 Cổng FAQ đo trực tiếp, không hardcode** – `IntentClassifierTest`
+  dựng `FaqKnowledgeBase` + `FaqRetriever` thật, đọc `/faq_queries.jsonl`
+  và in 2 row `FAQ recall@1/@3`; nếu < 0,85/0,95 thì **fail build**.
+
+### 6.2 Chưa làm / ngoài phạm vi V2-3
+
+- **Chưa click-through trình duyệt thật** – giữ nguyên giới hạn của các bản
+  trước: kiểm tĩnh + unit/MockMvc/E2E HTTP + `ScenarioRunnerTest`.
+- 24 scenario còn `PENDING` (intent/thứ tự hành vi chưa có ở V2-8…V2-11).
+- Mục `PENDING_FEATURE` duy nhất (`pending_plan_advisor`) bị retriever bỏ qua
+  theo plan – chờ `PlanAdvisorFlow` ở V2-7.
+- Ngưỡng 0,55/0,35 vẫn **chỉ warn** ở bảng cổng; sẽ siết cùng V2-6.

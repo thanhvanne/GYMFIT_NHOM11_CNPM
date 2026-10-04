@@ -109,11 +109,16 @@ class IntentPolicyTest {
     }
 
     @Test
-    @DisplayName("36 intent đúng như plan")
+    @DisplayName("37 intent (36 + FAQ_GENERAL gộp 6 FAQ)")
     void intentCount() {
         assertEquals(
-                36,
+                37,
                 Intent.values().length
+        );
+
+        assertEquals(
+                31,
+                Intent.activeCount()
         );
     }
 

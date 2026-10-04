@@ -219,9 +219,14 @@ class DatasetGeneratorTest {
 
         for (Intent intent : Intent.values()) {
 
+            // 6 intent FAQ cũ đã gộp vào FAQ_GENERAL - không còn mẫu riêng
+            if (intent.isMergedFaq()) {
+                continue;
+            }
+
             int count =
                     counts.getOrDefault(
-                            intent.name(),
+                            intent.label(),
                             0
                     );
 
@@ -261,7 +266,7 @@ class DatasetGeneratorTest {
     }
 
     @Test
-    @DisplayName("Tất cả 36 intent đều có mặt trong tập train")
+    @DisplayName("Tất cả 31 intent còn hiệu lực có mặt trong tập train")
     void allIntentsPresent()
             throws Exception {
 
@@ -269,9 +274,23 @@ class DatasetGeneratorTest {
                 countPerIntent("train");
 
         assertEquals(
-                Intent.values().length,
+                Intent.activeCount(),
                 counts.size(),
                 "Thiếu intent trong tập train"
+        );
+
+        assertFalse(
+                counts.containsKey(
+                        Intent.FAQ_CANCEL_POLICY.name()
+                ),
+                "Nhãn FAQ cũ phải được gộp vào FAQ_GENERAL"
+        );
+
+        assertTrue(
+                counts.containsKey(
+                        Intent.FAQ_GENERAL.name()
+                ),
+                "Thiếu nhãn FAQ_GENERAL trong tập train"
         );
     }
 

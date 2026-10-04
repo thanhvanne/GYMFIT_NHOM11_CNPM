@@ -637,8 +637,11 @@ public final class DatasetGenerator {
                                         java.util.Map.of(
                                                 "text",
                                                 sample.text(),
+                                                // áp alias: 6 FAQ cũ → FAQ_GENERAL
                                                 "intent",
-                                                sample.intent(),
+                                                IntentAliases.map(
+                                                        sample.intent()
+                                                ),
                                                 "group",
                                                 sample.group()
                                         )

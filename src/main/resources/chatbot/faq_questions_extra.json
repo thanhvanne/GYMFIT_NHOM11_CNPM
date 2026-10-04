@@ -1,0 +1,462 @@
+{
+  "_doc": "Câu hỏi bổ sung cho kho FAQ (V2-3). Mỗi mục nhận thêm 4 cách hỏi tự nhiên để mở rộng vốn từ, giúp TF-IDF khớp được cả những diễn đạt người dùng hay dùng. Nguồn sự thật vẫn lấy từ faq_kb.json (source/answer) - file này CHỈ chứa câu hỏi.",
+  "questions": {
+    "plan_tiers": [
+      "gói tập được chia làm mấy loại",
+      "loại gói nào là rẻ nhất trong hệ thống",
+      "so sánh gói cơ bản với gói cao cấp",
+      "cách chọn gói phù hợp trong các loại"
+    ],
+    "plan_single_branch": [
+      "một gói dùng được ở mấy chi nhánh",
+      "gói mua ở q1 mang sang q7 tập có được không",
+      "gói có dùng chung nhiều chỗ được không",
+      "dùng gói ở chi nhánh khác có cho phép không"
+    ],
+    "plan_services": [
+      "một gói gồm những môn nào",
+      "gói có cho vào phòng boxing không",
+      "gói gym dùng có chơi pickleball không",
+      "gói combo gồm mấy môn"
+    ],
+    "plan_replace_existing": [
+      "đang có gói mà mua tiếp thì cái cũ thế nào",
+      "mua gói thứ hai thì gói đầu còn dùng không",
+      "nâng cấp gói giữa chừng gói trước còn dùng không",
+      "gói bị thay thế là mất hay chỉ khóa"
+    ],
+    "plan_extend": [
+      "hết hạn rồi mua gói tiếp ở đâu",
+      "hết hạn rồi dùng lại bằng cách nào",
+      "gia hạn có cộng dồn ngày gói cũ không",
+      "gói cũ sắp hết mà mua tiếp thì tính ngày thế nào"
+    ],
+    "plan_expired": [
+      "hết hạn rồi còn vào phòng tập được không",
+      "gói quá hạn thì có đặt lịch không",
+      "gói khi nào bị coi là hết hạn",
+      "gói hết hạn dùng lại được không"
+    ],
+    "plan_dates": [
+      "gói 30 ngày bắt đầu từ khi nào",
+      "ngày hết hạn gói tính làm sao",
+      "mua hôm nay thì gói hiệu lực từ lúc nào",
+      "gói 90 ngày kéo dài đến ngày nào"
+    ],
+    "payment_momo": [
+      "mình thanh toán bằng cách nào",
+      "có cho thanh toán qua momo không",
+      "phòng tập có nhận tiền mặt không",
+      "thanh toán momo có gọi ra ngoài thật không"
+    ],
+    "payment_failed": [
+      "thanh toán báo lỗi thì làm gì",
+      "giao dịch momo thất bại thì sao",
+      "đơn đang chờ thanh toán thì xử lý thế nào",
+      "thanh toán không thành công có mất tiền không"
+    ],
+    "payment_deduct": [
+      "đơn hàng khi nào bị trừ tiền",
+      "bán nước ở quầy tồn kho có giảm không",
+      "đơn thanh toán xong có trừ tồn kho không",
+      "thanh toán lỗi có trừ hàng không"
+    ],
+    "payment_invoice": [
+      "hóa đơn tiền gói lấy ở đâu",
+      "in hóa đơn ra giấy thì làm thế nào",
+      "đơn đã thanh toán tải hóa đơn ở đâu",
+      "mua hàng có được xuất hóa đơn không"
+    ],
+    "payment_refund": [
+      "lấy lại tiền gói thì làm sao",
+      "gói không tập nữa hoàn tiền được không",
+      "chính sách hoàn tiền bên này là gì",
+      "trả lại tiền đã mua gói ở đâu"
+    ],
+    "plan_change_branch": [
+      "gói q1 chuyển sang q7 dùng được không",
+      "dọn nhà thì chuyển gói sang chỗ khác được không",
+      "đổi chi nhánh cho gói hiện tại ở đâu",
+      "gói có đổi sang chi nhánh khác tập không"
+    ],
+    "plan_transfer_suspend": [
+      "tặng gói tập cho người khác có được không",
+      "gói cho người thân đứng tên có được không",
+      "đi công tác thì tạm ngưng gói thế nào",
+      "bảo lưu gói trong thời gian không tập được không"
+    ],
+    "booking_conditions": [
+      "đặt lịch cần đáp ứng điều kiện gì",
+      "đặt buổi tập có cần gói không",
+      "book sân cần đủ những gì",
+      "vì sao chưa đặt được lịch"
+    ],
+    "booking_duration": [
+      "một buổi tập kéo dài mấy phút",
+      "mỗi slot dài bao nhiêu phút",
+      "đặt một buổi hai tiếng được không",
+      "khung giờ cắt theo độ dài nào"
+    ],
+    "booking_slot_full": [
+      "giờ đã kín chỗ thì làm sao",
+      "báo hết khung giờ trống thì sao",
+      "vì sao không book được giờ đó",
+      "sân đầy người có đặt được không"
+    ],
+    "booking_duplicate_time": [
+      "tôi đã có lịch trùng giờ chưa",
+      "báo trùng lịch là sao",
+      "đặt hai buổi cùng khung giờ có được không",
+      "lịch cũ chưa hủy mà đặt giờ đó thì sao"
+    ],
+    "booking_operating_hours": [
+      "phòng gym mở cửa từ lúc mấy giờ",
+      "chủ nhật có mở cửa cho tập không",
+      "đặt ngoài giờ mở cửa có được không",
+      "chi nhánh đóng cửa vào lúc mấy giờ"
+    ],
+    "booking_cancel_2h": [
+      "hủy lịch tối thiểu trước bao lâu",
+      "hủy sát giờ có bị phạt không",
+      "quy định hủy lịch của phòng tập",
+      "còn một tiếng nữa tới giờ muốn hủy thì sao"
+    ],
+    "booking_reschedule": [
+      "muốn dời lịch sang buổi khác thì làm sao",
+      "sửa lại giờ đã đặt ở chỗ nào",
+      "đưa lịch tập sang ngày khác ở đâu",
+      "hoãn buổi tập sang tuần sau có được không"
+    ],
+    "booking_status": [
+      "lịch đặt có mấy trạng thái",
+      "trạng thái đã hoàn thành nghĩa là sao",
+      "đơn lịch gồm những trạng thái nào",
+      "khi buổi tập đã hết giờ thì hiển thị gì"
+    ],
+    "booking_where_view": [
+      "xem các buổi tập sắp tới ở đâu",
+      "danh sách lịch đặt ở trang nào",
+      "tra lịch tập của tôi ở chỗ nào",
+      "xem lịch đã đặt thì vào đâu"
+    ],
+    "booking_advance_limit": [
+      "book trước được xa tới đâu",
+      "đặt lịch mấy tuần tới có được không",
+      "đặt trước hơn một tháng có sao không",
+      "có giới hạn đặt sớm không"
+    ],
+    "booking_for_others": [
+      "nhân viên đặt lịch thay hội viên được không",
+      "book giúp em trai có được không",
+      "đặt lịch cho người khác qua quầy có được không",
+      "hội viên nhờ đặt hộ có cho không"
+    ],
+    "booking_maintenance": [
+      "sân đang bảo trì thì book được không",
+      "cơ sở đang sửa chữa thì đặt lịch sao",
+      "tại sao sân đó không đặt được",
+      "phòng tạm ngưng hoạt động thì sao"
+    ],
+    "checkin_howto": [
+      "vào phòng tập thì cần làm gì",
+      "checkin ở quầy thì làm thế nào",
+      "vào phòng tập gồm mấy bước",
+      "phòng gym cho checkin mấy cách"
+    ],
+    "qr_ttl": [
+      "mã qr của tôi dùng được bao lâu",
+      "qr bao nhiêu giây thì hết hạn",
+      "qr có tự động đổi mã không",
+      "mấy giây thì phải mở lại qr",
+      "qr hết hạn thì làm sao tạo lại mã"
+    ],
+    "qr_not_scan": [
+      "qr quét không chịu nhận thì sao",
+      "mã quét báo không hợp lệ",
+      "vì sao quét qr bị lỗi",
+      "mã vừa lấy đã báo dùng rồi"
+    ],
+    "checkin_manual_no_phone": [
+      "quên cầm điện thoại thì vào thế nào",
+      "không có qr thì checkin thế nào",
+      "quên mang phone tới phòng tập thì sao",
+      "nhập mã hội viên thay vì quét qr"
+    ],
+    "member_code_where": [
+      "tìm mã thành viên ở đâu",
+      "mã gf để làm gì",
+      "mã hội viên hiển thị ở trang nào",
+      "mình đã có mã khách hàng chưa"
+    ],
+    "reject_no_active_membership": [
+      "quét báo chưa có gói thì sao",
+      "checkin báo không có membership",
+      "bị từ chối vì chưa mua gói thì làm gì",
+      "no active membership nghĩa là gì"
+    ],
+    "reject_service_not_included": [
+      "gói không có boxing mà vào thì sao",
+      "bị báo dịch vụ không có trong gói",
+      "gym membership vào boxing bị từ chối",
+      "service not included là sao"
+    ],
+    "reject_branch_mismatch": [
+      "tập ở chi nhánh khác bị chặn",
+      "gói q1 quét ở q7 thì sao",
+      "checkin báo membership khác chi nhánh",
+      "vào sai chỗ nên không cho vào sao"
+    ],
+    "reject_membership_invalid": [
+      "gói chưa tới ngày đầu mà quét thì sao",
+      "checkin báo membership không hợp lệ",
+      "gói không còn hiệu lực thì làm gì",
+      "membership invalid nghĩa là sao"
+    ],
+    "reject_duplicate_checkin": [
+      "quét hai lần bị báo trùng",
+      "vừa checkin xong quét tiếp thì sao",
+      "duplicate checkin nghĩa là gì",
+      "một buổi mà quét nhiều lần có được không"
+    ],
+    "checkin_multi_service": [
+      "trong ngày vào được mấy môn",
+      "sáng gym chiều boxing checkin cả hai được không",
+      "một ngày quét được mấy lượt",
+      "vào hai phòng trong ngày có sao không"
+    ],
+    "checkin_duplicate_window": [
+      "phải chờ bao lâu mới quét lại",
+      "cửa sổ chống trùng là mấy phút",
+      "quét lần hai sau mấy phút",
+      "bao lâu thì cho checkin lại"
+    ],
+    "auth_login_howto": [
+      "mình vào bằng tài khoản nào vậy",
+      "đăng nhập bằng email hay số điện thoại",
+      "ô đăng nhập điền gì",
+      "đăng nhập bằng mã hội viên được không"
+    ],
+    "auth_forgot_password": [
+      "không nhớ mật khẩu thì làm sao",
+      "quên pass không đăng nhập được",
+      "tự đặt lại mật khẩu ở đâu",
+      "lấy lại mật khẩu bằng cách nào"
+    ],
+    "auth_change_password": [
+      "đổi pass mới cần đáp ứng gì",
+      "mật khẩu phải đủ mấy ký tự",
+      "muốn thay đổi mật khẩu đăng nhập",
+      "lần đầu vào bắt đổi mật khẩu ở đâu"
+    ],
+    "auth_locked": [
+      "tài khoản đang bị khóa",
+      "đăng nhập báo tài khoản bị vô hiệu",
+      "người dùng có mấy trạng thái",
+      "bị disable thì vào lại thế nào"
+    ],
+    "auth_session_ttl": [
+      "phiên làm việc hết hạn khi nào",
+      "bao lâu thì tự đăng xuất",
+      "token sống được mấy tiếng",
+      "đang dùng mà bị đá ra vì sao"
+    ],
+    "auth_change_contact": [
+      "sửa email trong hồ sơ ở đâu",
+      "đổi số điện thoại liên hệ được không",
+      "cập nhật thông tin cá nhân ở đâu",
+      "email đăng ký sai thì sửa thế nào"
+    ],
+    "auth_password_privacy": [
+      "bot có đọc được mật khẩu không",
+      "hệ thống có lưu mật khẩu dạng chữ thường không",
+      "trợ lý chat có biết pass mình không",
+      "mật khẩu có bị lộ ra log không"
+    ],
+    "auth_member_account": [
+      "tạo tài khoản cho khách mới thế nào",
+      "thêm hội viên có kèm tài khoản login không",
+      "cấp tài khoản member ở đâu",
+      "đăng ký khách mới ở quầy thì sao"
+    ],
+    "product_where_buy": [
+      "có bán đồ uống không",
+      "mua nước thì tới quầy nào",
+      "phòng tập có bán protein không",
+      "mua đồ dùng tập ở chỗ nào"
+    ],
+    "product_payment": [
+      "mua đồ ở quầy trả tiền thế nào",
+      "sản phẩm có thanh toán momo không",
+      "nhân viên thu tiền mặt hay quẹt thẻ",
+      "tự tạo đơn mua đồ được không"
+    ],
+    "product_invoice": [
+      "mua nước có hóa đơn không",
+      "đơn bán hàng in ra được không",
+      "xin hóa đơn cho món vừa mua",
+      "sản phẩm mua ở quầy xuất hóa đơn thế nào"
+    ],
+    "branch_three_services": [
+      "bên đây có mấy môn tập",
+      "GYMFIT có những bộ môn gì",
+      "phòng tập có những dịch vụ nào",
+      "ở đây chơi được những gì"
+    ],
+    "branch_service_matrix": [
+      "chi nhánh nào có phòng boxing",
+      "ở chỗ tôi có sân pickleball không",
+      "chi nhánh nào có đủ ba môn",
+      "chọn chi nhánh nào có gym"
+    ],
+    "branch_contact": [
+      "số điện thoại phòng tập bao nhiêu",
+      "địa chỉ chi nhánh gần nhất ở đâu",
+      "liên hệ phòng tập bằng cách nào",
+      "chỉ đường tới cửa hàng gym"
+    ],
+    "branch_hours": [
+      "phòng tập mở cửa từ mấy giờ",
+      "mấy giờ thì đóng cửa",
+      "lịch làm việc của phòng gym sao",
+      "tới lúc 7 giờ tối có vào được không"
+    ],
+    "branch_facilities": [
+      "ở đây có những cơ sở gì",
+      "phòng gym trang bị những gì",
+      "chi nhánh này có mấy sân",
+      "trang thiết bị gồm những gì"
+    ],
+    "staff_member_create_edit": [
+      "thêm khách hàng mới vào hệ thống",
+      "sửa thông tin hội viên ở đâu",
+      "đăng ký khách ở quầy vào màn nào",
+      "nhân viên tự thêm hội viên được không"
+    ],
+    "staff_member_status": [
+      "khóa tài khoản hội viên này",
+      "chuyển khách sang ngừng hoạt động",
+      "mở lại hội viên đã bị tắt",
+      "đổi trạng thái thành viên ở đâu"
+    ],
+    "staff_sales": [
+      "bán hàng cho khách ở màn nào",
+      "thu tiền tại quầy làm thế nào",
+      "tạo đơn bán sản phẩm ở trang nào",
+      "nhân viên quầy tự bán được không"
+    ],
+    "staff_checkin_manual": [
+      "khách không có qr thì checkin sao",
+      "nhập mã hội viên ở chỗ nào",
+      "checkin tay cho khách thao tác sao",
+      "quên mã thì tra bằng gì"
+    ],
+    "staff_scan_qr": [
+      "khách đưa qr thì quét ở đâu",
+      "dùng điện thoại quét mã khách thế nào",
+      "quét qr báo hết hạn thì làm gì",
+      "ô quét mã nằm ở trang nào"
+    ],
+    "staff_checkin_rejected": [
+      "xem các ca checkin bị từ chối",
+      "khách không vào được thì xem gì",
+      "ca checkin lỗi nằm ở đâu",
+      "vì sao khách bị reject"
+    ],
+    "staff_bookings": [
+      "xem lịch đặt của khách trong ngày",
+      "hủy lịch thay khách được không",
+      "đặt hộ hội viên ở trang nào",
+      "nhân viên quản lý booking thế nào"
+    ],
+    "staff_inventory": [
+      "kiểm kê tồn kho ở đâu",
+      "nhập thêm hàng vào kho bấm gì",
+      "cập nhật số lượng sản phẩm còn lại",
+      "xem mặt hàng sắp hết vào màn nào"
+    ],
+    "staff_reports": [
+      "doanh thu hôm nay của chi nhánh là bao nhiêu",
+      "xem báo cáo doanh thu ở đâu",
+      "thống kê theo dịch vụ xem thế nào",
+      "nhân viên coi được báo cáo gì"
+    ],
+    "staff_invoice": [
+      "in hóa đơn cho khách bấm đâu",
+      "tải hóa đơn pdf tại quầy",
+      "khách xin hóa đơn thì làm sao",
+      "xuất hóa đơn bán hàng ở màn nào"
+    ],
+    "admin_branches": [
+      "tạo chi nhánh mới",
+      "sửa địa chỉ chi nhánh ở đâu",
+      "tắt chi nhánh không hoạt động",
+      "quản trị viên thêm phòng tập thế nào"
+    ],
+    "admin_branch_config": [
+      "cấu hình giờ mở cửa chi nhánh ở đâu",
+      "thêm dịch vụ boxing cho chi nhánh",
+      "đổi thời lượng một buổi tập ở đâu",
+      "bật tắt dịch vụ theo chi nhánh"
+    ],
+    "admin_plans": [
+      "thêm gói tập mới vào hệ thống",
+      "sửa giá gói tập ở đâu",
+      "tắt gói không bán nữa",
+      "quản trị gói tập ở màn nào"
+    ],
+    "admin_products": [
+      "tạo mặt hàng mới trong kho",
+      "sửa thông tin sản phẩm ở đâu",
+      "đổi ngưỡng cảnh báo sắp hết hàng",
+      "quản trị danh mục sản phẩm ở đâu"
+    ],
+    "admin_users": [
+      "tạo tài khoản quản trị mới",
+      "khóa tài khoản người dùng",
+      "đổi vai trò người dùng ở đâu",
+      "danh sách tài khoản nằm ở đâu"
+    ],
+    "admin_audit": [
+      "ai vừa thao tác dữ liệu này",
+      "mở nhật ký hệ thống lên xem",
+      "truy vết thao tác người dùng",
+      "log hoạt động xem ở màn nào"
+    ],
+    "admin_reports": [
+      "doanh thu toàn hệ thống là bao nhiêu",
+      "so sánh doanh thu các chi nhánh",
+      "báo cáo tổng hợp cho quản trị",
+      "xem thống kê công ty ở đâu"
+    ],
+    "bot_capabilities": [
+      "trợ lý giúp được những việc gì",
+      "mình hỏi bạn được những chuyện gì",
+      "giới thiệu một chút về bạn",
+      "chat với bạn làm được gì"
+    ],
+    "bot_conversation_privacy": [
+      "bạn có lưu lại đoạn chat không",
+      "tin nhắn này ai đọc được không",
+      "dữ liệu hội thoại giữ bao lâu",
+      "xóa lịch sử chat ở chỗ nào"
+    ],
+    "bot_feedback": [
+      "câu trả lời sai thì báo kiểu gì",
+      "bấm nút phàn nàn có tác dụng gì",
+      "đánh giá câu trả lời ở đâu",
+      "muốn góp ý cho bot thì làm sao"
+    ],
+    "bot_human_contact": [
+      "nói chuyện với người thật ở đâu",
+      "trang khiếu nại nằm ở đâu",
+      "gọi cho tư vấn viên thì sao",
+      "có mục hỗ trợ khách hàng không"
+    ],
+    "pending_plan_advisor": [
+      "bạn gợi ý gói nào hợp với mình",
+      "tư vấn chọn gói tập ở đâu",
+      "gói nào hợp với người mới tập",
+      "nên mua gói nào cho túi tiền hẹp"
+    ]
+  }
+}

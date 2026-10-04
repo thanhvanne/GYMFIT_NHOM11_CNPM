@@ -1,0 +1,1302 @@
+[
+  {
+    "id": "plan_tiers",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "gói tập có những cấp nào",
+      "GYMFIT có mấy hạng gói",
+      "phân biệt gói basic standard premium",
+      "gói cơ bản với gói cao cấp khác gì",
+      "các loại gói tập tại GYMFIT",
+      "hạng gói tập là gì"
+    ],
+    "answer": "Hệ thống có 3 hạng gói: BASIC (cơ bản), STANDARD (tiêu chuẩn) và PREMIUM (cao cấp). Mỗi hạng bán ở nhiều chi nhánh với giá và thời lượng khác nhau — bạn xem bảng giá tại trang Gói tập để so sánh.",
+    "link": "/member/plans",
+    "source": "PlanTier",
+    "tags": ["goi tap", "hang goi"]
+  },
+  {
+    "id": "plan_single_branch",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "gói tập có gắn với chi nhánh không",
+      "mua gói ở chi nhánh này dùng ở chi nhánh khác được không",
+      "gói tập áp dụng ở chi nhánh nào",
+      "một gói dùng được mấy chi nhánh",
+      "gói chỉ dùng được ở một chỗ đúng không",
+      "dùng gói ở chi nhánh khác có được không"
+    ],
+    "answer": "Mỗi gói gắn với đúng 1 chi nhánh. Mua sai chi nhánh bị chặn ngay lúc mua, và khi đặt lịch hay check-in ở chi nhánh khác sẽ báo gói tập không áp dụng tại chi nhánh này.",
+    "link": "/member/plans",
+    "source": "MembershipService.requireEligible; OrderService.createItem",
+    "tags": ["chi nhanh", "goi tap"]
+  },
+  {
+    "id": "plan_services",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "gói tập gồm những dịch vụ nào",
+      "gói có kèm boxing không",
+      "trong gói có chơi pickleball không",
+      "gói tập dùng được dịch vụ gì",
+      "một gói gồm mấy dịch vụ",
+      "gói nào dùng được cả gym boxing"
+    ],
+    "answer": "Gói ghép dịch vụ qua bảng dịch vụ của gói. 3 dịch vụ trong hệ thống là Gym, Boxing và Pickleball: gói gym chỉ dùng được gym, gói boxing chỉ dùng boxing, gói combo dùng nhiều dịch vụ. Dịch vụ không có trong gói thì không đặt lịch và không check-in được.",
+    "link": "/member/plans",
+    "source": "ServiceCode; database/gymfit.sql (plan_service)",
+    "tags": ["dich vu", "goi tap"]
+  },
+  {
+    "id": "plan_replace_existing",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "mua gói mới khi đang có gói cũ thì sao",
+      "gói cũ có bị mất không khi mua gói mới",
+      "nâng cấp gói giữa chừng thì gói cũ thế nào",
+      "mua thêm một gói nữa có được không",
+      "gói cũ còn hạn mà mua gói mới",
+      "gói mới có thay gói cũ không"
+    ],
+    "answer": "Khi bạn mua gói mới, gói cũ đang hiệu lực bị đánh dấu đã thay thế (REPLACED) ngay lúc kích hoạt — lịch sử vẫn giữ nhưng gói cũ không dùng được nữa. Nếu gói cũ đã qua ngày kết thúc thì nó chuyển thành hết hạn.",
+    "link": "/member/history",
+    "source": "MembershipService.activateFromPaidOrder",
+    "tags": ["goi tap", "mua goi"]
+  },
+  {
+    "id": "plan_extend",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "gia hạn gói tập như thế nào",
+      "gói hết hạn mua tiếp có bị trừ ngày cũ không",
+      "gia hạn có cộng dồn ngày không",
+      "có gói gia hạn riêng không",
+      "gói hết hạn thì gia hạn ở đâu",
+      "gia hạn gói trước khi hết hạn được không"
+    ],
+    "answer": "Gia hạn bằng cách mua tiếp 1 gói mới tại trang Gói tập. Ngày bắt đầu luôn là hôm nay và ngày kết thúc bằng ngày bắt đầu cộng số ngày của gói trừ 1; số ngày còn lại của gói cũ KHÔNG được cộng dồn.",
+    "link": "/member/plans",
+    "source": "MembershipService.activateFromPaidOrder",
+    "tags": ["gia han", "goi tap"]
+  },
+  {
+    "id": "plan_expired",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "gói hết hạn thì tôi bị gì",
+      "hết gói có tập được không",
+      "gói hết hạn có đặt lịch được không",
+      "gói hết hạn check-in có được không",
+      "khi nào thì gói bị hết hạn",
+      "gói hết hạn dùng lại được không"
+    ],
+    "answer": "Gói hết hạn thì không đặt lịch, không check-in được — hệ thống báo gói tập không còn hiệu lực. Lịch sử gói vẫn giữ nguyên, bạn mua gói mới để dùng lại.",
+    "link": "/member/plans",
+    "source": "MembershipService.requireEligible",
+    "tags": ["het han", "goi tap"]
+  },
+  {
+    "id": "plan_dates",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "gói tập bắt đầu tính từ ngày nào",
+      "ngày hết hạn gói tính làm sao",
+      "gói 30 ngày thì đến ngày nào",
+      "gói mua hôm nay hiệu lực từ khi nào",
+      "thời hạn gói tính thế nào",
+      "gói 90 ngày bắt đầu từ ngày mua"
+    ],
+    "answer": "Gói bắt đầu ngay ngày bạn mua (theo giờ Việt Nam) và kết thúc bằng ngày bắt đầu cộng số ngày của gói trừ 1. Ví dụ gói 30 ngày mua ngày 05/10 thì hiệu lực từ 05/10 đến 03/11.",
+    "link": "/member/plans",
+    "source": "MembershipService.activateFromPaidOrder",
+    "tags": ["thoi han", "goi tap"]
+  },
+  {
+    "id": "payment_momo",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "thanh toán bằng cách nào",
+      "có thanh toán momo không",
+      "chấp nhận những hình thức thanh toán nào",
+      "cách trả tiền gói tập",
+      "thanh toán qua momo có thật không",
+      "tôi trả tiền mặt được không"
+    ],
+    "answer": "Thanh toán qua MoMo — đây là bản mô phỏng trong hệ thống (chỉ sinh tham chiếu MoMo giả, không gọi dịch vụ MoMo thật) để phục vụ demo. Bạn vào trang Gói tập, chọn gói, bấm Mua rồi làm theo bước thanh toán.",
+    "link": "/member/plans",
+    "source": "MomoPaymentProvider.createReference; PaymentProviderCode",
+    "tags": ["thanh toan", "momo"]
+  },
+  {
+    "id": "payment_failed",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "thanh toán thất bại thì sao",
+      "momo báo lỗi thì làm gì",
+      "chưa thanh toán được gói tập",
+      "đơn hàng đang chờ thanh toán",
+      "thanh toán không thành công có mất tiền không",
+      "làm lại thanh toán ở đâu"
+    ],
+    "answer": "Thanh toán lỗi thì giao dịch chuyển sang thất bại, đơn hàng vẫn ở trạng thái chờ thanh toán nên bạn thanh toán lại được từ trang Lịch sử giao dịch. Hệ thống không tự hủy đơn và cũng không thu thêm tiền.",
+    "link": "/member/history",
+    "source": "PaymentService.simulateFailure; PaymentService.createMomo",
+    "tags": ["thanh toan", "loi"]
+  },
+  {
+    "id": "payment_deduct",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "khi nào tiền bị trừ",
+      "khi nào kho sản phẩm bị trừ",
+      "mua nước thì tồn kho có tự giảm không",
+      "đơn thành công thì trừ hàng đúng không",
+      "mua hàng có trừ tồn kho không",
+      "thanh toán thất bại có trừ gì không"
+    ],
+    "answer": "Tiền chỉ bị trừ khi thanh toán thành công. Với sản phẩm, tồn kho cũng chỉ bị trừ đúng lúc đó và được ghi vào sổ luân chuyển kho; thanh toán thất bại thì không trừ gì cả.",
+    "link": "/admin/inventory",
+    "source": "PaymentService.simulateSuccess; InventoryService.deductForSale",
+    "tags": ["thanh toan", "kho"]
+  },
+  {
+    "id": "payment_invoice",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "xem hóa đơn ở đâu",
+      "tải hóa đơn pdf",
+      "in hóa đơn mua gói",
+      "hóa đơn mua hàng lấy thế nào",
+      "đơn hàng có hóa đơn không",
+      "xuất hóa đơn cho đơn đã thanh toán"
+    ],
+    "answer": "Hóa đơn PDF tải từ trang Lịch sử của hội viên (hoặc trang Bán hàng của nhân viên) bằng nút Tải hóa đơn. Chỉ đơn đã thanh toán thành công mới có hóa đơn; tên file dạng GYMFIT-theo-ma-don.",
+    "link": "/member/history",
+    "source": "InvoiceController.invoice; InvoiceService.getInvoice",
+    "tags": ["hoa don"]
+  },
+  {
+    "id": "payment_refund",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "NOT_SUPPORTED",
+    "questions": [
+      "hoàn tiền gói tập",
+      "xin hoàn tiền",
+      "gói không dùng nữa có trả lại không",
+      "hoàn lại tiền đã mua",
+      "chính sách hoàn tiền",
+      "tiền gói có lấy lại được không"
+    ],
+    "answer": "Bạn liên hệ nhân viên chi nhánh để được hỗ trợ về khoản tiền đã thanh toán.",
+    "link": "",
+    "source": "Không tìm thấy mã hoàn tiền (refund) trong src/main/java",
+    "tags": ["hoan tien"]
+  },
+  {
+    "id": "plan_change_branch",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "NOT_SUPPORTED",
+    "questions": [
+      "đổi chi nhánh của gói",
+      "chuyển gói sang chi nhánh khác",
+      "gói ở q1 dùng ở q7 được không",
+      "chuyển nơi tập",
+      "đổi chỗ tập sang chi nhánh gần hơn",
+      "sang chi nhánh khác dùng gói"
+    ],
+    "answer": "Bạn cần mua gói tại chi nhánh muốn tập; gói đang có vẫn dùng được ở chi nhánh phát hành.",
+    "link": "",
+    "source": "Không tìm thấy endpoint đổi membership.branchId",
+    "tags": ["chi nhanh", "goi tap"]
+  },
+  {
+    "id": "plan_transfer_suspend",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "NOT_SUPPORTED",
+    "questions": [
+      "bảo lưu gói tập",
+      "chuyển nhượng gói cho người khác",
+      "tạm dừng gói tập",
+      "cho bạn mượn gói tập",
+      "đứng tên hộ gói",
+      "đóng băng gói tập"
+    ],
+    "answer": "Bạn liên hệ nhân viên chi nhánh để được hỗ trợ, vì gói chỉ dùng được bằng tài khoản của người mua.",
+    "link": "",
+    "source": "Không tìm thấy mã bảo lưu/chuyển nhượng trong src/main/java",
+    "tags": ["goi tap"]
+  },
+
+  {
+    "id": "booking_conditions",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "điều kiện để đặt lịch là gì",
+      "muốn đặt lịch cần những gì",
+      "tôi đặt lịch được không",
+      "quy trình đặt lịch tập",
+      "đặt lịch có cần gói không",
+      "cần đủ điều kiện gì để book"
+    ],
+    "answer": "Đặt lịch cần: hội viên có gói đang hiệu lực tại chi nhánh đó, dịch vụ nằm trong gói, cơ sở vật chất đang hoạt động, thời gian nằm trong giờ mở cửa, chưa trùng lịch của bạn và khung giờ còn chỗ.",
+    "link": "/member/booking",
+    "source": "BookingService.create",
+    "tags": ["dat lich"]
+  },
+  {
+    "id": "booking_duration",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "một buổi tập dài bao nhiêu phút",
+      "mỗi lần đặt lịch được bao lâu",
+      "thời lượng một buổi là bao nhiêu",
+      "book hai tiếng được không",
+      "mỗi slot dài mấy phút",
+      "tập bao lâu thì hết slot"
+    ],
+    "answer": "Mỗi buổi theo cấu hình thời lượng của chi nhánh cho dịch vụ đó, mặc định là 60 phút. Khung giờ trong ngày được cắt theo đúng độ dài này.",
+    "link": "/member/booking",
+    "source": "BranchServiceConfig.bookingDurationMinutes",
+    "tags": ["thoi luong", "dat lich"]
+  },
+  {
+    "id": "booking_slot_full",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "khung giờ hết chỗ thì sao",
+      "sao vẫn không đặt được giờ này",
+      "slot đầy là thế nào",
+      "hết chỗ thì đặt lịch khác giờ thế nào",
+      "báo không còn khung giờ trống",
+      "khung giờ kín phải làm sao"
+    ],
+    "answer": "Khung giờ đầy khi số người đã đặt chạm sức chứa của cơ sở. Hệ thống báo không còn khung giờ trống và gợi ý các giờ gần nhất còn chỗ — bạn chọn giờ khác là đặt được ngay.",
+    "link": "/member/booking",
+    "source": "BookingService.create (facility_full); BookingRepository.countFacilityOverlap",
+    "tags": ["khung gio", "het cho"]
+  },
+  {
+    "id": "booking_duplicate_time",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "đặt trùng lịch có được không",
+      "tôi đã có giờ này rồi",
+      "báo trùng lịch là sao",
+      "một giờ đặt được hai buổi không",
+      "trùng khung giờ với lịch cũ",
+      "đặt hai lịch cùng giờ"
+    ],
+    "answer": "Không được — hệ thống kiểm các lịch CONFIRMED của chính bạn và báo bạn đã có lịch tập trùng thời gian. Bạn hủy lịch cũ hoặc chọn giờ khác.",
+    "link": "/member/booking",
+    "source": "BookingRepository.countMemberOverlap",
+    "tags": ["trung lich"]
+  },
+  {
+    "id": "booking_operating_hours",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "chi nhánh mở cửa mấy giờ",
+      "giờ mở cửa của phòng tập",
+      "chủ nhật có tập được không",
+      "mấy giờ đến mấy giờ thì mở cửa",
+      "đặt lịch ngoài giờ mở cửa được không",
+      "giờ hoạt động của chi nhánh"
+    ],
+    "answer": "Giờ mở cửa lưu theo từng chi nhánh và từng ngày trong tuần (mặc định thứ 2 đến thứ 7 từ 06:00 đến 22:00, chủ nhật từ 08:00 đến 20:00). Đặt ngoài khung giờ bị từ chối; ngày không có cấu hình thì chi nhánh đóng cửa và không có khung giờ.",
+    "link": "/member/booking",
+    "source": "BookingService.validateOperatingHours; BookingService.availability",
+    "tags": ["gio mo cua", "chi nhanh"]
+  },
+  {
+    "id": "booking_cancel_2h",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "hủy lịch trước mấy giờ",
+      "chính sách hủy lịch tập",
+      "hủy sát giờ có được không",
+      "được hủy lịch trong bao lâu",
+      "hủy lịch quá hai giờ thì sao",
+      "quy định khi hủy lịch"
+    ],
+    "answer": "Bạn hủy được trước ít nhất 2 giờ so với giờ bắt đầu; quá thời hạn hệ thống báo chỉ được hủy lịch trước ít nhất 2 giờ. Quy định này áp dụng cho hội viên. Lịch đã bắt đầu, đã hoàn thành hoặc đã hủy thì không hủy lại được.",
+    "link": "/member/booking",
+    "source": "BookingService.cancel; BookingActionExecutor.message",
+    "tags": ["huy lich"]
+  },
+  {
+    "id": "booking_reschedule",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "NOT_SUPPORTED",
+    "questions": [
+      "đổi lịch sang giờ khác",
+      "dời lịch tập được không",
+      "chuyển lịch sang ngày khác",
+      "sửa giờ đặt lịch ở đâu",
+      "đổi lịch online",
+      "hoãn lịch tập sang tuần sau"
+    ],
+    "answer": "Bạn hủy lịch cũ (trước ít nhất 2 giờ) rồi đặt lại lịch mới; thao tác hủy và đặt lại nằm ở trang Đặt lịch.",
+    "link": "/member/booking",
+    "source": "Không tìm thấy reschedule trong BookingController",
+    "tags": ["doi lich", "dat lich"]
+  },
+  {
+    "id": "booking_status",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "trạng thái lịch đặt có những gì",
+      "lịch đã hoàn thành là sao",
+      "confirmed là gì",
+      "lịch của tôi đang ở trạng thái nào",
+      "đơn lịch có mấy trạng thái",
+      "lịch đã hủy còn xem được không"
+    ],
+    "answer": "Lịch đặt có 3 trạng thái: CONFIRMED (đã xác nhận), COMPLETED (đã hoàn thành — hiển thị tự động khi thời gian đã qua) và CANCELLED (đã hủy).",
+    "link": "/member/booking",
+    "source": "BookingStatus; BookingService.effectiveStatus",
+    "tags": ["trang thai", "dat lich"]
+  },
+  {
+    "id": "booking_where_view",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "xem lịch tập của tôi ở đâu",
+      "lịch đặt nằm trong trang nào",
+      "tôi có lịch vào ngày nào",
+      "xem danh sách lịch đã đặt",
+      "lịch sắp tới của tôi",
+      "tra lịch tập ở đâu"
+    ],
+    "answer": "Bạn vào trang Đặt lịch để xem lịch sắp tới và lịch sử; cũng ở trang đó để hủy lịch. Bạn cũng có thể hỏi mình lịch của tôi để được trả lời ngay.",
+    "link": "/member/booking",
+    "source": "UiController.memberBooking",
+    "tags": ["xem lich"]
+  },
+  {
+    "id": "booking_advance_limit",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "đặt lịch trước tối đa bao nhiêu ngày",
+      "có giới hạn đặt trước không",
+      "đặt trước một tháng được không",
+      "tôi book trước bao lâu được",
+      "chỉ đặt được trong hôm nay sao",
+      "đặt lịch xa quá có được không"
+    ],
+    "answer": "Không có giới hạn đặt trước — chỉ cần thời gian nằm trong tương lai và trong giờ mở cửa của chi nhánh. Bạn đặt trước bao xa tùy ý.",
+    "link": "/member/booking",
+    "source": "BookingService.create",
+    "tags": ["dat lich"]
+  },
+  {
+    "id": "booking_for_others",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "đặt lịch hộ người khác được không",
+      "tôi đặt cho bạn tôi được không",
+      "nhân viên đặt hộ hội viên",
+      "ai đặt lịch giúp tôi được",
+      "đặt lịch cho người thân",
+      "đặt giúp người khác"
+    ],
+    "answer": "Hội viên chỉ đặt được cho chính mình. Nhân viên và quản trị viên đặt hộ hội viên được, bằng cách chọn hội viên khi tạo lịch tại quầy.",
+    "link": "/manager/bookings",
+    "source": "BookingService.resolveMemberId",
+    "tags": ["dat lich"]
+  },
+  {
+    "id": "booking_maintenance",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "cơ sở đang bảo trì đặt lịch được không",
+      "sân đang sửa thì sao",
+      "bảo trì có book được không",
+      "cơ sở vật chất không hoạt động",
+      "sân đóng cửa đặt lịch thế nào",
+      "tại sao không đặt được sân này"
+    ],
+    "answer": "Cơ sở đang bảo trì hoặc ngừng hoạt động thì không đặt được — hệ thống báo cơ sở vật chất hiện không hoạt động và khung giờ của cơ sở đó cũng không được hiển thị.",
+    "link": "/member/booking",
+    "source": "BookingService.create (facility_unavailable); FacilityStatus",
+    "tags": ["bao tri", "co so vat chat"]
+  },
+
+  {
+    "id": "checkin_howto",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "cách check-in như thế nào",
+      "tập thì check-in ở đâu",
+      "làm sao để check in vào phòng tập",
+      "có mấy cách check-in",
+      "check in bằng gì",
+      "vào phòng tập cần làm gì"
+    ],
+    "answer": "Có 2 cách: mở trang QR cho nhân viên quét, hoặc nhờ nhân viên check-in thủ công bằng mã hội viên (hoặc số điện thoại). Mỗi lần đến phòng tập nên check-in một lần cho mỗi dịch vụ.",
+    "link": "/member/qr",
+    "source": "CheckInService.manual; CheckInService.qr",
+    "tags": ["check in"]
+  },
+  {
+    "id": "qr_ttl",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "mã qr hết hạn sau bao lâu",
+      "qr sống được bao lâu",
+      "mã qr bao nhiêu giây thì hết hạn",
+      "qr của tôi bị hết hạn",
+      "mã qr có tự làm mới không",
+      "bao lâu thì phải mở lại qr"
+    ],
+    "answer": "Mã QR có hiệu lực 60 giây và tự đổi mã; quá hạn thì mở lại trang QR để lấy mã mới. Nhân viên quét mã ngay khi bạn đến.",
+    "link": "/member/qr",
+    "source": "QrTokenService.issue/parse (gymfit.qr.ttl-seconds: 60)",
+    "tags": ["qr"]
+  },
+  {
+    "id": "qr_not_scan",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "qr quét không được thì sao",
+      "mã qr bị từ chối khi quét",
+      "quét mã báo lỗi",
+      "qr không hợp lệ",
+      "mã qr hết hạn khi quét",
+      "quét qr bị lỗi"
+    ],
+    "answer": "QR báo không hợp lệ hoặc đã hết hạn nếu quá 60 giây, hoặc báo QR đã được sử dụng nếu mã từng quét rồi. Bạn mở lại trang QR để lấy mã mới — mỗi mã chỉ dùng một lần.",
+    "link": "/member/qr",
+    "source": "CheckInService.qr; QrTokenUseRepository",
+    "tags": ["qr", "loi"]
+  },
+  {
+    "id": "checkin_manual_no_phone",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "quên điện thoại thì check-in thế nào",
+      "không mang điện thoại vào phòng tập",
+      "check in thủ công bằng gì",
+      "quên qr thì làm sao",
+      "nhập mã hội viên check in",
+      "không có qr thì vào thế nào"
+    ],
+    "answer": "Bạn không cần điện thoại — chỉ cần đọc mã hội viên (định dạng GF cộng 8 chữ số) cho nhân viên, họ nhập mã hoặc số điện thoại để check-in thủ công giúp bạn.",
+    "link": "/member/profile",
+    "source": "CheckInService.findMember",
+    "tags": ["check in", "ma hoi vien"]
+  },
+  {
+    "id": "member_code_where",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "mã hội viên của tôi ở đâu",
+      "xem mã hội viên ở trang nào",
+      "mã gf dùng để làm gì",
+      "mã hội viên gồm mấy chữ số",
+      "tìm mã thành viên",
+      "mã hội viên lấy ở đâu"
+    ],
+    "answer": "Mã hội viên định dạng GF cộng 8 chữ số, hiển thị ở trang Chủ nhà, Hồ sơ và trang QR. Mã này dùng để đăng nhập và để nhân viên check-in thủ công.",
+    "link": "/member/profile",
+    "source": "MemberService.generateMemberCode",
+    "tags": ["ma hoi vien"]
+  },
+  {
+    "id": "reject_no_active_membership",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "check-in bảo chưa có gói là sao",
+      "no active membership nghĩa là gì",
+      "vào phòng tập báo không có gói",
+      "chưa có gói tập mà check in",
+      "bị từ chối vì chưa mua gói",
+      "check in báo không có membership"
+    ],
+    "answer": "Đây là lý do chưa có gói tập đang hoạt động — gói của bạn đã hết hạn, chưa kích hoạt hoặc không có. Bạn mua gói tại trang Gói tập rồi check-in lại.",
+    "link": "/member/qr",
+    "source": "CheckInService.performEligibilityCheckLocked",
+    "tags": ["tu choi", "goi tap"]
+  },
+  {
+    "id": "reject_service_not_included",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "gói không bao gồm dịch vụ này",
+      "sao check in boxing bị từ chối",
+      "service not included là gì",
+      "gói gym vào phòng boxing được không",
+      "dịch vụ không có trong gói",
+      "check in sai dịch vụ"
+    ],
+    "answer": "Đây là lý do gói không bao gồm dịch vụ — gói của bạn không kèm dịch vụ này (ví dụ gói gym nhưng vào phòng boxing). Bạn chọn dịch vụ đúng gói, hoặc mua gói có dịch vụ đó.",
+    "link": "/member/qr",
+    "source": "CheckInService.performEligibilityCheckLocked",
+    "tags": ["tu choi", "dich vu"]
+  },
+  {
+    "id": "reject_branch_mismatch",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "membership khác chi nhánh",
+      "sao check in ở đây bị từ chối",
+      "gói ở q1 vào q7 được không",
+      "check in sai chi nhánh",
+      "membership branch mismatch là gì",
+      "vào chi nhánh khác bị chặn"
+    ],
+    "answer": "Đây là lý do gói thuộc chi nhánh khác — gói chỉ dùng được tại chi nhánh phát hành. Bạn check-in tại chi nhánh của gói, hoặc mua gói mới ở chi nhánh này.",
+    "link": "/member/qr",
+    "source": "CheckInService.performEligibilityCheckLocked",
+    "tags": ["tu choi", "chi nhanh"]
+  },
+  {
+    "id": "reject_membership_invalid",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "membership không hợp lệ",
+      "gói chưa tới hạn check in được không",
+      "check in bị từ chối vì gói chưa hiệu lực",
+      "gói hết hạn check in",
+      "membership invalid là sao",
+      "gói không còn hiệu lực"
+    ],
+    "answer": "Đây là lý do gói không hợp lệ — gói chưa tới ngày bắt đầu, đã hết hạn hoặc không còn hiệu lực. Bạn xem hiệu lực gói tại trang Hồ sơ, rồi mua hoặc gia hạn nếu cần.",
+    "link": "/member/profile",
+    "source": "CheckInService.performEligibilityCheckLocked",
+    "tags": ["tu choi", "goi tap"]
+  },
+  {
+    "id": "reject_duplicate_checkin",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "check in trùng là sao",
+      "quét hai lần bị từ chối",
+      "duplicate check in là gì",
+      "vừa check in xong mà quét lại",
+      "check in hai lần trong năm phút",
+      "bị báo trùng check-in"
+    ],
+    "answer": "Đây là lý do check-in trùng — bạn đã check-in cùng dịch vụ, cùng chi nhánh trong vòng 5 phút gần nhất. Đợi quá 5 phút là quét lại được; mỗi buổi chỉ cần check-in một lần.",
+    "link": "/member/qr",
+    "source": "CheckInService.DUPLICATE_WINDOW",
+    "tags": ["tu choi", "check in"]
+  },
+  {
+    "id": "checkin_multi_service",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "một ngày check in được mấy dịch vụ",
+      "check in hai dịch vụ trong ngày",
+      "sáng gym chiều boxing có được không",
+      "mỗi ngày check in bao nhiêu lần",
+      "check in nhiều lần có sao không",
+      "vào hai phòng trong một ngày"
+    ],
+    "answer": "Được — mỗi dịch vụ check-in riêng, điều kiện chống trùng chỉ áp dụng cho đúng dịch vụ đó. Cùng dịch vụ thì cách lần trước hơn 5 phút là được; hệ thống không giới hạn số lượt trong ngày.",
+    "link": "/member/qr",
+    "source": "CheckInService.performEligibilityCheckLocked",
+    "tags": ["check in", "dich vu"]
+  },
+  {
+    "id": "checkin_duplicate_window",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "thời gian chờ khi check in trùng",
+      "bao lâu thì check in lại được",
+      "cửa sổ check in trùng là bao lâu",
+      "phải chờ năm phút để quét lại",
+      "chờ bao lâu để quét lại",
+      "check in lần hai sau bao lâu"
+    ],
+    "answer": "Cửa sổ chống trùng là 5 phút: cùng dịch vụ và chi nhánh thì phải cách lần trước hơn 5 phút mới check-in lại được.",
+    "link": "/member/qr",
+    "source": "CheckInService.DUPLICATE_WINDOW",
+    "tags": ["check in"]
+  },
+
+  {
+    "id": "auth_login_howto",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "đăng nhập bằng gì",
+      "dùng email hay số điện thoại để vào",
+      "tôi quên tên đăng nhập",
+      "đăng nhập GYMFIT thế nào",
+      "nhập gì vào ô đăng nhập",
+      "đăng nhập bằng mã hội viên được không"
+    ],
+    "answer": "Bạn đăng nhập bằng email hoặc mã hội viên (GF cộng 8 chữ số) — hệ thống tự nhận ra tài khoản tương ứng. Mật khẩu do bạn hoặc nhân viên cấp.",
+    "link": "/login",
+    "source": "AuthService.resolveLogin; AuthService.normalizeLogin",
+    "tags": ["dang nhap"]
+  },
+  {
+    "id": "auth_forgot_password",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "NOT_SUPPORTED",
+    "questions": [
+      "quên mật khẩu làm thế nào",
+      "tôi không nhớ mật khẩu",
+      "đặt lại mật khẩu ở đâu",
+      "không đăng nhập được vì quên pass",
+      "quên pass tự lấy lại được không",
+      "lấy lại mật khẩu"
+    ],
+    "answer": "Bạn nhờ nhân viên hoặc quản trị viên cấp lại mật khẩu; mật khẩu tạm sẽ phải đổi sau lần đăng nhập đầu tiên.",
+    "link": "",
+    "source": "AuthController chỉ có login/me/change-password",
+    "tags": ["mat khau"]
+  },
+  {
+    "id": "auth_change_password",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "đổi mật khẩu như thế nào",
+      "yêu cầu đổi mật khẩu lần đầu",
+      "mật khẩu mới phải mấy ký tự",
+      "đổi pass ở trang nào",
+      "mật khẩu gồm chữ và số phải không",
+      "tôi muốn đổi mật khẩu"
+    ],
+    "answer": "Bạn vào trang Đổi mật khẩu: cần nhập đúng mật khẩu hiện tại; mật khẩu mới từ 8 ký tự trở lên, có chữ VÀ số, không trùng email. Sau lần đăng nhập đầu bạn sẽ bị yêu cầu đổi mật khẩu.",
+    "link": "/change-password",
+    "source": "AuthService.changePassword; AuthService.isStrongPassword",
+    "tags": ["mat khau"]
+  },
+  {
+    "id": "auth_locked",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "tài khoản bị khóa",
+      "tôi không đăng nhập được báo tài khoản bị khóa",
+      "tài khoản có mấy trạng thái",
+      "tài khoản bị vô hiệu hóa",
+      "bị khóa tài khoản thì làm sao",
+      "tài khoản disabled là gì"
+    ],
+    "answer": "Tài khoản có 3 trạng thái: ACTIVE (hoạt động), LOCKED (khóa) và DISABLED (vô hiệu). LOCKED hoặc DISABLED thì không đăng nhập được — nhờ nhân viên mở lại; hội viên bị ngừng hoạt động thì tài khoản tự chuyển sang DISABLED.",
+    "link": "/login",
+    "source": "UserStatus; AppPrincipal.isEnabled; AppPrincipal.isAccountNonLocked",
+    "tags": ["tai khoan"]
+  },
+  {
+    "id": "auth_session_ttl",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "phiên đăng nhập hết hạn sau bao lâu",
+      "tự đăng xuất sau mấy giờ",
+      "token hết hạn trong bao lâu",
+      "sao đang dùng tự bị đăng xuất",
+      "thời hạn phiên là bao lâu",
+      "phiên đăng nhập sống được mấy tiếng"
+    ],
+    "answer": "Phiên đăng nhập kéo dài 2 giờ; sau đó token hết hạn và bạn cần đăng nhập lại.",
+    "link": "/login",
+    "source": "JwtService.createToken (gymfit.jwt.ttl-seconds: 7200)",
+    "tags": ["phien", "dang nhap"]
+  },
+  {
+    "id": "auth_change_contact",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "NOT_SUPPORTED",
+    "questions": [
+      "đổi email đăng nhập",
+      "tôi đổi số điện thoại được không",
+      "cập nhật thông tin liên hệ",
+      "sai email muốn sửa",
+      "hội viên tự đổi thông tin cá nhân",
+      "đổi số điện thoại trong tài khoản"
+    ],
+    "answer": "Bạn liên hệ nhân viên chi nhánh để cập nhật giúp; nhân viên cập nhật qua mục Hội viên.",
+    "link": "/member/profile",
+    "source": "Trang /member/profile chỉ có GET; MemberController.update chỉ ADMIN/BRANCH_MANAGER",
+    "tags": ["email", "so dien thoai"]
+  },
+  {
+    "id": "auth_password_privacy",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "bot có xem được mật khẩu tôi không",
+      "chatbot có lưu mật khẩu không",
+      "mật khẩu có bị lộ không",
+      "nhân viên có thấy pass của tôi không",
+      "hệ thống lưu mật khẩu thế nào",
+      "mật khẩu có mã hóa không"
+    ],
+    "answer": "Không ai xem được mật khẩu của bạn — hệ thống chỉ lưu dạng băm BCrypt, mật khẩu không bao giờ ghi vào log hay nhật ký. Mình (trợ lý chat) cũng không yêu cầu và không lưu mật khẩu.",
+    "link": "/change-password",
+    "source": "AuthService.changePassword; SecurityConfig.passwordEncoder",
+    "tags": ["mat khau", "bao mat"]
+  },
+  {
+    "id": "auth_member_account",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "tạo tài khoản cho hội viên mới",
+      "hội viên mới có tài khoản chưa",
+      "cấp tài khoản hội viên",
+      "tài khoản member lấy ở đâu",
+      "đăng ký hội viên mới",
+      "nhân viên tạo login cho khách"
+    ],
+    "answer": "Hội viên được cấp tài khoản ngay khi tạo hội viên (hoặc cấp sau bằng nút Cấp tài khoản). Tên đăng nhập là email hoặc maHoiVien@member.gymfit.local, mật khẩu tạm phải đổi sau lần đăng nhập đầu.",
+    "link": "/manager/members",
+    "source": "MemberAccountService.issue; MemberController.create",
+    "tags": ["tai khoan", "hoi vien"]
+  },
+
+  {
+    "id": "product_where_buy",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "mua nước ở đâu",
+      "có bán protein không",
+      "bán đồ uống tại phòng tập",
+      "mua đồ tập ở đâu",
+      "cửa hàng bán gì",
+      "có bán nước không"
+    ],
+    "answer": "Sản phẩm bán tại quầy qua trang Bán hàng của nhân viên — bạn đưa sản phẩm cho nhân viên, họ tạo đơn và thu tiền giúp.",
+    "link": "/manager/sales",
+    "source": "UiController.managerSales",
+    "tags": ["san pham"]
+  },
+  {
+    "id": "product_payment",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "mua sản phẩm thanh toán thế nào",
+      "trả tiền nước như nào",
+      "sản phẩm có thanh toán momo không",
+      "đơn bán hàng tại quầy",
+      "thanh toán khi mua đồ",
+      "mua hàng trả trước hay sau"
+    ],
+    "answer": "Nhân viên tạo đơn tại trang Bán hàng và thu tiền cùng lúc (tiền mặt hoặc MoMo mô phỏng). Hội viên không tự tạo đơn bán hàng được.",
+    "link": "/manager/sales",
+    "source": "OrderService.create",
+    "tags": ["san pham", "thanh toan"]
+  },
+  {
+    "id": "product_invoice",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "hóa đơn mua sản phẩm",
+      "mua nước có hóa đơn không",
+      "xin hóa đơn cho đơn hàng",
+      "hóa đơn bán hàng",
+      "in hóa đơn sản phẩm",
+      "đơn hàng in ra giấy được không"
+    ],
+    "answer": "Đơn hàng (kể cả sản phẩm) đều có hóa đơn PDF tải từ trang Lịch sử của hội viên hoặc trang Bán hàng. Chỉ đơn đã thanh toán mới in được.",
+    "link": "/member/history",
+    "source": "InvoiceController.invoice; InvoiceService.getInvoice",
+    "tags": ["hoa don", "san pham"]
+  },
+
+  {
+    "id": "branch_three_services",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "GYMFIT có những dịch vụ nào",
+      "ở đây có mấy môn tập",
+      "phòng tập gồm những gì",
+      "có boxing không",
+      "có pickleball không",
+      "các bộ môn ở GYMFIT"
+    ],
+    "answer": "3 dịch vụ trong hệ thống là Gym, Boxing và Pickleball. Tùy chi nhánh mà có đủ hay chỉ một vài dịch vụ — bạn hỏi danh sách dịch vụ để mình tra giúp.",
+    "link": "/member/plans",
+    "source": "ServiceCode",
+    "tags": ["dich vu"]
+  },
+  {
+    "id": "branch_service_matrix",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "chi nhánh nào có boxing",
+      "chi nhánh nào có dịch vụ gì",
+      "q1 có mấy dịch vụ",
+      "tôi ở gần chi nhánh nào",
+      "chọn chi nhánh có gym",
+      "chi nhánh nào có pickleball"
+    ],
+    "answer": "Danh sách dịch vụ của từng chi nhánh là dữ liệu động — bạn hỏi danh sách dịch vụ hoặc cơ sở vật chất tại chi nhánh đó để mình tra giúp.",
+    "link": "/member/plans",
+    "source": "BranchServiceConfig; FacilityController",
+    "tags": ["chi nhanh", "dich vu"]
+  },
+  {
+    "id": "branch_contact",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "số điện thoại chi nhánh",
+      "liên hệ phòng tập",
+      "địa chỉ chi nhánh",
+      "gọi cho nhân viên được không",
+      "chi nhánh ở đâu",
+      "chỉ đường tới phòng tập"
+    ],
+    "answer": "Mỗi chi nhánh có địa chỉ và số điện thoại (ví dụ Q1: 12 Nguyễn Huệ — 02873001001). Bạn hỏi thông tin chi nhánh đó để mình tra giúp; chi nhánh không có email liên hệ.",
+    "link": "/member/home",
+    "source": "Branch; BranchResponse",
+    "tags": ["chi nhanh", "lien he"]
+  },
+  {
+    "id": "branch_hours",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "mấy giờ mở cửa",
+      "giờ mở cửa phòng gym",
+      "mở cửa thứ mấy",
+      "đóng cửa mấy giờ",
+      "giờ hoạt động",
+      "tập được mấy giờ"
+    ],
+    "answer": "Giờ mở cửa theo từng ngày trong tuần, mặc định thứ 2 đến thứ 7 từ 06:00 đến 22:00 và chủ nhật từ 08:00 đến 20:00. Bạn hỏi giờ mở cửa của chi nhánh đó để mình tra chính xác.",
+    "link": "/member/booking",
+    "source": "OperatingHourRead; database/gymfit.sql (branch_operating_hour)",
+    "tags": ["gio mo cua"]
+  },
+  {
+    "id": "branch_facilities",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "cơ sở vật chất gồm những gì",
+      "có mấy sân",
+      "phòng gym có gì",
+      "sân nào đang hoạt động",
+      "hệ thống cơ sở",
+      "cơ sở vật chất chi nhánh"
+    ],
+    "answer": "Cơ sở vật chất gồm 3 loại: sân gym, phòng boxing và sân pickleball, mỗi cơ sở có trạng thái hoạt động, bảo trì hoặc ngừng hoạt động. Bạn hỏi cơ sở vật chất tại chi nhánh đó để xem danh sách thật.",
+    "link": "/member/home",
+    "source": "FacilityType; FacilityStatus",
+    "tags": ["co so vat chat"]
+  },
+
+  {
+    "id": "staff_member_create_edit",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "tạo hội viên mới",
+      "sửa thông tin hội viên",
+      "thêm khách hàng vào hệ thống",
+      "nhân viên thêm hội viên",
+      "cập nhật hội viên",
+      "đăng ký khách ở quầy"
+    ],
+    "answer": "Bạn vào trang Hội viên: bấm Thêm hội viên để tạo (kèm luôn tài khoản đăng nhập), và Sửa để cập nhật thông tin. Nhân viên chỉ thao tác được trong chi nhánh của mình.",
+    "link": "/manager/members",
+    "source": "MemberController.create; UiController.managerMembers",
+    "tags": ["hoi vien"]
+  },
+  {
+    "id": "staff_member_status",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "đổi trạng thái hội viên",
+      "khóa hội viên",
+      "kích hoạt hội viên",
+      "ngừng hoạt động hội viên",
+      "chuyển hội viên sang inactive",
+      "mở lại hội viên"
+    ],
+    "answer": "Tại trang Hội viên, dùng nút đổi trạng thái; hội viên ngừng hoạt động thì tài khoản đăng nhập tự chuyển sang DISABLED. Thao tác chỉ áp dụng cho chi nhánh của bạn.",
+    "link": "/manager/members",
+    "source": "MemberService; MemberController.update",
+    "tags": ["hoi vien", "trang thai"]
+  },
+  {
+    "id": "staff_sales",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "bán hàng ở trang nào",
+      "thanh toán tại quầy",
+      "bán sản phẩm cho khách",
+      "tạo đơn hàng",
+      "thu tiền tại quầy",
+      "bán hàng cho hội viên"
+    ],
+    "answer": "Bạn vào trang Bán hàng: chọn sản phẩm, tạo đơn, thu tiền. Hội viên không tự tạo được đơn — mọi đơn do nhân viên hoặc quản trị viên lập.",
+    "link": "/manager/sales",
+    "source": "UiController.managerSales; OrderController",
+    "tags": ["ban hang", "thanh toan"]
+  },
+  {
+    "id": "staff_checkin_manual",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "check-in thủ công cho khách",
+      "nhập mã hội viên check in",
+      "khách không có qr",
+      "check in bằng tay",
+      "nhập mã vào quầy",
+      "hướng dẫn khách check in thủ công"
+    ],
+    "answer": "Bạn vào trang Check-in rồi nhập mã hội viên (GF cộng 8 chữ số) hoặc số điện thoại rồi bấm Check-in. Hệ thống tự kiểm gói, chi nhánh, dịch vụ và chống trùng trong 5 phút.",
+    "link": "/manager/checkins",
+    "source": "CheckInService.manual; CheckInController",
+    "tags": ["check in"]
+  },
+  {
+    "id": "staff_scan_qr",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "quét qr hội viên",
+      "khách đưa qr thì làm gì",
+      "quét mã qr ở đâu",
+      "dùng máy quét mã",
+      "check in bằng qr cho khách",
+      "quét qr báo lỗi"
+    ],
+    "answer": "Ở trang Check-in, dùng ô quét QR — mã có hiệu lực 60 giây và chỉ dùng một lần; nếu khách báo lỗi thì cho họ mở lại trang QR để lấy mã mới.",
+    "link": "/manager/checkins",
+    "source": "CheckInService.qr",
+    "tags": ["qr", "check in"]
+  },
+  {
+    "id": "staff_checkin_rejected",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "xem ca check-in bị từ chối",
+      "khách bị từ chối check in thì làm sao",
+      "lý do check in thất bại",
+      "xử lý check-in lỗi",
+      "khách không vào được",
+      "ca bị reject ở đâu"
+    ],
+    "answer": "Trang Check-in có lọc các ca bị từ chối kèm lý do để bạn hỗ trợ khách (thiếu gói, sai dịch vụ, sai chi nhánh, gói không hợp lệ, trùng 5 phút). Nhân viên không tự chấp nhận được ca bị từ chối — khách cần có gói hợp lệ.",
+    "link": "/manager/checkins",
+    "source": "CheckInService.reject; UiController.managerCheckIns",
+    "tags": ["check in", "tu choi"]
+  },
+  {
+    "id": "staff_bookings",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "xem lịch đặt của khách",
+      "hủy lịch cho khách",
+      "đặt lịch hộ khách",
+      "quản lý đặt lịch ở đâu",
+      "tạo lịch cho hội viên",
+      "sửa lịch đặt"
+    ],
+    "answer": "Bạn vào trang Đặt lịch: xem lịch trong ngày, hủy lịch hoặc đặt hộ hội viên (tại quầy được chọn hội viên khi tạo). Hủy hộ vẫn áp dụng luật hủy trước 2 giờ.",
+    "link": "/manager/bookings",
+    "source": "BookingController; BookingService.resolveMemberId",
+    "tags": ["dat lich", "huy lich"]
+  },
+  {
+    "id": "staff_inventory",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "điều chỉnh tồn kho",
+      "nhập hàng vào kho",
+      "cập nhật số lượng sản phẩm",
+      "kho hụt hàng",
+      "xem tồn kho ở đâu",
+      "sửa số lượng tồn"
+    ],
+    "answer": "Điều chỉnh tồn kho qua API /api/v1/inventory/adjust (nhân viên và quản trị đều có quyền). Lưu ý giao diện tồn kho chỉ có ở trang quản trị — nhân viên thao tác qua API hoặc nhờ quản trị.",
+    "link": "/admin/inventory",
+    "source": "InventoryController; UiController.adminInventory",
+    "tags": ["kho", "san pham"]
+  },
+  {
+    "id": "staff_reports",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "xem báo cáo doanh thu",
+      "doanh thu hôm nay",
+      "báo cáo theo dịch vụ",
+      "xem thống kê chi nhánh",
+      "doanh thu tuần này",
+      "báo cáo ở đâu"
+    ],
+    "answer": "Bạn gọi API báo cáo /api/v1/reports/dashboard, /revenue và /services — dữ liệu luôn bị ép về đúng chi nhánh của nhân viên. Giao diện báo cáo đầy đủ nằm ở trang quản trị /admin/reports.",
+    "link": "/admin/reports",
+    "source": "ReportService.resolveBranch; UiController.adminReports",
+    "tags": ["bao cao", "doanh thu"]
+  },
+  {
+    "id": "staff_invoice",
+    "roles": ["BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "in hóa đơn cho khách",
+      "xuất hóa đơn tại quầy",
+      "hóa đơn pdf ở đâu",
+      "khách xin hóa đơn",
+      "tải hóa đơn giúp khách",
+      "in hóa đơn đơn hàng"
+    ],
+    "answer": "Tại trang Bán hàng có nút Tải hóa đơn cho đơn đã thanh toán; file PDF lấy từ API /api/v1/orders/{id}/invoice.",
+    "link": "/manager/sales",
+    "source": "InvoiceController.invoice; static/js/core/invoice.js",
+    "tags": ["hoa don"]
+  },
+
+  {
+    "id": "admin_branches",
+    "roles": ["ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "tạo chi nhánh mới",
+      "sửa chi nhánh",
+      "thêm phòng tập",
+      "quản lý chi nhánh",
+      "bật tắt chi nhánh",
+      "cập nhật địa chỉ chi nhánh"
+    ],
+    "answer": "Bạn vào trang Chi nhánh: tạo, sửa và bật tắt chi nhánh qua API POST và PUT /api/v1/branches. Chỉ quản trị viên.",
+    "link": "/admin/branches",
+    "source": "BranchController; UiController.adminBranches",
+    "tags": ["chi nhanh"]
+  },
+  {
+    "id": "admin_branch_config",
+    "roles": ["ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "cấu hình giờ mở cửa",
+      "thêm dịch vụ cho chi nhánh",
+      "sửa thời lượng buổi tập",
+      "cấu hình dịch vụ chi nhánh",
+      "đổi giờ mở cửa",
+      "bật tắt dịch vụ"
+    ],
+    "answer": "Cùng tại trang Chi nhánh: API /api/v1/branches/{id}/services cho dịch vụ và thời lượng buổi, /api/v1/branches/{id}/operating-hours cho giờ mở cửa theo ngày. Chỉ ADMIN.",
+    "link": "/admin/branches",
+    "source": "BranchController; UiController.adminBranches",
+    "tags": ["gio mo cua", "dich vu"]
+  },
+  {
+    "id": "admin_plans",
+    "roles": ["ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "tạo gói tập mới",
+      "sửa giá gói",
+      "thêm gói tập",
+      "quản lý gói tập",
+      "tắt gói tập",
+      "cập nhật thời lượng gói"
+    ],
+    "answer": "Bạn vào trang Gói tập: POST và PUT /api/v1/plans để tạo hoặc sửa, PATCH /api/v1/plans/{id}/status để bật tắt. Chỉ ADMIN.",
+    "link": "/admin/plans",
+    "source": "PlanController; static/js/admin/plans.js",
+    "tags": ["goi tap"]
+  },
+  {
+    "id": "admin_products",
+    "roles": ["ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "tạo sản phẩm mới",
+      "sửa sản phẩm",
+      "thêm hàng vào bán",
+      "quản lý sản phẩm",
+      "đặt lại ngưỡng sắp hết hàng",
+      "thêm danh mục sản phẩm"
+    ],
+    "answer": "Bạn vào trang Sản phẩm và Kho: POST /api/v1/products và PUT /api/v1/products/{id}. Ngưỡng sắp hết hàng mặc định là 10 (cấu hình trong ứng dụng).",
+    "link": "/admin/inventory",
+    "source": "ProductController; gymfit.chatbot.low-stock-threshold",
+    "tags": ["san pham", "kho"]
+  },
+  {
+    "id": "admin_users",
+    "roles": ["ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "quản lý người dùng",
+      "tạo tài khoản admin",
+      "khóa tài khoản người dùng",
+      "cấp quyền người dùng",
+      "xem danh sách tài khoản",
+      "đổi vai trò người dùng"
+    ],
+    "answer": "Bạn vào trang Người dùng với API GET, POST và PUT /api/v1/users — toàn bộ chỉ ADMIN. Dùng để tạo, sửa, khóa hoặc mở tài khoản.",
+    "link": "/admin/users",
+    "source": "UserController; UiController.adminUsers",
+    "tags": ["tai khoan"]
+  },
+  {
+    "id": "admin_audit",
+    "roles": ["ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "xem nhật ký hệ thống",
+      "ai đã thao tác gì",
+      "log hệ thống ở đâu",
+      "nhật ký hoạt động",
+      "truy vết thao tác",
+      "audit log"
+    ],
+    "answer": "Nhật ký hệ thống lấy qua API GET /api/v1/audit (chỉ ADMIN) và hiển thị ngay trong trang Báo cáo — hiện chưa có trang nhật ký riêng.",
+    "link": "/admin/reports",
+    "source": "AuditController.list; static/js/admin/reports.js",
+    "tags": ["nhat ky"]
+  },
+  {
+    "id": "admin_reports",
+    "roles": ["ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "báo cáo toàn hệ thống",
+      "doanh thu tất cả chi nhánh",
+      "thống kê toàn công ty",
+      "so sánh chi nhánh",
+      "báo cáo tổng hợp",
+      "xem báo cáo ở đâu"
+    ],
+    "answer": "Bạn vào trang Báo cáo với 3 API: tổng quan, doanh thu theo khoảng ngày và doanh thu theo dịch vụ. Chỉ ADMIN thấy toàn hệ thống; nhân viên chỉ thấy chi nhánh mình.",
+    "link": "/admin/reports",
+    "source": "ReportController; UiController.adminReports",
+    "tags": ["bao cao", "doanh thu"]
+  },
+
+  {
+    "id": "bot_capabilities",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "bạn làm được gì",
+      "bot giúp được gì",
+      "trợ lý ảo làm được gì",
+      "chat được gì với bạn",
+      "chức năng của chatbot",
+      "giới thiệu trợ lý"
+    ],
+    "answer": "Mình xem được gói tập, lịch tập, check-in, đơn hàng; đặt và hủy lịch giúp bạn; tra kho FAQ, quy định, giờ mở cửa. Nhân viên còn xem báo cáo, tồn kho và ca check-in.",
+    "link": "/member/home",
+    "source": "DialogueManager.indexHandlers",
+    "tags": ["tro ly"]
+  },
+  {
+    "id": "bot_conversation_privacy",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "bot có lưu hội thoại không",
+      "chat có bị xem không",
+      "trợ lý lưu tin nhắn thế nào",
+      "dữ liệu chat được bảo mật không",
+      "xóa lịch sử chat",
+      "bot có đọc tin nhắn của tôi không"
+    ],
+    "answer": "Hội thoại được lưu để cải thiện bot, nhưng trước khi lưu mình che số điện thoại, email và token; tin nhắn bị cắt còn 2000 ký tự. Hiện chưa có chức năng xóa lịch sử chat theo thời hạn.",
+    "link": "/member/home",
+    "source": "PrivacyGuard.mask; ChatSessionService.appendUser",
+    "tags": ["bao mat", "hoi thoai"]
+  },
+  {
+    "id": "bot_feedback",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "ACTIVE",
+    "questions": [
+      "trả lời sai thì làm sao",
+      "bấm nút không thích để làm gì",
+      "gửi phản hồi cho bot",
+      "câu trả lời không đúng",
+      "đánh giá câu trả lời",
+      "báo lỗi cho trợ lý"
+    ],
+    "answer": "Bạn bấm nút không thích dưới câu trả lời — hệ thống ghi lại câu đó làm ứng viên huấn luyện để cải thiện. Bấm thích nếu câu trả lời đúng.",
+    "link": "/admin/chatbot",
+    "source": "ChatService.feedback; ChatSessionService.createCandidate",
+    "tags": ["phan hoi"]
+  },
+  {
+    "id": "bot_human_contact",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "NOT_SUPPORTED",
+    "questions": [
+      "gọi cho nhân viên tư vấn",
+      "liên hệ hỗ trợ",
+      "trò chuyện với người thật",
+      "trang hỗ trợ ở đâu",
+      "khiếu nại dịch vụ",
+      "gặp quản lý"
+    ],
+    "answer": "Bạn gọi số điện thoại của chi nhánh (hỏi mình thông tin chi nhánh đó) hoặc bấm nút không thích để báo câu trả lời chưa đúng.",
+    "link": "",
+    "source": "Không tìm thấy route hỗ trợ/feedback trong UiController",
+    "tags": ["lien he"]
+  },
+  {
+    "id": "pending_plan_advisor",
+    "roles": ["MEMBER", "BRANCH_MANAGER", "ADMIN"],
+    "status": "PENDING_FEATURE",
+    "questions": [
+      "gợi ý gói tập phù hợp cho tôi",
+      "bạn gợi ý gói nào cho mình",
+      "tư vấn chọn gói tập",
+      "chọn gói nào hợp với người mới tập",
+      "gói nào phù hợp với túi tiền của tôi",
+      "nên mua gói nào cho người mới"
+    ],
+    "answer": "Tính năng tư vấn chọn gói tự động chưa được triển khai. Bạn xem bảng giá tại trang Gói tập hoặc hỏi nhân viên chi nhánh.",
+    "link": "/member/plans",
+    "source": "Chưa có trong code - plan V2-7 (PlanAdvisorFlow)",
+    "tags": ["goi tap", "tu van"]
+  }
+]
