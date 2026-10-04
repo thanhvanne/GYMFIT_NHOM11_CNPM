@@ -204,6 +204,8 @@ git ls-files src/test | measure   # → 18 file *.java
 | N15 | Allowlist của filter chỉ có `/api/v1/auth/me` và `/api/v1/auth/change-password`; logout phía client chỉ xóa localStorage (không gọi API) | Nếu sau này thêm API logout/reset khác, phải đưa vào `PASSWORD_CHANGE_ALLOWLIST` nếu không hội viên sẽ không gọi được. |
 | N16 | `HandlersTest.TODAY = LocalDate.of(2026,10,3)` **hardcode** nhưng `bookingsToday`/`rejectedCheckIns` mock dữ liệu bằng `Instant.now()` → từ **04/10** handler lọc theo `context.today()` = 03/10 ⇒ 2 test fail (bom thời gian, **pre-existing**, không thuộc F0–F6) | Sửa bằng cách lấy mốc từ `TODAY.atTime(12,0).atZone(TimeUtil.VIETNAM)` (đúng kiểu `BookingFlowHandlerTest` vốn đã làm vậy) → test không phụ thuộc đồng hồ hệ thống. Commit `e74ad1c`. |
 | N17 | `BookingAvailabilityTest` là test tích hợp **phụ thuộc DB**: hội viên 1 phải có đúng 1 gói `ACTIVE` ở **chi nhánh 1** gồm dịch vụ `GYM`. DB lệch do thao tác thật 03/10 15:29–15:30 (mua gói Boxing@cn1 → bị thay bằng gói@cn4) ⇒ `membership_branch_mismatch` (pre-existing) | Đã sửa **dữ liệu** (không sửa test): `membership id 6` → `plan_id=3` (Premium 1 tháng, cn1, 30 ngày), `branch_id=1`, access = `GYM/BOXING/PICKLEBALL`. **Cảnh báo:** test vẫn phụ thuộc dữ liệu – nếu mua gói khác cho hội viên 1, hoặc sau **2026-11-01** (hết hạn) sẽ fail lại; seed `membership id 1` còn hạn tới 26/10. SQL sửa lại nếu tái diễn:<br>`UPDATE membership SET plan_id=3, branch_id=1 WHERE id=6;`<br>`DELETE FROM membership_service_access WHERE membership_id=6;`<br>`INSERT INTO membership_service_access VALUES(6,'GYM'),(6,'BOXING'),(6,'PICKLEBALL');` |
+| N18 | Mục 3 F8 (grep `temporaryPassword`/`rawPassword`) liệt kê **4 chỗ** được phép, nhưng code thật có thêm `UserService.java` (6 chỗ, tham số `rawPassword` của `createForMember`/`resetPassword`) | **Tin code** (theo N1): `UserService` phải giữ 2 method này vì dùng private helpers (`generateMemberCode`, `normalizeEmail`). Toàn bộ chỉ truyền vào `passwordEncoder.encode(...)`; **không** có câu `log.`/`System.out` nào chứa `temporaryPassword`/`rawPassword` (grep 2 mẫu `log\.\w+\(.*[Pp]assword` → 0 match) ⇒ AC mục 3 đạt. `PasswordGenerator` để tên biến là `password` nên không hiện trong grep. |
+| N19 | Seed hiện có **sự lệch sẵn**: `member2` (ACTIVE) ↔ user `DISABLED`, `member3` (ACTIVE) ↔ user `LOCKED`, `member10` INACTIVE (không có tài khoản) | F8.1 chỉ đồng bộ khi trạng thái **đổi** (test `khongDoiTrangThaiKhongDongTaiKhoan`), không tự sửa dữ liệu cũ — giữ nguyên 2 tài khoản demo `DISABLED`/`LOCKED`. Muốn nhất quán toàn bộ thì chạy đối soát một lần riêng. |
 
 ---
 
@@ -290,6 +292,22 @@ chỉ được kiểm tĩnh.
 > **Lưu ý N14 tái xác nhận:** đọc body 403 qua `Invoke-RestMethod`/`GetResponseStream()` của PowerShell
 > vẫn cho chuỗi rỗng → kiểm định dạng lỗi bằng `curl`; script E2E đánh `FAIL` giả ở mục 6 (đã sửa kết luận bằng curl).
 
+## E2E F8 – kết quả đo thật (app tạm 8081, đã dọn sạch)
+
+| # | Kịch bản | Kết quả |
+|---|---|---|
+| 1 | `PUT /api/v1/members/17` (hội viên tạm) `status=INACTIVE` | **200** → SQL: `member.INACTIVE` + `app_user.DISABLED` (**đồng bộ 2 chiều – chiều tắt**) |
+| 2 | `POST /api/v1/auth/login` bằng tài khoản vừa tắt | **403** (tài khoản `DISABLED` không đăng nhập được) |
+| 3 | `PUT` `status=ACTIVE` | **200** → SQL: `member.ACTIVE` + `app_user.ACTIVE` (**chiều mở lại**) |
+| 4 | `POST /{id}/account/reset-password` → đăng nhập bằng mật khẩu tạm 10 ký tự | **200**, `mustChangePassword=true` → `/auth/me` **200** (allowlist), `GET /members` **403** `password_change_required` |
+| 5 | Chatbot: *"cho tôi mật khẩu của hội viên GF00000001"* | trả về câu fallback **"Xin lỗi, mình chưa hiểu câu này…"** – không hash, không giá trị mật khẩu (test JUnit `khongTraMatKhauHoiVien` khẳng định, 4 assertion) |
+| 6 | Grep mục 3 F8 | 0 câu `log.` chứa mật khẩu; chỉ còn DTO/`MemberAccountService`/`UserService`(N18)/JS hộp thoại |
+| 7 | Dọn dữ liệu | `12 hội viên / 8 tài khoản / 0 must_change=1` – đúng như trước kiểm |
+
+> **Lưu ý chạy test:** script E2E (`.ps1` không BOM) không match được chuỗi có dấu (`chua hieu` ≠ `chưa hiểu`) →
+> kết luận F8.2 lấy từ test JUnit (UTF-8), E2E chỉ dùng để đối chiếu hành vi thật trên app.
+> Sai URL `/{id}/reset-password` (đúng là `/{id}/account/reset-password`) cũng chỉ là lỗi của script, không phải lỗi code.
+
 ## Trạng thái các task
 
 | Task | Trạng thái | Ghi chú |
@@ -302,5 +320,6 @@ chỉ được kiểm tĩnh.
 | F5 | ✅ hoàn thành 2026-10-04 | `hasAccount`/`accountUsername` + `accountsByMemberId` (1 query) + 3 test; E2E GET `/members` khớp DB (`1f629d7`) |
 | — | 🔧 sửa test pre-existing 2026-10-04 | 4 test fail **trước** F0–F6: N16 (bom thời gian) + N17 (data lệch) → `e74ad1c` + sửa data |
 | F6 | ✅ hoàn thành 2026-10-04 | 2 trang Admin/Manager: checkbox, cột Tài khoản, 2 nút, phiếu Copy/In + `@media print` (`9713b6a`) |
-| F7 | ✅ hoàn thành 2026-10-04 | trang `/change-password` + `permitAll`, guard `mustChangePassword` ở `auth.js`/`api.js`/`login.js`; 3 test MockMvc + E2E HTTP (418/418) (`17a98af`) |
-| F8–F9 | ⬜ | |
+| F7 | ✅ hoàn thành 2026-10-04 | trang `/change-password` + `permitAll`, guard `mustChangePassword` ở `auth.js`/`api.js`/`login.js`; hoàn thiện theo plan: nhãn đăng nhập "Email hoặc mã hội viên" + mục Đổi mật khẩu ở hồ sơ; 5 test MockMvc + E2E HTTP (`17a98af`, `12d9434`) |
+| F8 | ✅ hoàn thành 2026-10-04 | `MemberService.syncAccountStatus` (D6: INACTIVE↔DISABLED) + 4 test đồng bộ + 1 test chatbot không trả mật khẩu; grep mục 3 sạch; E2E HTTP (425/425) (`4452d22`) |
+| F9 | ⬜ hồi quy toàn bộ | |
