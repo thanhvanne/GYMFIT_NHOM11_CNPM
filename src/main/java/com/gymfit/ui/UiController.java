@@ -80,6 +80,15 @@ public class UiController {
         return "admin/users";
     }
 
+    /**
+     * Trang quản trị chatbot (V2-1): gán nhãn câu hỏi bot trả lời chưa chắc
+     * chắn, xem thống kê và export {@code seed_from_logs.jsonl}.
+     */
+    @GetMapping("/admin/chatbot")
+    public String adminChatbot() {
+        return "admin/chatbot";
+    }
+
     @GetMapping("/manager/dashboard")
     public String managerDashboard() {
         return "manager/dashboard";

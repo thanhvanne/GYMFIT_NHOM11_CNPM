@@ -199,3 +199,73 @@ Số liệu đầy đủ: **`docs/chatbot/baseline-v1.md`** (train/val/test/hold
 6. **Ghi chú script `.ps1` tiếng Việt**: PowerShell 5.1 gửi body theo ANSI ⇒ server trả
    **500** `Invalid UTF-8 middle byte`. Phải ghi
    `-ContentType "application/json; charset=utf-8"` **và** lưu file `.ps1` có **BOM**.
+
+---
+
+## 4. Ghi nhận V2-1 — Khép vòng gán nhãn (2026-10-04)
+
+### 4.1 Đã làm
+
+| Thành phần | File |
+|---|---|
+| API | `chat/admin/ChatbotAdminController.java` (5 endpoint, `@PreAuthorize("hasRole('ADMIN')")` **ở cấp class**) |
+| Nghiệp vụ | `chat/admin/ChatbotAdminService.java` |
+| DTO | `chat/admin/dto/{CandidateResponse,CandidatePageResponse,CandidateLabelRequest,IntentOptionResponse,FeedbackCountResponse,ChatbotStatsResponse}.java` |
+| Trang | `templates/admin/chatbot.html` + `static/js/admin/chatbot.js` |
+| Route | `UiController` → `GET /admin/chatbot` |
+| Menu | thêm mục **Chatbot** vào **12 file** `templates/admin/*.html` |
+| Repo | `ChatTrainingCandidateRepository.findTop20ByStatus…`, `ChatMessageRepository.{findByRoleAndCreatedAtUtcAfter,findTop500ByFeedbackNotNullOrderByIdDesc}` |
+| Test | `chat/admin/ChatbotAdminEndpointTest` — **14 test** |
+
+API: `GET /candidates?status&page&size` · `PUT /candidates/{id}` `{label,status}` ·
+`GET /intents` · `GET /export` (JSONL, `application/jsonl`, `attachment; filename="seed_from_logs.jsonl"`) ·
+`GET /stats`.
+
+Mã lỗi: `page_invalid` / `size_invalid` (giới hạn 1–100) / `candidate_status_invalid` /
+`candidate_label_required` / `candidate_label_unknown` / `candidate_not_found`.
+
+### 4.2 E2E HTTP thật (app 8081) — 9/9 PASS
+
+```
+1. stats 200      tin24h=43  fallback=0.186  cho=21  daGan=0
+2. intents 200    36 nhãn (GREETING / SMALLTALK)
+3. candidates 200 total=21 page=0 items=5
+4. PUT gắn nhãn   200 id=62 status=LABELED label=LIST_PLANS labeledAtUtc=…Z
+5. export 200     attachment; filename="seed_from_logs.jsonl"
+                  {"text":"E2E V2-1 candidate","intent":"LIST_PLANS","group":"CAND#62"}
+6. quyền          manager=403  member=403  chưa đăng nhập=403
+7. nghiệp vụ      nhãn không tồn tại → 400
+8. GET /admin/chatbot 200 (5.686 ký tự), đủ JS + nội dung
+9. menu Chatbot có ở /admin/users
+```
+
+Full suite sau V2-1: **452/452 PASS** (`mvn test`, exit=0).
+
+### 4.3 Lỗi đã gặp + phát hiện
+
+- **N10 `created_at_utc` không có `@PrePersist`** – bảng có
+  `DEFAULT SYSUTCDATETIME()` nhưng Hibernate vẫn **INSERT NULL** khi entity để trống
+  (mapper sinh cột đầy đủ) ⇒ `INSERT fails`. Mọi chỗ tự `builder()` phải set
+  `.createdAtUtc(TimeUtil.now())` như `ChatSessionService.createCandidate` đang làm.
+- **N11 Định nghĩa "% fallback"** = câu trả lời bot có `intent = OUT_OF_SCOPE`
+  **hoặc** `confidence < threshold-clarify (0,40)` — đúng nhánh `DialogueManager.gate`.
+  Lưu ý: câu OOS **có độ tin cậy cao** vẫn là fallback nhưng **không** tạo candidate
+  (`recordCandidate` chỉ ghi khi `confidence < clarify`) → `candidates` ≠ tổng số fallback.
+- **N12 `seed_from_logs.jsonl` chưa tồn tại** trong `src/main/resources/chatbot/`
+  (`DatasetGenerator.loadSeedFromLogs` bỏ qua nếu thiếu file) ⇒ export là bước đầu tiên
+  của vòng huấn luyện, chưa có mẫu nào để so.
+- **N13 Menu admin không có fragment** – sidebar chép tay trong **12** template;
+  thêm 1 trang admin là phải sửa cả 12 file (đã làm, neo vào `</nav>`).
+- **N14 Còn 20 ứng viên `PENDING`** (id 13–32) tạo ra từ các lượt chat test/benchmark:
+  "tôi muốn gặp nhân viên", "mã hội viên của tôi là gì", "có sân pickleball không"…
+  Đây là câu **thật** bot trả lời chưa chắc nên **giữ lại làm dữ liệu demo**;
+  muốn xóa:
+  `DELETE FROM chat_training_candidate WHERE status='PENDING';`
+
+### 4.4 Chưa làm / ngoài phạm vi V2-1
+
+- Chưa có nút "huấn luyện lại" từ trang admin (phải chạy tay `mvn exec:java@train`) — theo plan,
+  vòng huấn luyện nằm ở V2-14.
+- Chưa có `GET /api/v1/chatbot/kb/reload` (P2, mục 5.3 plan).
+- Chưa đếm được **tỷ lệ 👎 theo % trên tổng số câu trả lời** (chỉ có % 👎 trên các câu
+  **được đánh giá**) — thiếu cột tổng đánh giá theo intent.

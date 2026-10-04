@@ -24,6 +24,11 @@ public interface ChatTrainingCandidateRepository
             String status
     );
 
+    /** 20 câu fallback mới nhất – dùng cho trang quản trị. */
+    List<ChatTrainingCandidate> findTop20ByStatusOrderByCreatedAtUtcDesc(
+            String status
+    );
+
     long countByStatus(
             String status
     );

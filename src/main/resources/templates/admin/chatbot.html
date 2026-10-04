@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Chatbot - GYMFIT</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+</head>
+
+<body class="app-page">
+
+<aside class="sidebar">
+
+    <a class="sidebar-brand"
+       href="/admin/dashboard">
+        <span class="brand-mark">G</span>
+        <span>GYMFIT</span>
+    </a>
+
+    <nav class="sidebar-nav">
+        <a class="nav-item"
+           href="/admin/dashboard">
+            Tổng quan
+        </a>
+
+        <a class="nav-item"
+           href="/admin/branches">
+            Chi nhánh
+        </a>
+
+        <a class="nav-item"
+           href="/admin/members">
+            Hội viên
+        </a>
+
+        <a class="nav-item"
+           href="/admin/plans">
+            Gói tập
+        </a>
+
+        <a class="nav-item"
+           href="/admin/sales">
+            Bán hàng
+        </a>
+
+        <a class="nav-item"
+           href="/admin/bookings">
+            Đặt lịch
+        </a>
+
+        <a class="nav-item"
+           href="/admin/checkins">
+            Check-in
+        </a>
+
+        <a class="nav-item"
+           href="/admin/reports">
+            Báo cáo
+        </a>
+
+        <a class="nav-item"
+           href="/admin/users">
+            Người dùng
+        </a>
+
+        <a class="nav-item active"
+           href="/admin/chatbot">
+            Chatbot
+        </a>
+    </nav>
+
+    <button id="logout-button"
+            class="sidebar-logout">
+        Đăng xuất
+    </button>
+
+</aside>
+
+<main class="app-content">
+
+    <header class="page-header">
+        <div>
+            <h1>Chatbot</h1>
+            <p class="muted">
+                Gán nhãn câu hỏi bot trả lời chưa chắc chắn rồi export
+                sang file huấn luyện
+            </p>
+        </div>
+    </header>
+
+    <div id="page-error"
+         class="alert alert-error hidden"></div>
+
+    <div id="page-success"
+         class="alert alert-success hidden"></div>
+
+    <section class="stats-grid">
+
+        <article class="stat-card">
+            <span>Tin 24 giờ qua</span>
+            <strong id="stat-messages">—</strong>
+        </article>
+
+        <article class="stat-card">
+            <span>Tỷ lệ fallback 24h</span>
+            <strong id="stat-fallback">—</strong>
+        </article>
+
+        <article class="stat-card">
+            <span>Chờ gán nhãn</span>
+            <strong id="stat-pending">—</strong>
+        </article>
+
+        <article class="stat-card">
+            <span>Đã gán / bị loại</span>
+            <strong id="stat-labeled">—</strong>
+        </article>
+
+    </section>
+
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <div>
+                <h2>Phản hồi 👍/👎 theo intent</h2>
+
+                <p class="muted">
+                    Câu trả lời nào đang bị người dùng đánh giá thấp nhất
+                </p>
+            </div>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+
+                <thead>
+                <tr>
+                    <th>Intent</th>
+                    <th>👍</th>
+                    <th>👎</th>
+                    <th>Tỷ lệ 👎</th>
+                </tr>
+                </thead>
+
+                <tbody id="feedback-table-body">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <div>
+                <h2>Câu hỏi chờ gán nhãn</h2>
+
+                <p class="muted">
+                    Chọn nhãn rồi bấm "Gán nhãn" – câu đã gán mới được đưa
+                    vào file export
+                </p>
+            </div>
+
+            <button id="export-button"
+                    type="button"
+                    class="button button-secondary button-small">
+                Tải file seed_from_logs.jsonl
+            </button>
+
+        </div>
+
+        <div class="toolbar">
+
+            <select id="candidate-status-filter">
+
+                <option value="">Tất cả trạng thái</option>
+
+                <option value="PENDING">Chờ gán nhãn</option>
+
+                <option value="LABELED">Đã gán nhãn</option>
+
+                <option value="REJECTED">Bị loại</option>
+
+            </select>
+
+            <button id="refresh-button"
+                    type="button"
+                    class="button button-secondary button-small">
+                Tải lại
+            </button>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table class="data-table">
+
+                <thead>
+                <tr>
+                    <th>Câu hỏi</th>
+                    <th>Mô hình dự đoán</th>
+                    <th>Tin cậy</th>
+                    <th>Nhãn</th>
+                    <th>Trạng thái</th>
+                    <th>Thời điểm</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody id="candidate-table-body">
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="toolbar">
+
+            <button id="prev-page"
+                    type="button"
+                    class="button button-secondary button-small">
+                Trang trước
+            </button>
+
+            <span id="page-info"
+                  class="muted">—</span>
+
+            <button id="next-page"
+                    type="button"
+                    class="button button-secondary button-small">
+                Trang sau
+            </button>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script th:src="@{/js/core/api.js}"></script>
+<script th:src="@{/js/core/auth.js}"></script>
+<script th:src="@{/js/admin/chatbot.js}"></script>
+
+</body>
+
+</html>
