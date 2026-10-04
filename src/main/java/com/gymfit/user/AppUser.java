@@ -35,6 +35,13 @@ public class AppUser {
     @Column(name = "status", nullable = false, length = 20)
     private UserStatus status;
 
+    /**
+     * Bắt buộc đổi mật khẩu ở lần đăng nhập đầu (D3).
+     * Mật khẩu tạm do hệ thống sinh khi cấp tài khoản hội viên.
+     */
+    @Column(name = "must_change_password", nullable = false)
+    private boolean mustChangePassword;
+
     @Column(name = "branch_id")
     private Long branchId;
 

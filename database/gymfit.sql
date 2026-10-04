@@ -192,6 +192,8 @@ CREATE TABLE app_user (
                           status VARCHAR(20) NOT NULL,
                           branch_id BIGINT NULL,
                           member_id BIGINT NULL,
+                          must_change_password BIT NOT NULL
+                              CONSTRAINT DF_app_user_must_change_password DEFAULT 0,
                           created_at_utc DATETIME2(0) NOT NULL CONSTRAINT DF_app_user_created_at DEFAULT SYSUTCDATETIME(),
                           updated_at_utc DATETIME2(0) NOT NULL CONSTRAINT DF_app_user_updated_at DEFAULT SYSUTCDATETIME(),
 

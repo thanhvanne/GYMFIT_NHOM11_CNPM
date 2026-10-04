@@ -22,6 +22,7 @@ public class AppPrincipal implements UserDetails {
     private final String passwordHash;
     private final RoleCode role;
     private final UserStatus status;
+    private final boolean mustChangePassword;
 
     public AppPrincipal(AppUser user) {
         this.userId = user.getId();
@@ -32,6 +33,7 @@ public class AppPrincipal implements UserDetails {
         this.passwordHash = user.getPasswordHash();
         this.role = user.getRoleCode();
         this.status = user.getStatus();
+        this.mustChangePassword = user.isMustChangePassword();
     }
 
     @Override
