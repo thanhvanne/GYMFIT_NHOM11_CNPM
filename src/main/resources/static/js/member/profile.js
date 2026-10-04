@@ -15,6 +15,14 @@ document.addEventListener(
             () => Auth.logout()
         );
 
+        // F7.5 – đổi mật khẩu từ hồ sơ
+        document.getElementById(
+            "profile-password-form"
+        ).addEventListener(
+            "submit",
+            changePassword
+        );
+
         try {
             const member =
                 await Api.get(
@@ -175,4 +183,91 @@ function showError(message) {
 
     box.textContent = message;
     box.classList.remove("hidden");
+}
+
+// ------------------------------------------------------------------
+// F7.5 – đổi mật khẩu (cùng API với trang /change-password)
+// Mật khẩu chỉ nằm trong ô nhập: không log, không ghi localStorage.
+// ------------------------------------------------------------------
+
+async function changePassword(event) {
+    event.preventDefault();
+
+    hideBox("profile-password-error");
+    hideBox("profile-password-success");
+
+    const button = document.getElementById(
+        "profile-password-button"
+    );
+
+    button.disabled = true;
+
+    const current = document.getElementById(
+        "profile-current-password"
+    ).value;
+
+    const next = document.getElementById(
+        "profile-new-password"
+    ).value;
+
+    const confirm = document.getElementById(
+        "profile-confirm-password"
+    ).value;
+
+    if (next !== confirm) {
+        showPasswordError(
+            "Mật khẩu nhập lại không khớp."
+        );
+        button.disabled = false;
+        return;
+    }
+
+    try {
+        await Api.post(
+            "/api/v1/auth/change-password",
+            {
+                currentPassword: current,
+                newPassword: next
+            }
+        );
+
+        document
+            .getElementById("profile-password-form")
+            .reset();
+
+        const success = document.getElementById(
+            "profile-password-success"
+        );
+
+        success.textContent = "Đã đổi mật khẩu.";
+        success.classList.remove("hidden");
+    } catch (error) {
+        showPasswordError(messageOf(error));
+    } finally {
+        button.disabled = false;
+    }
+}
+
+function showPasswordError(message) {
+    const box = document.getElementById(
+        "profile-password-error"
+    );
+
+    box.textContent = message;
+    box.classList.remove("hidden");
+}
+
+function hideBox(id) {
+    document.getElementById(id)
+        .classList.add("hidden");
+}
+
+function messageOf(error) {
+    if (error.errors
+        && Object.keys(error.errors).length) {
+        return Object.values(error.errors)
+            .join(". ");
+    }
+
+    return error.message || "Có lỗi xảy ra";
 }

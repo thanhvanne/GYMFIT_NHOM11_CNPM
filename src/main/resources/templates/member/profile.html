@@ -121,6 +121,72 @@
 
         </section>
 
+        <!-- F7.5 – đổi mật khẩu bất cứ lúc nào, cùng API với trang bắt buộc -->
+        <section class="panel member-section">
+
+            <div class="panel-header">
+                <div>
+                    <h2>Đổi mật khẩu</h2>
+                    <p class="muted">
+                        Mật khẩu mới tối thiểu 8 ký tự,
+                        gồm cả chữ và số.
+                    </p>
+                </div>
+            </div>
+
+            <form id="profile-password-form"
+                  class="form-stack">
+
+                <label>
+                    <span>Mật khẩu hiện tại</span>
+                    <input
+                            id="profile-current-password"
+                            type="password"
+                            autocomplete="current-password"
+                            required
+                            placeholder="••••••••">
+                </label>
+
+                <label>
+                    <span>Mật khẩu mới</span>
+                    <input
+                            id="profile-new-password"
+                            type="password"
+                            autocomplete="new-password"
+                            required
+                            minlength="8"
+                            placeholder="••••••••">
+                </label>
+
+                <label>
+                    <span>Nhập lại mật khẩu mới</span>
+                    <input
+                            id="profile-confirm-password"
+                            type="password"
+                            autocomplete="new-password"
+                            required
+                            minlength="8"
+                            placeholder="••••••••">
+                </label>
+
+                <div id="profile-password-error"
+                     class="alert alert-error hidden">
+                </div>
+
+                <div id="profile-password-success"
+                     class="alert alert-success hidden">
+                </div>
+
+                <button
+                        id="profile-password-button"
+                        class="button button-primary"
+                        type="submit">
+                    Đổi mật khẩu
+                </button>
+            </form>
+
+        </section>
+
     </main>
 
     <nav class="member-bottom-nav">
