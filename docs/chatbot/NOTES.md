@@ -173,3 +173,29 @@ Nếu muốn vá: bỏ `/admin/**`,`/manager/**`,`/member/**` khỏi `permitAll`
 13. **Server đang chạy không tự nạp code mới** — `mvnw spring-boot:run`/IntelliJ nạp class lúc
     khởi động; code compile sau đó không áp dụng. Dấu hiệu: chat trả đúng câu placeholder T0
     *"Trợ lý GYMFIT đang được nâng cấp..."* dù code đã sửa → phải **restart** server.
+
+---
+
+## 3. Ghi nhận V2-0 — Chốt đường cơ sở (2026-10-04)
+
+Số liệu đầy đủ: **`docs/chatbot/baseline-v1.md`** (train/val/test/holdout, p95, khoảng trống).
+
+1. **`chat/admin` rỗng** — `src/main/java/com/gymfit/chat/admin/` không có file nào,
+   không có `ChatbotAdminController`, không có trang `/admin/chatbot`
+   → vòng **gán nhãn → export → huấn luyện lại** chưa khép kín (V2-1).
+2. **Chưa có bộ kịch bản hội thoại** — `src/test/resources/scenarios/` không tồn tại,
+   không có `ScenarioRunnerTest`/`ScenarioFixtures` (V2-2).
+3. **Tiền tố mã đơn = `ORD_`** → *đóng mục 1.2 "verify tại T9"*:
+   `OrderService` dòng 120 và `MemberPurchaseService` dòng 102 đều gọi
+   `CodeGenerator.generate("ORD")`. Regex entity `\b(BOOK|ORD|PLAN|MEM|PROD|BILL|PAY)_[0-9A-F]{16}\b`
+   đã bao trúng. Các tiền tố khác cũng xác nhận: `BOOK_`, `PAY_`, `MOMO_`.
+4. **`sessionId` không phải UUID của chính user ⇒ server tạo session MỚI** (mục 4.1 baseline):
+   `ChatSessionService.loadOrCreate` dòng 68–95 chỉ tái sử dụng khi
+   `findByIdAndUserId(sessionId, userId)` khớp, nếu không thì `create()` với `UUID.randomUUID()`.
+   Đo 200 câu ⇒ 201 session mới. Frontend **bắt buộc** nhận `sessionId` từ `ChatResponse`
+   rồi gửi lại ở lượt sau, nếu tự sinh chuỗi tùy ý thì mỗi lượt là phiên mới → mất slot/xác nhận.
+5. **Không được sửa `application.yml` khi đo**: rate-limit 20/phút sẽ cắt sau 20 câu.
+   Khi đo p95 chạy app với `--gymfit.chatbot.rate-limit-per-minute=1000000` (chỉ lúc đo).
+6. **Ghi chú script `.ps1` tiếng Việt**: PowerShell 5.1 gửi body theo ANSI ⇒ server trả
+   **500** `Invalid UTF-8 middle byte`. Phải ghi
+   `-ContentType "application/json; charset=utf-8"` **và** lưu file `.ps1` có **BOM**.
