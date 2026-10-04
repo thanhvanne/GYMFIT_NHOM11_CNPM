@@ -202,6 +202,8 @@ git ls-files src/test | measure   # → 18 file *.java
 | N13 | PLAN F4.3 chỉ ghép `@member.gymfit.local` khi người dùng gõ mã hội viên | Với tài khoản **đang dùng email** (hội viên seed có email), gõ mã sẽ cho tên không tồn tại → đăng nhập fail, không đạt AC F7. ⇒ Bổ sung `AuthService.resolveLogin`: nếu tên ghép không tồn tại thì tra `member.memberCode` → `app_user.email`. Tài khoản sinh theo mã vẫn dùng thẳng (test `maHoiVienCoTaiKhoanTheoMa`). |
 | N14 | Filter ghi `403 password_change_required` bằng **ObjectMapper bean**; nếu serialize lỗi thì rơi về JSON ghi tay `FALLBACK_BODY` + `logger.warn` | Kiểm bằng `curl -D -`: body **213 bytes**, đúng định dạng `ApiError`, `Content-Type: application/json;charset=UTF-8`. Lưu ý: đọc body 403 qua `Invoke-WebRequest` của PowerShell cho length=0 (lỗi đọc stream phía client) – **không phải lỗi server**; dùng curl để đo. |
 | N15 | Allowlist của filter chỉ có `/api/v1/auth/me` và `/api/v1/auth/change-password`; logout phía client chỉ xóa localStorage (không gọi API) | Nếu sau này thêm API logout/reset khác, phải đưa vào `PASSWORD_CHANGE_ALLOWLIST` nếu không hội viên sẽ không gọi được. |
+| N16 | `HandlersTest.TODAY = LocalDate.of(2026,10,3)` **hardcode** nhưng `bookingsToday`/`rejectedCheckIns` mock dữ liệu bằng `Instant.now()` → từ **04/10** handler lọc theo `context.today()` = 03/10 ⇒ 2 test fail (bom thời gian, **pre-existing**, không thuộc F0–F6) | Sửa bằng cách lấy mốc từ `TODAY.atTime(12,0).atZone(TimeUtil.VIETNAM)` (đúng kiểu `BookingFlowHandlerTest` vốn đã làm vậy) → test không phụ thuộc đồng hồ hệ thống. Commit `e74ad1c`. |
+| N17 | `BookingAvailabilityTest` là test tích hợp **phụ thuộc DB**: hội viên 1 phải có đúng 1 gói `ACTIVE` ở **chi nhánh 1** gồm dịch vụ `GYM`. DB lệch do thao tác thật 03/10 15:29–15:30 (mua gói Boxing@cn1 → bị thay bằng gói@cn4) ⇒ `membership_branch_mismatch` (pre-existing) | Đã sửa **dữ liệu** (không sửa test): `membership id 6` → `plan_id=3` (Premium 1 tháng, cn1, 30 ngày), `branch_id=1`, access = `GYM/BOXING/PICKLEBALL`. **Cảnh báo:** test vẫn phụ thuộc dữ liệu – nếu mua gói khác cho hội viên 1, hoặc sau **2026-11-01** (hết hạn) sẽ fail lại; seed `membership id 1` còn hạn tới 26/10. SQL sửa lại nếu tái diễn:<br>`UPDATE membership SET plan_id=3, branch_id=1 WHERE id=6;`<br>`DELETE FROM membership_service_access WHERE membership_id=6;`<br>`INSERT INTO membership_service_access VALUES(6,'GYM'),(6,'BOXING'),(6,'PICKLEBALL');` |
 
 ---
 
@@ -244,6 +246,31 @@ git ls-files src/test | measure   # → 18 file *.java
 | 9 | Đăng nhập lại bằng mật khẩu mới / bằng mã hội viên | **OK**, `mustChangePassword=false`; mật khẩu tạm cũ bị từ chối |
 | 10 | Dọn dữ liệu | `12 hội viên / 8 tài khoản / 0 must_change=1` – đúng như trước kiểm |
 
+## E2E F5 – kết quả đo thật
+
+| # | Kịch bản | Kết quả |
+|---|---|---|
+| 1 | `GET /api/v1/members` (admin, app tạm 8081) | **200**, mỗi phần tử có `hasAccount` + `accountUsername`; 12 hội viên → **3 đã có / 9 chưa có** (khớp `member` LEFT JOIN `app_user`) |
+| 2 | Số query khi list | 1 query `findAllByMemberIdIn` cho toàn bộ trang (không N+1) |
+
+## F6 – kết quả kiểm (2026-10-04, app tạm 8081)
+
+**Kiểm markup/JS/CSS/API qua HTTP (curl + script PowerShell, toàn bộ PASS):**
+
+| # | Kiểm tra | Kết quả |
+|---|---|---|
+| 1 | `/admin/members`, `/manager/members`: checkbox `member-create-account`, cột `<th>Tài khoản</th>`, bảng đúng **7 cột** | PASS cả 2 trang |
+| 2 | Modal `credentials-slip` đủ 6 dòng (tên, mã HV, chi nhánh, URL, username, mật khẩu tạm) + nút Copy/In/Đóng + `credentials-error` | PASS (14 id F6 có đủ ở cả 2 trang) |
+| 3 | Chéo **ID trong JS ↔ ID trong HTML**: 32 id (admin) + 30 id (manager) `getElementById` | PASS – **0 id thiếu** |
+| 4 | `admin.js`/`manager.js`: gửi `createAccount`, đọc `created.member`/`created.account`, có `accountCell` + `issueMemberAccount` + `resetMemberAccount` + `showCredentials`/`copyCredentials`/`printCredentials` | PASS |
+| 5 | **Không** ghi mật khẩu vào `localStorage` ở 2 file JS | PASS |
+| 6 | `app.css`: `.credentials-slip`, `.checkbox-field`, `@media print` chỉ in `#credentials-slip`, ẩn phần còn lại | PASS |
+| 7 | API mà 2 nút row gọi (`POST /{id}/account`, `/reset-password`) | đã E2E ở F3 (bảng 9) |
+
+**Giới hạn:** chưa click-through trên trình duyệt thật (môi trường không có công cụ tự động hoá trình duyệt) –
+đã thay bằng kiểm markup/JS/CSS/API; logic Copy (clipboard + fallback `execCommand`) và In (`window.print` + CSS)
+chỉ được kiểm tĩnh.
+
 ## Trạng thái các task
 
 | Task | Trạng thái | Ghi chú |
@@ -252,5 +279,8 @@ git ls-files src/test | measure   # → 18 file *.java
 | F1 | ✅ hoàn thành 2026-10-04 | bỏ qua mục 5 (N6); migration đã chạy trên DB thật (`fd81bf5`) |
 | F2 | ✅ hoàn thành 2026-10-04 | 8 test (`d9800ba`) |
 | F3 | ✅ hoàn thành 2026-10-04 | 12 test Mockito pass + E2E HTTP qua app tạm 8081 (đã dọn dữ liệu test) |
-| F4 | ✅ hoàn thành 2026-10-04 | 15 test pass + E2E HTTP/curl (đã dọn dữ liệu test) |
-| F4–F9 | ⬜ | |
+| F4 | ✅ hoàn thành 2026-10-04 | 15 test pass + E2E HTTP/curl (đã dọn dữ liệu test) (`7ba92f7`) |
+| F5 | ✅ hoàn thành 2026-10-04 | `hasAccount`/`accountUsername` + `accountsByMemberId` (1 query) + 3 test; E2E GET `/members` khớp DB (`1f629d7`) |
+| — | 🔧 sửa test pre-existing 2026-10-04 | 4 test fail **trước** F0–F6: N16 (bom thời gian) + N17 (data lệch) → `e74ad1c` + sửa data |
+| F6 | ✅ hoàn thành 2026-10-04 | 2 trang Admin/Manager: checkbox, cột Tài khoản, 2 nút, phiếu Copy/In + `@media print` (`9713b6a`) |
+| F7–F9 | ⬜ | |
