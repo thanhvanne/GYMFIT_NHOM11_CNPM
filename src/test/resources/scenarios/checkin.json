@@ -1,0 +1,128 @@
+[
+  {
+    "id": "CK-01",
+    "title": "QR bị từ chối vì SERVICE_NOT_INCLUDED → giải thích theo gói",
+    "role": "MEMBER",
+    "fixture": "member_with_rejected_checkin_service_not_included",
+    "turns": [
+      {
+        "say": "vì sao tôi quét QR bị từ chối",
+        "expect": {
+          "intent": "FAQ_CHECKIN_REJECTED",
+          "contains": ["Vì sao check-in bị từ chối"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["checkin", "rejected", "service_not_included"]
+  },
+  {
+    "id": "CK-02",
+    "title": "QR bị từ chối vì MEMBERSHIP_BRANCH_MISMATCH → nêu chi nhánh của gói",
+    "role": "MEMBER",
+    "fixture": "member_with_rejected_checkin_membership_branch_mismatch",
+    "turns": [
+      {
+        "say": "vì sao tôi quét QR bị từ chối",
+        "expect": {
+          "intent": "FAQ_CHECKIN_REJECTED",
+          "contains": ["Vì sao check-in bị từ chối"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["checkin", "rejected", "branch_mismatch"]
+  },
+  {
+    "id": "CK-03",
+    "title": "QR bị từ chối vì DUPLICATE_CHECKIN → giải thích cửa sổ 5 phút",
+    "role": "MEMBER",
+    "fixture": "member_with_rejected_checkin_duplicate_checkin",
+    "turns": [
+      {
+        "say": "vì sao tôi quét QR bị từ chối",
+        "expect": {
+          "intent": "FAQ_CHECKIN_REJECTED",
+          "contains": ["Vì sao check-in bị từ chối"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["checkin", "rejected", "duplicate"]
+  },
+  {
+    "id": "CK-04",
+    "title": "Không có lần bị từ chối nào → vẫn trả lời FAQ, không lỗi",
+    "role": "MEMBER",
+    "fixture": "member_no_membership",
+    "turns": [
+      {
+        "say": "vì sao tôi quét QR bị từ chối",
+        "expect": {
+          "intent": "FAQ_CHECKIN_REJECTED",
+          "contains": ["Vì sao check-in bị từ chối"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["checkin", "rejected", "no_data"]
+  },
+  {
+    "id": "CK-05",
+    "title": "QR hết hạn → FAQ hiệu lực / tạo lại",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "QR hết hạn thì làm sao tạo lại",
+        "expect": {
+          "intent": "FAQ_QR_HOWTO",
+          "contains": ["60 giây"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["checkin", "qr_expired"]
+  },
+  {
+    "id": "CK-06",
+    "title": "Hôm nay tôi check-in chưa → lịch sử check-in của tôi",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "lịch sử check-in tháng này của tôi",
+        "expect": {
+          "intent": "MY_CHECKINS",
+          "contains": ["chưa có lần check-in nào"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["checkin", "my_checkins"]
+  },
+  {
+    "id": "CK-07",
+    "title": "Staff: hôm nay bao nhiêu lượt check-in (ACCEPTED/REJECTED)",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "status": "PENDING",
+    "note": "intent CHECKINS_SUMMARY chưa có (plan V2-8)",
+    "turns": [
+      {"say": "hôm nay bao nhiêu lượt check-in", "expect": {"intent": "CHECKINS_SUMMARY"}}
+    ],
+    "tags": ["checkin", "staff_summary"]
+  },
+  {
+    "id": "CK-08",
+    "title": "Staff check-in hộ hội viên qua chat (trùng 5 phút → DUPLICATE_CHECKIN)",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "status": "PENDING",
+    "note": "check-in hộ qua chat chưa có (plan V2-8)",
+    "turns": [
+      {"say": "check-in cho hội viên GF00000123 môn boxing", "expect": {"intent": "FAQ_CHECKIN_HOWTO"}}
+    ],
+    "tags": ["checkin", "staff_manual"]
+  }
+]

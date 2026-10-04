@@ -1,0 +1,529 @@
+[
+  {
+    "id": "BK-01",
+    "title": "Đặt gym 7h tối mai → thẻ xác nhận → create đúng 1 lần",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "đặt cho tôi một lịch gym tối mai 7 giờ tối",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "card": true,
+          "contains": ["xác nhận lịch tập"],
+          "services_never": ["BookingService.create"]
+        }
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "contains": ["Đã đặt lịch thành công", "19:00 06/10/2026"],
+          "services_called": ["BookingService.create"]
+        }
+      }
+    ],
+    "tags": ["booking", "create", "confirm"]
+  },
+  {
+    "id": "BK-02",
+    "title": "Nói chung chung \"đặt lịch\" → làm rõ nhãn, chưa tạo gì",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "đặt lịch",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "card": false,
+          "contains": ["Đặt lịch tập"],
+          "services_never": ["BookingService.create"]
+        }
+      }
+    ],
+    "tags": ["booking", "clarify"]
+  },
+  {
+    "id": "BK-03",
+    "title": "Đặt boxing nhưng gói chỉ gồm GYM → service chặn, không ghi dữ liệu",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "đặt boxing giúp tôi tối mai lúc 6 giờ chiều",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "card": true,
+          "services_never": ["BookingService.create"]
+        }
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "contains": ["Gói tập không bao gồm dịch vụ"],
+          "notContains": ["Đã đặt lịch thành công"]
+        }
+      }
+    ],
+    "tags": ["booking", "service_not_in_plan"]
+  },
+  {
+    "id": "BK-04",
+    "title": "Đặt gym ở Q7 trong khi gói thuộc Q1 → membership_branch_mismatch",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "đặt lịch tập gym ở quận 7 ngày mai lúc 6 giờ chiều",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "services_never": ["BookingService.create"]
+        }
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "contains": ["Gói tập không áp dụng tại chi nhánh"],
+          "notContains": ["Đã đặt lịch thành công"]
+        }
+      }
+    ],
+    "tags": ["booking", "branch_mismatch"]
+  },
+  {
+    "id": "BK-05",
+    "title": "Đặt lịch vào hôm qua → service chặn booking_not_future",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "now": "2026-10-07T09:00:00+07:00",
+    "turns": [
+      {
+        "say": "đặt lịch tập gym hôm qua lúc 7 giờ tối",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "card": true,
+          "notContains": ["Đã đặt lịch thành công"],
+          "services_never": ["BookingService.create"]
+        }
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "contains": ["phải ở tương lai"],
+          "notContains": ["Đã đặt lịch thành công"]
+        }
+      }
+    ],
+    "tags": ["booking", "past_time"]
+  },
+  {
+    "id": "BK-06",
+    "title": "Đặt 3h sáng → ngoài giờ mở cửa, không tạo được lịch",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "đặt lịch tập gym ngày mai lúc 3h sáng",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "contains": ["khung giờ 03:00 đã kín"],
+          "notContains": ["Đã đặt lịch thành công"],
+          "services_never": ["BookingService.create"]
+        }
+      }
+    ],
+    "tags": ["booking", "outside_hours"]
+  },
+  {
+    "id": "BK-07",
+    "title": "Slot đầy → báo hết khung giờ trống, không có thẻ xác nhận",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_slot_full",
+    "turns": [
+      {
+        "say": "đặt cho tôi một lịch gym tối mai 7 giờ tối",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "card": false,
+          "contains": ["không còn khung giờ trống"],
+          "services_never": ["BookingService.create"]
+        }
+      }
+    ],
+    "tags": ["booking", "slot_full"]
+  },
+  {
+    "id": "BK-08",
+    "title": "Đã có lịch trùng giờ → booking_overlap khi xác nhận",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_conflict",
+    "turns": [
+      {
+        "say": "đặt cho tôi một lịch gym tối mai 7 giờ tối",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "card": true,
+          "services_never": ["BookingService.create"]
+        }
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "contains": ["trùng thời gian"],
+          "notContains": ["Đã đặt lịch thành công"]
+        }
+      }
+    ],
+    "tags": ["booking", "duplicate_time"]
+  },
+  {
+    "id": "BK-09",
+    "title": "Chưa có gói tập → no_active_membership khi xác nhận",
+    "role": "MEMBER",
+    "fixture": "member_no_membership",
+    "turns": [
+      {
+        "say": "đặt lịch tập gym ngày mai lúc 7 giờ tối",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "card": true,
+          "services_never": ["BookingService.create"]
+        }
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "contains": ["chưa có gói tập"],
+          "notContains": ["Đã đặt lịch thành công"]
+        }
+      }
+    ],
+    "tags": ["booking", "no_membership"]
+  },
+  {
+    "id": "BK-10",
+    "title": "Gói đã EXPIRED → membership_not_effective khi xác nhận",
+    "role": "MEMBER",
+    "fixture": "member_expired",
+    "turns": [
+      {
+        "say": "đặt lịch tập gym ngày mai lúc 7 giờ tối",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "card": true,
+          "services_never": ["BookingService.create"]
+        }
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "contains": ["đã hết hạn"],
+          "notContains": ["Đã đặt lịch thành công"]
+        }
+      }
+    ],
+    "tags": ["booking", "expired_membership"]
+  },
+  {
+    "id": "BK-11",
+    "title": "Đặt ngày 20/12 trong khi gói hết hạn 30/11",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "status": "PENDING",
+    "note": "code chỉ kiểm NGÀY HÔM NAY nằm trong hiệu lực gói (MembershipService.requireEligible) — chưa chặn ngày đặt nằm sau endDate; plan V2-9 phải bổ sung",
+    "turns": [
+      {
+        "say": "đặt lịch tập gym ngày 20 tháng 12 lúc 7 giờ tối",
+        "expect": {"intent": "BOOKING_CREATE"}
+      }
+    ],
+    "tags": ["booking", "outside_membership"]
+  },
+  {
+    "id": "BK-12",
+    "title": "Sửa giờ ngay ở bước thẻ xác nhận (\"thôi 8h tối\")",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "status": "PENDING",
+    "note": "cần CorrectionDetector (plan V2-5)",
+    "turns": [
+      {
+        "say": "đặt cho tôi một lịch gym tối mai 7 giờ tối",
+        "expect": {"intent": "BOOKING_CREATE", "card": true}
+      },
+      {
+        "say": "thôi 8h tối đi",
+        "expect": {"intent": "BOOKING_CREATE"}
+      }
+    ],
+    "tags": ["booking", "correction"]
+  },
+  {
+    "id": "BK-13",
+    "title": "Bấm Xác nhận sau khi pending hết hạn (5 phút) → không ghi dữ liệu",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "đặt cho tôi một lịch gym tối mai 7 giờ tối",
+        "expect": {"intent": "BOOKING_CREATE", "card": true}
+      },
+      {
+        "payload": "$CONFIRM",
+        "advanceMin": 6,
+        "expect": {
+          "intent": "CONFIRM_YES",
+          "contains": ["đã hết hạn"],
+          "services_never": ["BookingService.create"]
+        }
+      }
+    ],
+    "tags": ["booking", "pending_expired"]
+  },
+  {
+    "id": "BK-14",
+    "title": "Bấm Xác nhận 2 lần → create đúng 1 lần",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "đặt cho tôi một lịch gym tối mai 7 giờ tối",
+        "expect": {"intent": "BOOKING_CREATE", "card": true}
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "contains": ["Đã đặt lịch thành công"],
+          "services_called": ["BookingService.create"]
+        }
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "CONFIRM_YES",
+          "contains": ["đã hết hạn"],
+          "services_never": ["BookingService.create"]
+        }
+      }
+    ],
+    "tags": ["booking", "double_confirm"]
+  },
+  {
+    "id": "BK-15",
+    "title": "Đưa 2 phương án \"7h hoặc 8h\" → chỉ chốt 1 lịch, create 1 lần",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "đặt gym mai 7h hoặc 8h tối",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "card": true,
+          "services_never": ["BookingService.create"]
+        }
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "contains": ["Đã đặt lịch thành công"],
+          "services_called": ["BookingService.create"]
+        }
+      }
+    ],
+    "tags": ["booking", "ambiguous_time"]
+  },
+  {
+    "id": "BK-16",
+    "title": "\"Đặt giúp bạn tôi\" → hiện tại vẫn điền slot như đặt cho mình",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "đặt giúp bạn tôi một lịch gym tối mai",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "notContains": ["Đã đặt lịch thành công"],
+          "services_never": ["BookingService.create"]
+        }
+      }
+    ],
+    "tags": ["booking", "proxy_booking"]
+  },
+  {
+    "id": "BK-17",
+    "title": "Đặt thứ 3 tuần sau 6h chiều → trích được ngày tương đối",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "đặt lịch thứ 3 tuần sau 6h chiều",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "notContains": ["Đã đặt lịch thành công"],
+          "services_never": ["BookingService.create"]
+        }
+      }
+    ],
+    "tags": ["booking", "relative_date"]
+  },
+  {
+    "id": "BK-18",
+    "title": "Hủy lịch 7h tối mai (còn > 2 giờ) → thẻ xác nhận → cancel thành công",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_conflict",
+    "turns": [
+      {
+        "say": "hủy lịch 7h tối mai giúp tôi",
+        "expect": {
+          "intent": "BOOKING_CANCEL",
+          "card": true,
+          "contains": ["xác nhận hủy lịch"],
+          "services_never": ["BookingService.cancel"]
+        }
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "BOOKING_CANCEL",
+          "contains": ["Đã hủy lịch thành công"],
+          "services_called": ["BookingService.cancel"]
+        }
+      }
+    ],
+    "tags": ["booking", "cancel"]
+  },
+  {
+    "id": "BK-19",
+    "title": "\"Hủy lịch\" khi có 3 lịch tương lai → liệt kê để chọn",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_three_bookings",
+    "turns": [
+      {
+        "say": "hủy lịch của tôi",
+        "expect": {
+          "intent": "BOOKING_CANCEL",
+          "card": true,
+          "card_lines_min": 3,
+          "contains": ["Bạn muốn hủy lịch nào"],
+          "services_never": ["BookingService.cancel"]
+        }
+      }
+    ],
+    "tags": ["booking", "cancel_list"]
+  },
+  {
+    "id": "BK-20",
+    "title": "Hủy lịch hôm nay còn < 2 giờ → booking_cancellation_too_late",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "hủy lịch hôm nay giúp tôi",
+        "expect": {
+          "intent": "BOOKING_CANCEL",
+          "card": true,
+          "contains": ["xác nhận hủy lịch"]
+        }
+      },
+      {
+        "payload": "$CONFIRM",
+        "expect": {
+          "intent": "BOOKING_CANCEL",
+          "contains": ["ít nhất 2 giờ"],
+          "notContains": ["Đã hủy lịch thành công"]
+        }
+      }
+    ],
+    "tags": ["booking", "cancel_too_late"]
+  },
+  {
+    "id": "BK-21",
+    "title": "\"Mình không muốn hủy\" sau khi vào luồng hủy → không gọi cancel",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_three_bookings",
+    "turns": [
+      {
+        "say": "hủy lịch của tôi",
+        "expect": {
+          "intent": "BOOKING_CANCEL",
+          "services_never": ["BookingService.cancel"]
+        }
+      },
+      {
+        "say": "mình không muốn hủy nữa",
+        "expect": {
+          "intent": "CONFIRM_NO",
+          "notContains": ["Đã hủy lịch thành công"],
+          "services_never": ["BookingService.cancel"]
+        }
+      }
+    ],
+    "tags": ["booking", "cancel_abort"]
+  },
+  {
+    "id": "BK-22",
+    "title": "Dời lịch 7h sang 9h (slot trống)",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_conflict",
+    "status": "PENDING",
+    "note": "BookingService.reschedule chưa có (plan V2-9)",
+    "turns": [
+      {"say": "dời lịch 7h tối mai sang 9h", "expect": {"intent": "BOOKING_RESCHEDULE"}}
+    ],
+    "tags": ["booking", "reschedule"]
+  },
+  {
+    "id": "BK-23",
+    "title": "Đổi sang 7h30 trùng chính lịch cũ → vẫn cho phép",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_conflict",
+    "status": "PENDING",
+    "note": "BookingService.reschedule chưa có (plan V2-9)",
+    "turns": [
+      {"say": "đổi lịch 7h tối mai sang 7h30", "expect": {"intent": "BOOKING_RESCHEDULE"}}
+    ],
+    "tags": ["booking", "reschedule"]
+  },
+  {
+    "id": "BK-24",
+    "title": "\"Mai tôi có lịch không\" → làm rõ nhãn Lịch tập của tôi",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_conflict",
+    "turns": [
+      {
+        "say": "mai tôi có lịch không",
+        "expect": {
+          "intent": "MY_BOOKINGS",
+          "contains": ["Lịch tập của tôi"]
+        }
+      }
+    ],
+    "tags": ["booking", "my_bookings"]
+  },
+  {
+    "id": "BK-25",
+    "title": "Đặt gym chủ nhật khi chi nhánh đóng chủ nhật → báo hết khung giờ, không lỗi",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "đặt lịch tập gym chủ nhật lúc 7 giờ tối",
+        "expect": {
+          "intent": "BOOKING_CREATE",
+          "contains": ["chủ nhật", "không còn khung giờ trống"],
+          "notContains": ["Exception", "null", "Đã đặt lịch thành công"],
+          "services_never": ["BookingService.create"]
+        }
+      }
+    ],
+    "tags": ["booking", "closed_day"]
+  }
+]

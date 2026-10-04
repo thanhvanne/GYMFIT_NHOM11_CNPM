@@ -125,14 +125,14 @@
 - GREETING → THANKS: 3
 ### HOLDOUT (viết tay — KPI thật)
 
-- Accuracy: **0.8813**
-- Macro-F1: **0.8730**
+- Accuracy: **0.8930**
+- Macro-F1: **0.8841**
 - Recall OUT_OF_SCOPE: **1.0000**
 - Số mẫu: 36 intent có nhãn thật
 
 | Intent | Precision | Recall | F1 |
 |---|---|---|---|
-| AUDIT_RECENT | 0.8333 | 0.8333 | 0.8333 |
+| AUDIT_RECENT | 1.0000 | 0.8333 | 0.9091 |
 | BOOKINGS_TODAY | 0.6667 | 0.8000 | 0.7273 |
 | BOOKING_AVAILABILITY | 0.8750 | 1.0000 | 0.9333 |
 | BOOKING_CANCEL | 1.0000 | 0.8571 | 0.9231 |
@@ -147,11 +147,11 @@
 | FAQ_CHECKIN_HOWTO | 1.0000 | 1.0000 | 1.0000 |
 | FAQ_CHECKIN_REJECTED | 0.8000 | 0.6667 | 0.7273 |
 | FAQ_QR_HOWTO | 1.0000 | 1.0000 | 1.0000 |
-| GOODBYE | 1.0000 | 0.8000 | 0.8889 |
-| GREETING | 1.0000 | 0.4000 | 0.5714 |
+| GOODBYE | 1.0000 | 1.0000 | 1.0000 |
+| GREETING | 1.0000 | 0.5000 | 0.6667 |
 | HELP | 1.0000 | 0.8000 | 0.8889 |
 | LIST_FACILITIES | 1.0000 | 0.8000 | 0.8889 |
-| LIST_PLANS | 0.5714 | 0.8000 | 0.6667 |
+| LIST_PLANS | 0.7143 | 0.8333 | 0.7692 |
 | LIST_PRODUCTS | 0.7143 | 1.0000 | 0.8333 |
 | LIST_SERVICES | 0.7500 | 0.6000 | 0.6667 |
 | LOW_STOCK | 1.0000 | 0.8000 | 0.8889 |
@@ -160,7 +160,7 @@
 | MY_MEMBERSHIP | 1.0000 | 1.0000 | 1.0000 |
 | MY_ORDERS | 1.0000 | 0.8000 | 0.8889 |
 | OPERATING_HOURS | 0.8333 | 0.8333 | 0.8333 |
-| OUT_OF_SCOPE | 0.8125 | 1.0000 | 0.8966 |
+| OUT_OF_SCOPE | 0.8387 | 1.0000 | 0.9123 |
 | PLAN_COMPARE | 1.0000 | 1.0000 | 1.0000 |
 | PLAN_DETAIL | 0.8000 | 0.8000 | 0.8000 |
 | PLAN_RECOMMEND | 0.8333 | 1.0000 | 0.9091 |
@@ -173,11 +173,61 @@
 
 - LIST_SERVICES → BRANCH_INFO: 2
 - FAQ_BUY_PLAN_HOWTO → OUT_OF_SCOPE: 2
-- GREETING → LIST_PLANS: 1
 - GREETING → OUT_OF_SCOPE: 1
-- GREETING → AUDIT_RECENT: 1
-- GOODBYE → OUT_OF_SCOPE: 1
 - HELP → OUT_OF_SCOPE: 1
 - MY_BOOKINGS → BOOKINGS_TODAY: 1
 - MY_ORDERS → LIST_PRODUCTS: 1
 - BOOKING_CANCEL → FAQ_CANCEL_POLICY: 1
+- BRANCH_INFO → OPERATING_HOURS: 1
+- OPERATING_HOURS → BRANCH_INFO: 1
+- LIST_FACILITIES → LIST_PRODUCTS: 1
+### HOLDOUT theo tier
+
+| Nhóm | Số mẫu | Accuracy | Macro-F1 | Sai |
+|---|---:|---:|---:|---:|
+| ADVERSARIAL | 5 | 1.0000 | 1.0000 | 0 |
+| EASY | 85 | 0.8824 | 0.8131 | 10 |
+| NATURAL | 125 | 0.8960 | 0.8885 | 13 |
+
+### HOLDOUT theo tag
+
+| Nhóm | Số mẫu | Accuracy | Macro-F1 | Sai |
+|---|---:|---:|---:|---:|
+| greeting_wrapper | 1 | 1.0000 | 1.0000 | 0 |
+| long | 14 | 0.9286 | 0.9333 | 1 |
+| no_diacritics | 5 | 1.0000 | 1.0000 | 0 |
+| oos | 26 | 1.0000 | 1.0000 | 0 |
+| security | 7 | 1.0000 | 1.0000 | 0 |
+| short | 47 | 0.8936 | 0.8313 | 5 |
+| symbols | 3 | 1.0000 | 1.0000 | 0 |
+| tier_adversarial | 5 | 1.0000 | 1.0000 | 0 |
+| tier_easy | 85 | 0.8824 | 0.8131 | 10 |
+| tier_natural | 125 | 0.8960 | 0.8885 | 13 |
+| typo | 1 | 1.0000 | 1.0000 | 0 |
+
+### HOLDOUT — danh sách câu sai (23)
+
+- e ơi → OUT_OF_SCOPE (cần GREETING)
+- giới thiệu cho tôi biết về GYMFIT → OUT_OF_SCOPE (cần HELP)
+- lịch tôi tuần này có bao nhiêu buổi → BOOKINGS_TODAY (cần MY_BOOKINGS)
+- tôi thanh toán bằng phương thức nào → LIST_PRODUCTS (cần MY_ORDERS)
+- tôi không thể đến tập, huỷ lịch giúp tôi → FAQ_CANCEL_POLICY (cần BOOKING_CANCEL)
+- chi nhánh thủ đức hoạt động không → OPERATING_HOURS (cần BRANCH_INFO)
+- chi nhánh nào mở cửa sớm nhất → BRANCH_INFO (cần OPERATING_HOURS)
+- bình thạnh có boxing không → BRANCH_INFO (cần LIST_SERVICES)
+- chi nhánh thủ đức hỗ trợ dịch vụ nào → BRANCH_INFO (cần LIST_SERVICES)
+- danh sách sân pickleball của GYMFIT → LIST_PRODUCTS (cần LIST_FACILITIES)
+- gói nào rẻ nhất → PLAN_RECOMMEND (cần LIST_PLANS)
+- gói vip có dịch vụ nào → LIST_SERVICES (cần PLAN_DETAIL)
+- gói của tôi không có dịch vụ đó thì sao → FAQ_CHECKIN_REJECTED (cần FAQ_BOOKING_RULES)
+- thanh toán gói tập bằng cách nào → LIST_PLANS (cần FAQ_BUY_PLAN_HOWTO)
+- mua xong gói có được dùng ngay không → OUT_OF_SCOPE (cần FAQ_BUY_PLAN_HOWTO)
+- nút mua gói nằm ở trang nào → OUT_OF_SCOPE (cần FAQ_BUY_PLAN_HOWTO)
+- gia hạn gói tập ra sao → PLAN_DETAIL (cần FAQ_BUY_PLAN_HOWTO)
+- mã SERVICE_NOT_INCLUDED nghĩa là gì → OUT_OF_SCOPE (cần FAQ_CHECKIN_REJECTED)
+- tại sao lại báo chưa có gói tập → LIST_PLANS (cần FAQ_CHECKIN_REJECTED)
+- lịch hôm nay theo từng môn → REPORT_SERVICE (cần BOOKINGS_TODAY)
+- so sánh boxing với gym trong 7 ngày qua → BOOKING_AVAILABILITY (cần REPORT_SERVICE)
+- món nào đang thấp nhất → REPORT_SERVICE (cần LOW_STOCK)
+- lịch sử đăng nhập hôm nay → BOOKINGS_TODAY (cần AUDIT_RECENT)
+

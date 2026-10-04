@@ -1,0 +1,186 @@
+[
+  {
+    "id": "PL-01",
+    "title": "Gói của tôi còn mấy ngày (gói ACTIVE đến 30/11, now=05/10 → còn 56 ngày)",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "gói của tôi còn bao nhiêu ngày nữa",
+        "expect": {
+          "intent": "MY_MEMBERSHIP",
+          "contains": ["đang hoạt động", "01/09/2026", "30/11/2026", "còn 56 ngày"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["plan", "membership_days_left"]
+  },
+  {
+    "id": "PL-02",
+    "title": "Gói tôi hết hạn khi nào",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "membership của tôi hết hạn khi nào",
+        "expect": {
+          "intent": "MY_MEMBERSHIP",
+          "contains": ["30/11/2026", "Dịch vụ gồm: Gym"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["plan", "membership_end_date"]
+  },
+  {
+    "id": "PL-03",
+    "title": "Lịch sử gói tôi đã mua (kể cả REPLACED)",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "status": "PENDING",
+    "note": "intent MEMBERSHIP_HISTORY chưa có (plan V2-7)",
+    "turns": [
+      {"say": "lịch sử gói tôi đã mua", "expect": {"intent": "MEMBERSHIP_HISTORY"}}
+    ],
+    "tags": ["plan", "history"]
+  },
+  {
+    "id": "PL-04",
+    "title": "Gói rẻ nhất có boxing (lọc dịch vụ + sắp giá)",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "status": "PENDING",
+    "note": "lọc theo dịch vụ + sắp giá chưa có (plan V2-10)",
+    "turns": [
+      {"say": "gói rẻ nhất có boxing", "expect": {"intent": "PLAN_RECOMMEND"}}
+    ],
+    "tags": ["plan", "cheapest"]
+  },
+  {
+    "id": "PL-05",
+    "title": "Tư vấn gói theo mục tiêu + ngân sách 500k",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "status": "PENDING",
+    "note": "PlanAdvisorFlow / GoalMapper chưa có (plan V2-10)",
+    "turns": [
+      {"say": "gói nào hợp để giảm cân với ngân sách 500k", "expect": {"intent": "PLAN_RECOMMEND"}}
+    ],
+    "tags": ["plan", "advisor"]
+  },
+  {
+    "id": "PL-06",
+    "title": "So sánh basic với premium",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "so sánh gói cơ bản với gói cao cấp",
+        "expect": {
+          "intent": "PLAN_COMPARE",
+          "contains": ["So sánh các gói", "Giá/ngày"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["plan", "compare"]
+  },
+  {
+    "id": "PL-07",
+    "title": "\"Gói Platinum\" không tồn tại → rơi về OUT_OF_SCOPE (chưa nêu hạng thật)",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "gói Platinum của GYMFIT có không",
+        "expect": {
+          "intent": "OUT_OF_SCOPE",
+          "contains": ["chưa hiểu"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["plan", "nonexistent"]
+  },
+  {
+    "id": "PL-08",
+    "title": "Mua gói mới khi còn gói cũ → đúng nhãn FAQ nhưng ngưỡng fallback chặn nội dung FAQ",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "mua gói mới được không khi còn gói cũ",
+        "expect": {
+          "intent": "FAQ_BUY_PLAN_HOWTO",
+          "contains": ["chưa hiểu"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["plan", "faq_replace"]
+  },
+  {
+    "id": "PL-09",
+    "title": "Hoàn tiền gói theo xác minh code",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "status": "PENDING",
+    "note": "luồng hoàn tiền theo code chưa có (plan V2-11)",
+    "turns": [
+      {"say": "tôi muốn hoàn tiền gói", "expect": {"intent": "FAQ_CANCEL_POLICY"}}
+    ],
+    "tags": ["plan", "refund"]
+  },
+  {
+    "id": "PL-10",
+    "title": "Gói ở quận 7 có dịch vụ gì (lọc chi nhánh + dịch vụ)",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "cho tôi biết gói tập ở quận 7",
+        "expect": {
+          "intent": "LIST_PLANS",
+          "contains": ["GYM cơ bản 30 ngày", "Combo GYM + Boxing"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["plan", "list_by_branch"]
+  },
+  {
+    "id": "PL-11",
+    "title": "Bảng giá các gói tập",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "bảng giá các gói tập",
+        "expect": {
+          "intent": "LIST_PLANS",
+          "contains": ["800.000đ", "1.200.000đ"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["plan", "list"]
+  },
+  {
+    "id": "PL-12",
+    "title": "PLAN_DETAIL khi chưa khớp đúng tên → trả danh sách, không lỗi",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "turns": [
+      {
+        "say": "cho tôi xem chi tiết gói cơ bản",
+        "expect": {
+          "intent": "PLAN_DETAIL",
+          "contains": ["GYM cơ bản 30 ngày"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["plan", "detail"]
+  }
+]

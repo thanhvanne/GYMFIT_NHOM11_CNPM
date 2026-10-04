@@ -1,0 +1,208 @@
+[
+  {
+    "id": "ST-01",
+    "title": "Staff tìm hội viên theo tên → liệt kê kết quả cùng chi nhánh",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "status": "PENDING",
+    "note": "intent MEMBER_LOOKUP chưa có (plan V2-8)",
+    "turns": [
+      {"say": "tìm hội viên Nguyễn Văn A", "expect": {"intent": "MEMBER_LOOKUP"}}
+    ],
+    "tags": ["staff", "member_lookup"]
+  },
+  {
+    "id": "ST-02",
+    "title": "Manager Q1 tìm người ở Q7 → không thấy, không tiết lộ tồn tại",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "status": "PENDING",
+    "note": "intent MEMBER_LOOKUP chưa có (plan V2-8)",
+    "turns": [
+      {"say": "tìm hội viên Nguyễn Văn B", "expect": {"intent": "MEMBER_LOOKUP"}}
+    ],
+    "tags": ["staff", "member_lookup", "cross_branch"]
+  },
+  {
+    "id": "ST-03",
+    "title": "Hội viên GF00000123 còn gói không",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "status": "PENDING",
+    "note": "intent MEMBER_STATUS chưa có (plan V2-8)",
+    "turns": [
+      {"say": "GF00000123 còn gói tập không", "expect": {"intent": "MEMBER_STATUS"}}
+    ],
+    "tags": ["staff", "member_status"]
+  },
+  {
+    "id": "ST-04",
+    "title": "Ai sắp hết hạn tuần này → top 10 + tổng",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "status": "PENDING",
+    "note": "intent danh sách sắp hết hạn chưa có (plan V2-7)",
+    "turns": [
+      {"say": "ai sắp hết hạn gói tuần này", "expect": {"intent": "MEMBERSHIP_HISTORY"}}
+    ],
+    "tags": ["staff", "expiring"]
+  },
+  {
+    "id": "ST-05",
+    "title": "Doanh thu tháng này so với tháng trước",
+    "role": "ADMIN",
+    "fixture": "admin",
+    "turns": [
+      {
+        "say": "báo cáo doanh thu tháng 9",
+        "expect": {
+          "intent": "REPORT_REVENUE",
+          "contains": ["toàn hệ thống", "45.000.000đ", "Từ gói tập"],
+          "notContains": ["Exception", "null"],
+          "services_called": ["ReportService.revenue"]
+        }
+      }
+    ],
+    "tags": ["staff", "revenue"]
+  },
+  {
+    "id": "ST-06",
+    "title": "Admin: chi nhánh nào doanh thu cao nhất → phạm vi toàn hệ thống",
+    "role": "ADMIN",
+    "fixture": "admin",
+    "turns": [
+      {
+        "say": "doanh thu tháng 9 của hệ thống",
+        "expect": {
+          "intent": "REPORT_REVENUE",
+          "contains": ["toàn hệ thống"],
+          "notContains": ["Exception", "null"],
+          "services_called": ["ReportService.revenue"]
+        }
+      }
+    ],
+    "tags": ["staff", "revenue", "admin_scope"]
+  },
+  {
+    "id": "ST-07",
+    "title": "Manager đặt câu hỏi doanh thu chung → chỉ được chi nhánh mình",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "turns": [
+      {
+        "say": "báo cáo doanh thu tháng 9",
+        "expect": {
+          "intent": "REPORT_REVENUE",
+          "contains": ["chi nhánh #1"],
+          "notContains": ["Exception", "null", "toàn hệ thống"],
+          "services_called": ["ReportService.revenue"]
+        }
+      }
+    ],
+    "tags": ["staff", "revenue", "scoped"]
+  },
+  {
+    "id": "ST-08",
+    "title": "Giờ nào đông nhất (top 3 khung giờ)",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "status": "PENDING",
+    "note": "intent OCCUPANCY chưa có (plan V2-8)",
+    "turns": [
+      {"say": "giờ nào đông nhất", "expect": {"intent": "OCCUPANCY"}}
+    ],
+    "tags": ["staff", "occupancy"]
+  },
+  {
+    "id": "ST-09",
+    "title": "Tồn kho nước suối ở Q1",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "status": "PENDING",
+    "note": "intent STOCK_LEVEL (truy vấn theo sản phẩm) chưa có (plan V2-8)",
+    "turns": [
+      {"say": "tồn kho nước suối ở quận 1", "expect": {"intent": "STOCK_LEVEL"}}
+    ],
+    "tags": ["staff", "stock_level"]
+  },
+  {
+    "id": "ST-10",
+    "title": "Admin xem nhật ký hệ thống (AUDIT_RECENT, ADMIN-only)",
+    "role": "ADMIN",
+    "fixture": "admin",
+    "turns": [
+      {
+        "say": "cho tôi xem nhật ký hệ thống gần đây",
+        "expect": {
+          "intent": "AUDIT_RECENT",
+          "contains": ["10 sự kiện gần nhất"],
+          "notContains": ["Exception", "null"],
+          "services_called": ["AuditService.list"]
+        }
+      }
+    ],
+    "tags": ["staff", "audit"]
+  },
+  {
+    "id": "ST-11",
+    "title": "Manager Q1 hỏi doanh thu Q7 → bị ép về chi nhánh mình, không lộ Q7",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "turns": [
+      {
+        "say": "báo cáo doanh thu quận 7 tháng 9",
+        "expect": {
+          "intent": "REPORT_REVENUE",
+          "contains": ["chi nhánh #1"],
+          "notContains": ["Exception", "null", "chi nhánh #2"],
+          "services_called": ["ReportService.revenue"]
+        }
+      }
+    ],
+    "tags": ["staff", "revenue", "cross_branch"]
+  },
+  {
+    "id": "ST-12",
+    "title": "Admin hỏi báo cáo Q1 → Q7: chỉ đổi chi nhánh, vẫn gọi 1 service",
+    "role": "ADMIN",
+    "fixture": "admin",
+    "turns": [
+      {
+        "say": "doanh thu tháng 9",
+        "expect": {
+          "intent": "REPORT_REVENUE",
+          "contains": ["toàn hệ thống"],
+          "services_called": ["ReportService.revenue"]
+        }
+      },
+      {
+        "say": "doanh thu quận 7 tháng 9",
+        "expect": {
+          "intent": "REPORT_REVENUE",
+          "contains": ["chi nhánh #2"],
+          "notContains": ["Exception", "null", "chi nhánh #1"],
+          "services_called": ["ReportService.revenue"]
+        }
+      }
+    ],
+    "tags": ["staff", "revenue", "follow_up"]
+  },
+  {
+    "id": "ST-13",
+    "title": "Manager gọi nhật ký hệ thống → denied.role (chỉ ADMIN)",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "turns": [
+      {
+        "say": "cho tôi xem nhật ký hệ thống",
+        "expect": {
+          "intent": "AUDIT_RECENT",
+          "contains": ["không có quyền"],
+          "notContains": ["Exception", "null"],
+          "services_never": ["AuditService.list"]
+        }
+      }
+    ],
+    "tags": ["staff", "audit", "permission"]
+  }
+]

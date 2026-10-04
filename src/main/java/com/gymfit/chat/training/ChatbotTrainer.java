@@ -57,7 +57,15 @@ public final class ChatbotTrainer {
     public static final String DATASET_DIR =
             "src/main/resources/chatbot/dataset";
 
+    /**
+     * Holdout V2 (schema {@code text,intent,tier,tags,role}) – dùng khi có;
+     * nếu thiếu thì rơi về {@link #HOLDOUT_LEGACY}.
+     */
     public static final String HOLDOUT =
+            "src/main/resources/chatbot/holdout_v2.jsonl";
+
+    /** Holdout V1 (chỉ {@code text,intent,group}) – bản dự phòng. */
+    public static final String HOLDOUT_LEGACY =
             "src/main/resources/chatbot/holdout.jsonl";
 
     public static final String MODEL_PATH =
@@ -65,6 +73,10 @@ public final class ChatbotTrainer {
 
     public static final String REPORT_PATH =
             "docs/chatbot/training-report.md";
+
+    /** Ma trận nhầm lẫn trên holdout – mục 7.2 của plan V2. */
+    public static final String CONFUSION_PATH =
+            "docs/chatbot/confusion.csv";
 
     // ---- Siêu tham số ----
     public static final int EPOCHS = 40;
@@ -273,7 +285,7 @@ public final class ChatbotTrainer {
                         labels
                 );
 
-        Evaluator.Result holdoutResult =
+        HoldoutEvaluation holdout =
                 evaluateHoldout(
                         model,
                         normalizer,
@@ -301,6 +313,29 @@ public final class ChatbotTrainer {
                 modelPath
         );
 
+        if (holdout != null) {
+
+            Path confusion =
+                    Paths.get(CONFUSION_PATH);
+
+            Files.createDirectories(
+                    confusion.getParent()
+            );
+
+            Files.writeString(
+                    confusion,
+                    Evaluator.confusionCsv(
+                            holdout.predictions()
+                    ),
+                    StandardCharsets.UTF_8
+            );
+
+            log.info(
+                    "Đã ghi ma trận nhầm lẫn → {}",
+                    confusion
+            );
+        }
+
         writeReport(
                 trainRaw.size(),
                 valRaw.size(),
@@ -311,7 +346,7 @@ public final class ChatbotTrainer {
                 bestL2,
                 valResult,
                 testResult,
-                holdoutResult
+                holdout
         );
 
         System.out.printf(
@@ -720,7 +755,31 @@ public final class ChatbotTrainer {
         );
     }
 
-    private static Evaluator.Result evaluateHoldout(
+    /**
+     * Kết quả trên holdout kèm danh sách dự đoán đầy đủ
+     * (dùng để in câu sai và ghi {@code confusion.csv}).
+     *
+     * @param result      kết quả đánh giá
+     * @param predictions từng dự đoán có {@code text/tier/tags}
+     */
+    private record HoldoutEvaluation(
+            Evaluator.Result result,
+            List<Evaluator.Prediction> predictions
+    ) {
+    }
+
+    /** Ưu tiên holdout V2; thiếu thì dùng bản V1. */
+    private static Path holdoutPath() {
+
+        Path v2 =
+                Paths.get(HOLDOUT);
+
+        return Files.exists(v2)
+                ? v2
+                : Paths.get(HOLDOUT_LEGACY);
+    }
+
+    private static HoldoutEvaluation evaluateHoldout(
             IntentModel model,
             TextNormalizer normalizer,
             EntityExtractor extractor,
@@ -729,14 +788,14 @@ public final class ChatbotTrainer {
     ) throws Exception {
 
         Path path =
-                Paths.get(HOLDOUT);
+                holdoutPath();
 
         if (!Files.exists(path)) {
             return null;
         }
 
-        List<RawSample> holdout =
-                readJsonl(path);
+        List<JsonNode> holdout =
+                readJsonlNodes(path);
 
         if (holdout.isEmpty()) {
             return null;
@@ -745,20 +804,26 @@ public final class ChatbotTrainer {
         List<Evaluator.Prediction> predictions =
                 new ArrayList<>();
 
-        for (RawSample sample : holdout) {
+        for (JsonNode node : holdout) {
+
+            String intent =
+                    node.path("intent")
+                            .asText("");
 
             Integer index =
-                    labelIndex.get(
-                            sample.intent()
-                    );
+                    labelIndex.get(intent);
 
             if (index == null) {
                 continue;
             }
 
+            String text =
+                    node.path("text")
+                            .asText("");
+
             String masked =
                     mask(
-                            sample.text(),
+                            text,
                             normalizer,
                             extractor
                     );
@@ -773,16 +838,72 @@ public final class ChatbotTrainer {
 
             predictions.add(
                     new Evaluator.Prediction(
+                            text,
                             labels[best],
-                            sample.intent(),
-                            probs[best]
+                            intent,
+                            probs[best],
+                            node.path("tier")
+                                    .asText(null),
+                            readTags(node)
                     )
             );
         }
 
-        return Evaluator.evaluate(
+        if (predictions.isEmpty()) {
+            return null;
+        }
+
+        return new HoldoutEvaluation(
+                Evaluator.evaluate(
+                        predictions
+                ),
                 predictions
         );
+    }
+
+    private static List<String> readTags(
+            JsonNode node
+    ) {
+
+        List<String> tags =
+                new ArrayList<>();
+
+        JsonNode array =
+                node.path("tags");
+
+        if (array.isArray()) {
+            array.forEach(tag ->
+                    tags.add(
+                            tag.asText()
+                    )
+            );
+        }
+
+        return tags;
+    }
+
+    private static List<JsonNode> readJsonlNodes(
+            Path path
+    ) throws Exception {
+
+        List<JsonNode> result =
+                new ArrayList<>();
+
+        for (String line : Files.readAllLines(
+                path,
+                StandardCharsets.UTF_8
+        )) {
+
+            if (line.isBlank()) {
+                continue;
+            }
+
+            result.add(
+                    MAPPER.readTree(line)
+            );
+        }
+
+        return result;
     }
 
     private static int argmax(
@@ -1053,7 +1174,7 @@ public final class ChatbotTrainer {
             double l2,
             Evaluator.Result val,
             Evaluator.Result test,
-            Evaluator.Result holdout
+            HoldoutEvaluation holdout
     ) throws Exception {
 
         StringBuilder sb =
@@ -1096,10 +1217,42 @@ public final class ChatbotTrainer {
         }
 
         if (holdout != null) {
+
+            List<Evaluator.Prediction> predictions =
+                    holdout.predictions();
+
             sb.append(Evaluator.toMarkdown(
                     "HOLDOUT (viết tay — KPI thật)",
-                    holdout
+                    holdout.result()
             ));
+
+            sb.append(Evaluator.toMarkdown(
+                    "HOLDOUT theo tier",
+                    Evaluator.byTier(predictions)
+            ));
+
+            sb.append(Evaluator.toMarkdown(
+                    "HOLDOUT theo tag",
+                    Evaluator.byTag(predictions)
+            ));
+
+            List<String> wrong =
+                    Evaluator.wrongPredictions(predictions);
+
+            sb.append(
+                    "### HOLDOUT — danh sách câu sai ("
+                            + wrong.size()
+                            + ")\n\n"
+            );
+
+            wrong.forEach(line ->
+                    sb.append("- ")
+                            .append(line)
+                            .append('\n')
+            );
+
+            sb.append('\n');
+
         } else {
             sb.append(
                     "### HOLDOUT\n\nChưa có holdout.jsonl.\n\n"

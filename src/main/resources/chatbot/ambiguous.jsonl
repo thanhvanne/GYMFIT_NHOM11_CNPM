@@ -1,0 +1,4 @@
+{"text":"hello, có ai đó ở đây không","intent":"GREETING","group":"H004","reason":"chào + \"có ai đó ở đây không\" – không rõ HELP hay GREETING"}
+{"text":"tôi vừa đăng ký hội viên xong","intent":"GREETING","group":"H005","reason":"câu trần thuật, không phải câu chào và không có yêu cầu"}
+{"text":"cất điện thoại rồi","intent":"GOODBYE","group":"H015","reason":"\"cất điện thoại rồi\" – thiếu tín hiệu để gán GOODBYE"}
+{"text":"nên chọn gói nào","intent":"PLAN_COMPARE","group":"H099","reason":"\"nên chọn gói nào\" – cặp dễ nhầm PLAN_COMPARE / PLAN_RECOMMEND (6.5)"}

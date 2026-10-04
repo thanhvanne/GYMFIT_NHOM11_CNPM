@@ -8,15 +8,66 @@ import java.util.Map;
 
 /**
  * Tính accuracy, macro-F1, precision/recall/F1 từng intent và các cặp nhầm lẫn.
+ *
+ * <p>V2-2: thêm đọc breakdown theo {@code tier} (EASY/NATURAL/ADVERSARIAL),
+ * theo {@code tag}, xuất ma trận nhầm lẫn {@code CSV} và danh sách câu sai
+ * kèm dự đoán (mục 7.2 của plan mở rộng).
  */
 public final class Evaluator {
 
-    /** Dự đoán cho một mẫu. */
+    /**
+     * Dự đoán cho một mẫu.
+     *
+     * @param text       câu gốc (để in danh sách câu sai; {@code null} với
+     *                   tập val/test sinh tự động)
+     * @param predicted  nhãn mô hình dự đoán
+     * @param actual     nhãn thật
+     * @param confidence độ tin cậy
+     * @param tier       EASY / NATURAL / ADVERSARIAL ({@code null} nếu không có)
+     * @param tags       các tag đo được ({@code question}, {@code short}…)
+     */
     public record Prediction(
+            String text,
             String predicted,
             String actual,
-            double confidence
+            double confidence,
+            String tier,
+            List<String> tags
     ) {
+
+        /** Constructor ngắn cho tập val/test (không có tier/tag). */
+        public Prediction(
+                String predicted,
+                String actual,
+                double confidence
+        ) {
+            this(
+                    null,
+                    predicted,
+                    actual,
+                    confidence,
+                    null,
+                    List.of()
+            );
+        }
+
+        /** Constructor cho holdout v2 (có tier/tag, chưa có text). */
+        public Prediction(
+                String predicted,
+                String actual,
+                double confidence,
+                String tier,
+                List<String> tags
+        ) {
+            this(
+                    null,
+                    predicted,
+                    actual,
+                    confidence,
+                    tier,
+                    tags
+            );
+        }
     }
 
     /**
@@ -27,13 +78,15 @@ public final class Evaluator {
      * @param perIntent      precision/recall/f1/support theo intent
      * @param confusions     top cặp (actual → predicted) sai
      * @param outOfScopeRecall recall của OUT_OF_SCOPE
+     * @param samples        tổng số mẫu đã đánh giá
      */
     public record Result(
             double accuracy,
             double macroF1,
             Map<String, double[]> perIntent,
             List<Map.Entry<String, Integer>> confusions,
-            double outOfScopeRecall
+            double outOfScopeRecall,
+            int samples
     ) {
     }
 
@@ -187,8 +240,196 @@ public final class Evaluator {
                 confusions,
                 outOfScope == null
                         ? 0
-                        : outOfScope[1]
+                        : outOfScope[1],
+                total
         );
+    }
+
+    // ------------------------------------------------------------------
+    // V2-2: breakdown theo tier / tag, CSV, danh sách câu sai
+    // ------------------------------------------------------------------
+
+    /**
+     * Đánh giá riêng từng {@code tier} (EASY / NATURAL / ADVERSARIAL).
+     * Mẫu không có tier bị bỏ qua.
+     */
+    public static Map<String, Result> byTier(
+            List<Prediction> predictions
+    ) {
+        return groupBy(
+                predictions,
+                prediction ->
+                        prediction.tier() == null
+                                || prediction.tier().isBlank()
+                                ? List.of()
+                                : List.of(prediction.tier())
+        );
+    }
+
+    /**
+     * Đánh giá riêng từng {@code tag}. Một mẫu mang nhiều tag thì được tính
+     * vào tất cả nhóm tag của nó (nên tổng các nhóm có thể &gt; tổng mẫu).
+     */
+    public static Map<String, Result> byTag(
+            List<Prediction> predictions
+    ) {
+        return groupBy(
+                predictions,
+                prediction ->
+                        prediction.tags() == null
+                                ? List.of()
+                                : prediction.tags()
+        );
+    }
+
+    private static Map<String, Result> groupBy(
+            List<Prediction> predictions,
+            java.util.function.Function<Prediction, List<String>> keyOf
+    ) {
+
+        Map<String, List<Prediction>> groups =
+                new java.util.TreeMap<>();
+
+        for (Prediction prediction : predictions) {
+
+            for (String key : keyOf.apply(prediction)) {
+
+                if (key == null || key.isBlank()) {
+                    continue;
+                }
+
+                groups.computeIfAbsent(
+                                key,
+                                ignored -> new ArrayList<>()
+                        )
+                        .add(prediction);
+            }
+        }
+
+        Map<String, Result> results =
+                new LinkedHashMap<>();
+
+        groups.forEach((key, group) ->
+                results.put(
+                        key,
+                        evaluate(group)
+                )
+        );
+
+        return results;
+    }
+
+    /**
+     * Ma trận nhầm lẫn đầy đủ (gồm cả ô đúng) dạng CSV –
+     * ghi ra {@code docs/chatbot/confusion.csv}.
+     */
+    public static String confusionCsv(
+            List<Prediction> predictions
+    ) {
+
+        Map<String, Map<String, Integer>> matrix =
+                new java.util.TreeMap<>();
+
+        for (Prediction prediction : predictions) {
+
+            matrix.computeIfAbsent(
+                            prediction.actual(),
+                            ignored -> new java.util.TreeMap<>()
+                    )
+                    .merge(
+                            prediction.predicted(),
+                            1,
+                            Integer::sum
+                    );
+        }
+
+        StringBuilder builder =
+                new StringBuilder("actual,predicted,count\n");
+
+        matrix.forEach((actual, row) ->
+                row.forEach((predicted, count) ->
+                        builder.append(actual)
+                                .append(',')
+                                .append(predicted)
+                                .append(',')
+                                .append(count)
+                                .append('\n')
+                )
+        );
+
+        return builder.toString();
+    }
+
+    /**
+     * Danh sách câu sai kèm dự đoán – dùng để chẩn đoán từng câu trong
+     * báo cáo huấn luyện.
+     */
+    public static List<String> wrongPredictions(
+            List<Prediction> predictions
+    ) {
+
+        return predictions.stream()
+                .filter(prediction ->
+                        !prediction.actual()
+                                .equals(prediction.predicted())
+                )
+                .map(prediction ->
+                        (prediction.text() == null
+                                ? "(không có text)"
+                                : prediction.text())
+                                + " → " + prediction.predicted()
+                                + " (cần " + prediction.actual() + ")"
+                )
+                .toList();
+    }
+
+    /** In bảng breakdown (tier / tag) cho báo cáo Markdown. */
+    public static String toMarkdown(
+            String title,
+            Map<String, Result> groups
+    ) {
+
+        StringBuilder builder =
+                new StringBuilder();
+
+        builder.append("### ")
+                .append(title)
+                .append("\n\n");
+
+        if (groups.isEmpty()) {
+            builder.append("_Không có dữ liệu._\n\n");
+            return builder.toString();
+        }
+
+        builder.append(
+                "| Nhóm | Số mẫu | Accuracy | Macro-F1 | Sai |\n"
+                        + "|---|---:|---:|---:|---:|\n"
+        );
+
+        groups.forEach((group, result) -> {
+
+            int samples =
+                    result.samples();
+
+            builder.append(
+                    String.format(
+                            Locale.ROOT,
+                            "| %s | %d | %.4f | %.4f | %d |%n",
+                            group,
+                            samples,
+                            result.accuracy(),
+                            result.macroF1(),
+                            samples
+                                    - (int) Math.round(
+                                    result.accuracy() * samples
+                            )
+                    )
+            );
+        });
+
+        builder.append('\n');
+
+        return builder.toString();
     }
 
     public static String toMarkdown(

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gymfit.chat.nlu.entity.Entities;
 import com.gymfit.chat.nlu.entity.GazetteerProvider;
+import com.gymfit.chat.training.Evaluator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -386,31 +388,49 @@ class IntentClassifierTest {
     // KPI trên holdout — fail build nếu dưới ngưỡng
     // ------------------------------------------------------------------
 
-    @Test
-    @DisplayName("Accuracy trên holdout ≥ 0.85 (fail build nếu không)")
-    void holdoutAccuracy() throws Exception {
+    private static final String HOLDOUT_V2 =
+            "src/main/resources/chatbot/holdout_v2.jsonl";
 
-        List<String> lines =
-                Files.readAllLines(
-                        Paths.get(
-                                "src/main/resources/chatbot/holdout.jsonl"
-                        ),
-                        StandardCharsets.UTF_8
-                );
+    private static final String HOLDOUT_LEGACY =
+            "src/main/resources/chatbot/holdout.jsonl";
+
+    /** Một dòng holdout (schema V2 nếu có, V1 nếu thiếu trường). */
+    private record HoldoutRow(
+            String text,
+            String intent,
+            String tier,
+            List<String> tags
+    ) {
+    }
+
+    /**
+     * Nạp holdout: ưu tiên {@code holdout_v2.jsonl} (schema
+     * {@code text,intent,tier,tags,role}), thiếu thì dùng {@code holdout.jsonl}.
+     */
+    private static List<HoldoutRow> holdout() throws Exception {
+
+        java.nio.file.Path path =
+                java.nio.file.Path.of(HOLDOUT_V2);
+
+        if (!Files.exists(path)) {
+            path = java.nio.file.Path.of(HOLDOUT_LEGACY);
+        }
+
+        assertTrue(
+                Files.exists(path),
+                "Không tìm thấy holdout: " + path
+        );
 
         ObjectMapper mapper =
                 new ObjectMapper();
 
-        int total =
-                0;
-
-        int correct =
-                0;
-
-        List<String> wrong =
+        List<HoldoutRow> rows =
                 new ArrayList<>();
 
-        for (String line : lines) {
+        for (String line : Files.readAllLines(
+                path,
+                StandardCharsets.UTF_8
+        )) {
 
             if (line.isBlank()) {
                 continue;
@@ -419,39 +439,360 @@ class IntentClassifierTest {
             JsonNode node =
                     mapper.readTree(line);
 
-            String text =
-                    node.path("text")
-                            .asText();
+            List<String> tags =
+                    new ArrayList<>();
 
-            String expected =
-                    node.path("intent")
-                            .asText();
+            node.path("tags")
+                    .forEach(tag ->
+                            tags.add(
+                                    tag.asText()
+                            )
+                    );
 
-            Intent actual =
-                    classify(text).intent();
+            rows.add(
+                    new HoldoutRow(
+                            node.path("text")
+                                    .asText(),
+                            node.path("intent")
+                                    .asText(),
+                            node.path("tier")
+                                    .asText(""),
+                            tags
+                    )
+            );
+        }
 
-            total++;
+        assertFalse(
+                rows.isEmpty(),
+                "Holdout rỗng: " + path
+        );
 
-            if (expected.equals(actual.name())) {
-                correct++;
-            } else {
-                wrong.add(
-                        text + " → "
-                                + actual.name()
-                                + " (cần " + expected + ")"
+        return rows;
+    }
+
+    /** Chạy mô hình trên toàn bộ holdout, trả về dự đoán kèm tier/tags. */
+    private List<Evaluator.Prediction> holdoutPredictions(
+            List<HoldoutRow> rows
+    ) {
+
+        List<Evaluator.Prediction> predictions =
+                new ArrayList<>();
+
+        for (HoldoutRow row : rows) {
+
+            IntentPrediction prediction =
+                    classify(row.text());
+
+            predictions.add(
+                    new Evaluator.Prediction(
+                            row.text(),
+                            prediction.intent().name(),
+                            row.intent(),
+                            prediction.confidence(),
+                            row.tier(),
+                            row.tags()
+                    )
+            );
+        }
+
+        return predictions;
+    }
+
+    @Test
+    @DisplayName("Accuracy trên holdout ≥ 0.85 (fail build nếu không)")
+    void holdoutAccuracy() throws Exception {
+
+        List<Evaluator.Prediction> predictions =
+                holdoutPredictions(
+                        holdout()
                 );
+
+        Evaluator.Result result =
+                Evaluator.evaluate(
+                        predictions
+                );
+
+        List<String> wrong =
+                Evaluator.wrongPredictions(
+                        predictions
+                );
+
+        assertTrue(
+                result.accuracy() >= 0.85,
+                "Accuracy holdout = "
+                        + result.accuracy()
+                        + " (< 0.85). Sai: "
+                        + wrong
+        );
+    }
+
+    // ------------------------------------------------------------------
+    // Cổng chất lượng V2 (mục 7.2) — V2-2 CHỈ CẢNH BÁO
+    // ------------------------------------------------------------------
+
+    private static final double GATE_ACCURACY = 0.92;
+    private static final double GATE_MACRO_F1 = 0.90;
+    private static final double GATE_MIN_F1 = 0.80;
+    private static final double GATE_OOS_RECALL = 0.92;
+    private static final double GATE_OOS_PRECISION = 0.88;
+    private static final double GATE_NATURAL_FALLBACK = 0.12;
+
+    /** Ngưỡng fallback của {@code DialogueManager} (application.yml). */
+    private static final double THRESHOLD_CLARIFY = 0.40;
+
+    @Test
+    @DisplayName("Bảng cổng V2 (mục 7.2) — V2-2 chỉ in cảnh báo, fail build từ V2-6")
+    void gateTableV2() throws Exception {
+
+        List<HoldoutRow> rows =
+                holdout();
+
+        List<Evaluator.Prediction> predictions =
+                holdoutPredictions(
+                        rows
+                );
+
+        Evaluator.Result result =
+                Evaluator.evaluate(
+                        predictions
+                );
+
+        java.util.Set<String> actualIntents =
+                rows.stream()
+                        .map(HoldoutRow::intent)
+                        .collect(
+                                java.util.stream.Collectors.toSet()
+                        );
+
+        double minF1 =
+                actualIntents.stream()
+                        .mapToInt(intent -> {
+                            double[] values =
+                                    result.perIntent()
+                                            .get(intent);
+                            return values == null
+                                    ? 0
+                                    : (int) Math.round(values[2] * 10000);
+                        })
+                        .min()
+                        .orElse(0) / 10000.0;
+
+        double[] oos =
+                result.perIntent()
+                        .get("OUT_OF_SCOPE");
+
+        double oosRecall =
+                oos == null ? 0 : oos[1];
+
+        double oosPrecision =
+                oos == null ? 0 : oos[0];
+
+        int naturalTotal = 0;
+        int naturalFallback = 0;
+
+        for (int index = 0;
+             index < rows.size();
+             index++) {
+
+            HoldoutRow row =
+                    rows.get(index);
+
+            if (!"NATURAL".equals(row.tier())) {
+                continue;
+            }
+
+            naturalTotal++;
+
+            Evaluator.Prediction prediction =
+                    predictions.get(index);
+
+            boolean fallback =
+                    prediction.confidence() < THRESHOLD_CLARIFY
+                            || ("OUT_OF_SCOPE".equals(
+                            prediction.predicted()
+                    )
+                            && !"OUT_OF_SCOPE".equals(
+                            row.intent()
+                    ));
+
+            if (fallback) {
+                naturalFallback++;
             }
         }
 
-        double accuracy =
-                (double) correct / total;
+        double naturalFallbackRate =
+                naturalTotal == 0
+                        ? 0
+                        : (double) naturalFallback / naturalTotal;
 
+        StringBuilder table =
+                new StringBuilder();
+
+        table.append(
+                "\n=== CỔNG CHẤT LƯỢNG V2 (mục 7.2) — "
+                        + "CHỈ CẢNH BÁO Ở V2-2, FAIL BUILD TỪ V2-6 ===\n"
+        );
+        table.append(
+                String.format(
+                        java.util.Locale.ROOT,
+                        "Holdout: %d câu ("
+                                + "EASY=%d, NATURAL=%d, ADVERSARIAL=%d)%n",
+                        result.samples(),
+                        rows.stream()
+                                .filter(r -> "EASY".equals(r.tier()))
+                                .count(),
+                        rows.stream()
+                                .filter(r -> "NATURAL".equals(r.tier()))
+                                .count(),
+                        rows.stream()
+                                .filter(r -> "ADVERSARIAL".equals(r.tier()))
+                                .count()
+                )
+        );
+        table.append(
+                "----------------------------------------------------------------\n"
+        );
+        table.append(
+                String.format(
+                        java.util.Locale.ROOT,
+                        "%-46s %8s %8s %s%n",
+                        "Chỉ số",
+                        "Hiện tại",
+                        "Cổng",
+                        "Kết quả"
+                )
+        );
+
+        appendGate(
+                table,
+                "Intent accuracy",
+                result.accuracy(),
+                GATE_ACCURACY,
+                ">="
+        );
+        appendGate(
+                table,
+                "Macro-F1",
+                result.macroF1(),
+                GATE_MACRO_F1,
+                ">="
+        );
+        appendGate(
+                table,
+                "F1 thấp nhất (trên các intent có thật)",
+                minF1,
+                GATE_MIN_F1,
+                ">="
+        );
+        appendGate(
+                table,
+                "Recall OUT_OF_SCOPE",
+                oosRecall,
+                GATE_OOS_RECALL,
+                ">="
+        );
+        appendGate(
+                table,
+                "Precision OUT_OF_SCOPE",
+                oosPrecision,
+                GATE_OOS_PRECISION,
+                ">="
+        );
+        appendGate(
+                table,
+                "Fallback trên câu tier NATURAL ("
+                        + naturalFallback + "/" + naturalTotal + ")",
+                naturalFallbackRate,
+                GATE_NATURAL_FALLBACK,
+                "<="
+        );
+
+        table.append(
+                String.format(
+                        java.util.Locale.ROOT,
+                        "%-46s %8s %8s %s%n",
+                        "Câu ghép (tag compound)",
+                        "—",
+                        ">=0.80",
+                        "CHƯA ĐO"
+                )
+        );
+        table.append(
+                String.format(
+                        java.util.Locale.ROOT,
+                        "%-46s %8s %8s %s%n",
+                        "Entity/slot F1",
+                        "—",
+                        ">=0.93",
+                        "CHƯA ĐO"
+                )
+        );
+        table.append(
+                String.format(
+                        java.util.Locale.ROOT,
+                        "%-46s %8s %8s %s%n",
+                        "FAQ recall@1 / recall@3",
+                        "—",
+                        "0.85/0.95",
+                        "CHƯA ĐO (V2-3)"
+                )
+        );
+        table.append(
+                String.format(
+                        java.util.Locale.ROOT,
+                        "%-46s %8s %8s %s%n",
+                        "Task success (kịch bản)",
+                        "—",
+                        ">=0.88",
+                        "CHƯA ĐO (từ 250 kịch bản)"
+                )
+        );
+        table.append(
+                String.format(
+                        java.util.Locale.ROOT,
+                        "%-46s %8s %8s %s%n",
+                        "Độ trễ p95 không tính DB",
+                        "110.6ms(có DB)",
+                        "<300ms",
+                        "CHƯA ĐO (V2-16)"
+                )
+        );
+
+        table.append(
+                "----------------------------------------------------------------\n"
+        );
+
+        System.out.println(table);
+
+        // V2-2: KHÔNG fail build – giữ lại assert tối thiểu để test có ý nghĩa.
         assertTrue(
-                accuracy >= 0.85,
-                "Accuracy holdout = "
-                        + accuracy
-                        + " (< 0.85). Sai: "
-                        + wrong
+                result.samples() > 0,
+                "Holdout không có mẫu nào được đánh giá"
+        );
+    }
+
+    private static void appendGate(
+            StringBuilder table,
+            String name,
+            double actual,
+            double gate,
+            String direction
+    ) {
+
+        boolean pass =
+                ">=".equals(direction)
+                        ? actual >= gate
+                        : actual <= gate;
+
+        table.append(
+                String.format(
+                        java.util.Locale.ROOT,
+                        "%-46s %8.4f %8.2f %s%n",
+                        name,
+                        actual,
+                        gate,
+                        pass ? "ĐẠT" : "CHƯA ĐẠT"
+                )
         );
     }
 

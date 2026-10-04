@@ -1,0 +1,137 @@
+[
+  {
+    "id": "PY-01",
+    "title": "Trả tiền rồi nhưng chưa có gói (đơn PAID + membership ACTIVE)",
+    "role": "MEMBER",
+    "fixture": "member1_gym_q1_active",
+    "status": "PENDING",
+    "note": "intent \"đã trả tiền chưa có gói\" chưa có (plan V2-11)",
+    "turns": [
+      {"say": "tôi trả tiền rồi mà chưa có gói tập", "expect": {"intent": "MY_MEMBERSHIP"}}
+    ],
+    "tags": ["payment", "paid_no_membership"]
+  },
+  {
+    "id": "PY-02",
+    "title": "Đơn PAID nhưng không có membership → CONTACT_STAFF kèm mã đơn",
+    "role": "MEMBER",
+    "fixture": "member_order_paid_no_membership",
+    "status": "PENDING",
+    "note": "intent \"đã trả tiền chưa có gói\" chưa có (plan V2-11)",
+    "turns": [
+      {"say": "tôi trả tiền rồi mà chưa có gói tập", "expect": {"intent": "MY_MEMBERSHIP"}}
+    ],
+    "tags": ["payment", "paid_no_membership"]
+  },
+  {
+    "id": "PY-03",
+    "title": "Đơn PENDING_PAYMENT → hướng dẫn hoàn tất thanh toán",
+    "role": "MEMBER",
+    "fixture": "member_order_paid_no_membership",
+    "status": "PENDING",
+    "note": "intent trạng thái đơn hàng chưa có (plan V2-11)",
+    "turns": [
+      {"say": "đơn của tôi chưa thanh toán phải làm sao", "expect": {"intent": "ORDER_STATUS"}}
+    ],
+    "tags": ["payment", "pending_payment"]
+  },
+  {
+    "id": "PY-04",
+    "title": "Payment FAILED → giải thích và cho thử lại",
+    "role": "MEMBER",
+    "fixture": "member_order_paid_no_membership",
+    "status": "PENDING",
+    "note": "intent xử lý thanh toán lỗi chưa có (plan V2-11)",
+    "turns": [
+      {"say": "thanh toán của tôi bị lỗi", "expect": {"intent": "ORDER_STATUS"}}
+    ],
+    "tags": ["payment", "failed"]
+  },
+  {
+    "id": "PY-05",
+    "title": "Tải hóa đơn đơn gần nhất → card kèm liên kết PDF",
+    "role": "MEMBER",
+    "fixture": "member_order_paid_no_membership",
+    "status": "PENDING",
+    "note": "intent INVOICE_LINK chưa có (plan V2-7)",
+    "turns": [
+      {"say": "tải hóa đơn đơn gần nhất của tôi", "expect": {"intent": "INVOICE_LINK"}}
+    ],
+    "tags": ["payment", "invoice"]
+  },
+  {
+    "id": "PY-06",
+    "title": "Nhắc mã đơn ORD_… của chính mình → trả về đơn của tôi",
+    "role": "MEMBER",
+    "fixture": "member_order_paid_no_membership",
+    "turns": [
+      {
+        "say": "đơn ORD_1005 của tôi",
+        "expect": {
+          "intent": "MY_ORDERS",
+          "contains": ["ORD_1005", "450.000đ"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["payment", "order_code"]
+  },
+  {
+    "id": "PY-07",
+    "title": "Staff: đơn nào chưa thanh toán (≤ 10 dòng)",
+    "role": "STAFF",
+    "fixture": "manager_q1",
+    "status": "PENDING",
+    "note": "intent UNPAID_ORDERS chưa có (plan V2-8)",
+    "turns": [
+      {"say": "đơn nào chưa thanh toán", "expect": {"intent": "UNPAID_ORDERS"}}
+    ],
+    "tags": ["payment", "staff_unpaid"]
+  },
+  {
+    "id": "PY-08",
+    "title": "Đơn hàng gần nhất của tôi (data có)",
+    "role": "MEMBER",
+    "fixture": "member_order_paid_no_membership",
+    "turns": [
+      {
+        "say": "đơn hàng gần nhất của tôi là gì",
+        "expect": {
+          "intent": "MY_ORDERS",
+          "contains": ["5 đơn hàng gần nhất", "ORD_1005"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["payment", "my_orders"]
+  },
+  {
+    "id": "PY-09",
+    "title": "Tổng tiền tôi đã mua trong tháng này (tổng hợp danh sách)",
+    "role": "MEMBER",
+    "fixture": "member_order_paid_no_membership",
+    "status": "PENDING",
+    "note": "chưa có tổng hợp tổng tiền theo kỳ — MY_ORDERS chỉ trả danh sách (plan V2-7)",
+    "turns": [
+      {"say": "tổng tiền tôi đã mua trong tháng này", "expect": {"intent": "MY_ORDERS"}}
+    ],
+    "tags": ["payment", "my_orders", "aggregate"]
+  },
+  {
+    "id": "PY-10",
+    "title": "Đơn nào của tôi chưa thanh toán (data rỗng vẫn không lỗi)",
+    "role": "MEMBER",
+    "fixture": "member_no_membership",
+    "turns": [
+      {
+        "say": "đơn nào của tôi chưa thanh toán",
+        "expect": {
+          "intent": "MY_ORDERS",
+          "contains": ["chưa có đơn hàng nào"],
+          "notContains": ["Exception", "null"]
+        }
+      }
+    ],
+    "tags": ["payment", "my_orders", "empty"]
+  }
+]
