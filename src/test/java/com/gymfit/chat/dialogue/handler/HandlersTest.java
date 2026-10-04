@@ -24,6 +24,7 @@ import com.gymfit.chat.nlg.ResponseTemplates;
 import com.gymfit.common.error.ApiException;
 import com.gymfit.common.error.ForbiddenException;
 import com.gymfit.common.security.AppPrincipal;
+import com.gymfit.common.util.TimeUtil;
 import com.gymfit.inventory.InventoryService;
 import com.gymfit.inventory.dto.InventoryResponse;
 import com.gymfit.membership.MembershipService;
@@ -1647,8 +1648,12 @@ class HandlersTest {
     @DisplayName("BOOKINGS_TODAY đếm theo trạng thái và dịch vụ")
     void bookingsToday() {
 
+        // Lấy mốc thời gian từ TODAY chứ không dùng đồng hồ hệ thống,
+        // nếu không dữ liệu mock (04/10...) sẽ lệch ngày với context.today().
         Instant now =
-                Instant.now();
+                TODAY.atTime(12, 0)
+                        .atZone(TimeUtil.VIETNAM)
+                        .toInstant();
 
         when(bookingService.list(
                 any()
@@ -1733,8 +1738,12 @@ class HandlersTest {
     @DisplayName("CHECKINS_REJECTED gom theo lý do")
     void rejectedCheckIns() {
 
+        // Cùng lý do bookingsToday: createdAtUtc phải rơi vào ngày TODAY
+        // (bộ lọc của handler so với context.today()).
         Instant now =
-                Instant.now();
+                TODAY.atTime(12, 0)
+                        .atZone(TimeUtil.VIETNAM)
+                        .toInstant();
 
         when(checkInService.list(
                 any()
