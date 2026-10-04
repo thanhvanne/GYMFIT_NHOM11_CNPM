@@ -1,11 +1,13 @@
 package com.gymfit.auth;
 
+import com.gymfit.auth.dto.ChangePasswordRequest;
 import com.gymfit.auth.dto.CurrentUserResponse;
 import com.gymfit.auth.dto.LoginRequest;
 import com.gymfit.auth.dto.LoginResponse;
 import com.gymfit.common.security.SecurityContextService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,5 +33,20 @@ public class AuthController {
         return authService.currentUser(
                 securityContextService.principal()
         );
+    }
+
+    /**
+     * Đổi mật khẩu (bắt buộc với tài khoản {@code mustChangePassword=true}).
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        authService.changePassword(
+                securityContextService.principal(),
+                request
+        );
+
+        return ResponseEntity.noContent().build();
     }
 }

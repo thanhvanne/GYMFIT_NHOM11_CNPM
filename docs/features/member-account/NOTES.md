@@ -199,6 +199,9 @@ git ls-files src/test | measure   # → 18 file *.java
 | N10 | `MemberResponse` là `record` 10 field, **1 chỗ** `new` | F5 chỉ sửa `toResponse` + thêm param; kiểm bằng test list/get. |
 | N11 | Thứ tự kiểm tra trong `MemberService.create`: `ensureEmailAvailable` (bảng `member`) chạy **trước** `assertUsernameAvailable` (bảng `app_user`) | E2E: email trùng **hội viên khác** trả `member_email_exists` (409), không phải `user_email_exists`. `user_email_exists` chỉ nảy sinh khi email đã thuộc **tài khoản** khác mà chưa có hội viên nào dùng (đã có test C4). Cả hai đều 409 + không tạo hội viên rác ⇒ đạt AC F6-(d), nhưng plan viết "message gợi ý" là `user_email_exists` → ghi rõ tại đây. |
 | N12 | `issue()` kiểm `findByMemberId` **trước** khi sinh mật khẩu (thêm trong F3) | Nếu chỉ dựa vào `validateScope` bên trong `UserService.createForMember` thì lỗi sẽ là `user_email_exists` (đúng email mới trùng) hoặc `member_account_exists` ở bước sau; kiểm sớm cho mã lỗi ổn định `member_account_exists` (test C6) và tránh sinh/ băm mật khẩu vô ích. |
+| N13 | PLAN F4.3 chỉ ghép `@member.gymfit.local` khi người dùng gõ mã hội viên | Với tài khoản **đang dùng email** (hội viên seed có email), gõ mã sẽ cho tên không tồn tại → đăng nhập fail, không đạt AC F7. ⇒ Bổ sung `AuthService.resolveLogin`: nếu tên ghép không tồn tại thì tra `member.memberCode` → `app_user.email`. Tài khoản sinh theo mã vẫn dùng thẳng (test `maHoiVienCoTaiKhoanTheoMa`). |
+| N14 | Filter ghi `403 password_change_required` bằng **ObjectMapper bean**; nếu serialize lỗi thì rơi về JSON ghi tay `FALLBACK_BODY` + `logger.warn` | Kiểm bằng `curl -D -`: body **213 bytes**, đúng định dạng `ApiError`, `Content-Type: application/json;charset=UTF-8`. Lưu ý: đọc body 403 qua `Invoke-WebRequest` của PowerShell cho length=0 (lỗi đọc stream phía client) – **không phải lỗi server**; dùng curl để đo. |
+| N15 | Allowlist của filter chỉ có `/api/v1/auth/me` và `/api/v1/auth/change-password`; logout phía client chỉ xóa localStorage (không gọi API) | Nếu sau này thêm API logout/reset khác, phải đưa vào `PASSWORD_CHANGE_ALLOWLIST` nếu không hội viên sẽ không gọi được. |
 
 ---
 
@@ -226,6 +229,21 @@ git ls-files src/test | measure   # → 18 file *.java
 | 8 | `MEMBER` gọi endpoint cấp tài khoản | **403** |
 | 9 | Dọn dữ liệu | `12 hội viên / 8 tài khoản / 0 must_change=1` – đúng như trước kiểm |
 
+## E2E F4 – kết quả đo thật (app tạm 8081, đã dọn sạch sau kiểm)
+
+| # | Kịch bản | Kết quả |
+|---|---|---|
+| 1 | Đăng nhập `admin@gymfit.local`, `member1@gymfit.local` (seed, **email cũ**) | **OK** – không hỏng luồng cũ; `/auth/me` trả `mustChangePassword=false` |
+| 2 | Đăng nhập bằng **mã hội viên** `GF000001` | **OK** → trả `email=member1@gymfit.local` (N13) |
+| 3 | Hội viên mới (tài khoản tạm, cờ `mustChange=true`) gọi `GET /api/v1/bookings` | **403** + body `{..."code":"password_change_required","path":"/api/v1/bookings"...}` (curl: 213 bytes) |
+| 4 | Cùng token gọi `GET /api/v1/auth/me` | **200**, `mustChangePassword=true` |
+| 5 | `POST /api/v1/auth/change-password` (đúng mật khẩu tạm → mới) | **204** |
+| 6 | Mật khẩu mới yếu (`abcdefgh`) | **400** `weak_password` |
+| 7 | Sai mật khẩu hiện tại | **400** `invalid_current_password` |
+| 8 | Sau khi đổi, gọi lại `GET /api/v1/bookings` | **200** (hết nợ) |
+| 9 | Đăng nhập lại bằng mật khẩu mới / bằng mã hội viên | **OK**, `mustChangePassword=false`; mật khẩu tạm cũ bị từ chối |
+| 10 | Dọn dữ liệu | `12 hội viên / 8 tài khoản / 0 must_change=1` – đúng như trước kiểm |
+
 ## Trạng thái các task
 
 | Task | Trạng thái | Ghi chú |
@@ -234,4 +252,5 @@ git ls-files src/test | measure   # → 18 file *.java
 | F1 | ✅ hoàn thành 2026-10-04 | bỏ qua mục 5 (N6); migration đã chạy trên DB thật (`fd81bf5`) |
 | F2 | ✅ hoàn thành 2026-10-04 | 8 test (`d9800ba`) |
 | F3 | ✅ hoàn thành 2026-10-04 | 12 test Mockito pass + E2E HTTP qua app tạm 8081 (đã dọn dữ liệu test) |
+| F4 | ✅ hoàn thành 2026-10-04 | 15 test pass + E2E HTTP/curl (đã dọn dữ liệu test) |
 | F4–F9 | ⬜ | |
