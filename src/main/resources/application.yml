@@ -14,7 +14,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=gymfit;encrypt=true;trustServerCertificate=true}
     username: sa
-    password: 123
+    password: 123456
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
   jpa:

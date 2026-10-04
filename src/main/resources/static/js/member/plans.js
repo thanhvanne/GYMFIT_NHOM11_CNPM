@@ -2,560 +2,325 @@ let currentUser;
 let member;
 let branches = [];
 let plans = [];
-
-let selectedPlan = null;
 let currentOrder = null;
-let currentPayment = null;
+let purchasing = false;
 
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
-        currentUser =
-            Auth.requireRole("MEMBER");
+document.addEventListener("DOMContentLoaded", async () => {
+    currentUser = Auth.requireRole("MEMBER");
 
-        if (!currentUser) {
-            return;
+    if (!currentUser) return;
+
+    try {
+        // Tự nạp màn hình hóa đơn chung, không cần sửa HTML.
+        if (!window.Invoice) {
+            await import("/js/core/invoice.js");
         }
 
         bindEvents();
 
-        try {
-            const results =
-                await Promise.all([
-                    Api.get(
-                        `/api/v1/members/${currentUser.memberId}`
-                    ),
-                    Api.get(
-                        "/api/v1/branches?status=ACTIVE"
-                    )
-                ]);
+        const results = await Promise.all([
+            Api.get(`/api/v1/members/${currentUser.memberId}`),
+            Api.get("/api/v1/branches?status=ACTIVE")
+        ]);
 
-            member = results[0];
-            branches = results[1];
+        member = results[0];
+        branches = results[1];
 
-            renderBranches();
+        renderBranches();
 
-            const defaultBranch =
-                branches.find(
-                    branch =>
-                        branch.id
-                        === member.homeBranchId
-                )
-                || branches[0];
+        const defaultBranch = branches.find(
+            branch => branch.id === member.homeBranchId
+        ) || branches[0];
 
-            if (defaultBranch) {
-                document.getElementById(
-                    "plan-branch"
-                ).value =
-                    String(
-                        defaultBranch.id
-                    );
+        if (defaultBranch) {
+            document.getElementById("plan-branch").value =
+                String(defaultBranch.id);
 
-                await loadPlans();
-            }
-        } catch (error) {
-            showError(
-                formatApiError(error)
-            );
+            await loadPlans();
         }
+
+        await loadPurchaseHistory();
+    } catch (error) {
+        showError(formatApiError(error));
     }
-);
+});
 
 function bindEvents() {
-    document.getElementById(
-        "plan-branch"
-    ).addEventListener(
-        "change",
-        loadPlans
-    );
-
-    document.getElementById(
-        "purchase-success-button"
-    ).addEventListener(
-        "click",
-        simulateSuccess
-    );
-
-    document.getElementById(
-        "purchase-failure-button"
-    ).addEventListener(
-        "click",
-        simulateFailure
-    );
+    document.getElementById("plan-branch")
+        .addEventListener("change", loadPlans);
 }
 
 function renderBranches() {
-    const select =
-        document.getElementById(
-            "plan-branch"
-        );
+    const select = document.getElementById("plan-branch");
 
     select.replaceChildren();
 
     branches.forEach(branch => {
-        const option =
-            document.createElement("option");
+        const option = document.createElement("option");
 
-        option.value =
-            String(branch.id);
-
-        option.textContent =
-            branch.name;
+        option.value = String(branch.id);
+        option.textContent = branch.name;
 
         select.appendChild(option);
     });
 }
 
 async function loadPlans() {
-    const branchId =
-        document.getElementById(
-            "plan-branch"
-        ).value;
+    const branchId = document.getElementById("plan-branch").value;
 
-    if (!branchId) {
-        return;
-    }
+    if (!branchId) return;
 
     try {
         plans = await Api.get(
-            `/api/v1/plans`
-            + `?branchId=${branchId}`
-            + `&status=ACTIVE`
+            `/api/v1/plans?branchId=${branchId}&status=ACTIVE`
         );
 
         renderPlans();
     } catch (error) {
-        showError(
-            formatApiError(error)
-        );
+        showError(formatApiError(error));
     }
 }
 
 function renderPlans() {
-    const container =
-        document.getElementById(
-            "member-plan-grid"
-        );
+    const container = document.getElementById("member-plan-grid");
 
     container.replaceChildren();
 
     if (!plans.length) {
-        const empty =
-            document.createElement("div");
+        const empty = document.createElement("div");
 
-        empty.className =
-            "empty-state";
-
-        empty.textContent =
-            "Chi nhánh chưa có gói tập";
+        empty.className = "empty-state";
+        empty.textContent = "Chi nhánh chưa có gói tập";
 
         container.appendChild(empty);
-
         return;
     }
 
     plans.forEach(plan => {
-        const card =
-            document.createElement(
-                "article"
-            );
+        const card = document.createElement("article");
+        card.className = "manager-plan-card";
 
-        card.className =
-            "manager-plan-card";
+        const top = document.createElement("div");
+        top.className = "manager-plan-top";
 
-        const top =
-            document.createElement(
-                "div"
-            );
+        const name = document.createElement("strong");
+        name.textContent = plan.name;
 
-        top.className =
-            "manager-plan-top";
+        const tier = document.createElement("span");
+        tier.className = tierClass(plan.tier);
+        tier.textContent = plan.tier;
 
-        const name =
-            document.createElement(
-                "strong"
-            );
+        top.append(name, tier);
 
-        name.textContent =
-            plan.name;
+        const code = document.createElement("div");
+        code.className = "muted small";
+        code.textContent = plan.planCode;
 
-        const tier =
-            document.createElement(
-                "span"
-            );
+        const price = document.createElement("div");
+        price.className = "manager-plan-price";
+        price.textContent = formatMoney(plan.price);
 
-        tier.className =
-            tierClass(plan.tier);
+        const duration = document.createElement("div");
+        duration.className = "muted";
+        duration.textContent = `${plan.durationDays} ngày`;
 
-        tier.textContent =
-            plan.tier;
+        const services = document.createElement("div");
+        services.className = "service-badges";
 
-        top.append(
-            name,
-            tier
-        );
+        plan.services.forEach(service => {
+            const badge = document.createElement("span");
 
-        const code =
-            document.createElement(
-                "div"
-            );
+            badge.className = "badge badge-standard";
+            badge.textContent = service;
 
-        code.className =
-            "muted small";
+            services.appendChild(badge);
+        });
 
-        code.textContent =
-            plan.planCode;
-
-        const price =
-            document.createElement(
-                "div"
-            );
-
-        price.className =
-            "manager-plan-price";
-
-        price.textContent =
-            formatMoney(
-                plan.price
-            );
-
-        const duration =
-            document.createElement(
-                "div"
-            );
-
-        duration.className =
-            "muted";
-
-        duration.textContent =
-            `${plan.durationDays} ngày`;
-
-        const services =
-            document.createElement(
-                "div"
-            );
-
-        services.className =
-            "service-badges";
-
-        plan.services.forEach(
-            service => {
-                const badge =
-                    document.createElement(
-                        "span"
-                    );
-
-                badge.className =
-                    "badge badge-standard";
-
-                badge.textContent =
-                    service;
-
-                services.appendChild(
-                    badge
-                );
-            }
-        );
+        card.append(top, code, price, duration, services);
 
         if (plan.description) {
-            const description =
-                document.createElement(
-                    "p"
-                );
+            const description = document.createElement("p");
 
-            description.className =
-                "muted small";
+            description.className = "muted small";
+            description.textContent = plan.description;
 
-            description.textContent =
-                plan.description;
-
-            card.append(
-                top,
-                code,
-                price,
-                duration,
-                services,
-                description
-            );
-        } else {
-            card.append(
-                top,
-                code,
-                price,
-                duration,
-                services
-            );
+            card.appendChild(description);
         }
 
-        const purchase =
-            document.createElement(
-                "button"
-            );
+        const purchase = document.createElement("button");
 
         purchase.type = "button";
-
-        purchase.className =
-            "button button-primary";
-
-        purchase.textContent =
-            "Mua gói";
+        purchase.className = "button button-primary";
+        purchase.textContent = "Mua gói";
 
         purchase.addEventListener(
             "click",
-            () => purchasePlan(
-                plan
-            )
+            () => purchasePlan(plan)
         );
 
-        card.appendChild(
-            purchase
-        );
-
+        card.appendChild(purchase);
         container.appendChild(card);
     });
 }
 
 async function purchasePlan(plan) {
-    selectedPlan = plan;
+    if (purchasing) return;
 
-    hide("purchase-error");
+    purchasing = true;
+
+    document.querySelectorAll("#member-plan-grid button")
+        .forEach(button => {
+            button.disabled = true;
+        });
 
     try {
         currentOrder = await Api.post(
             "/api/v1/member/purchases",
-            {
-                planId:
-                plan.id
-            }
+            {planId: plan.id}
         );
 
-        currentPayment =
-            await Api.post(
-                "/api/v1/payments/momo",
-                {
-                    orderId:
-                    currentOrder.id,
+        await loadPurchaseHistory();
 
-                    idempotencyKey:
-                        createIdempotencyKey(
-                            currentOrder.id
-                        )
-                }
-            );
+        const result = await Invoice.checkout(currentOrder);
 
-        document.getElementById(
-            "purchase-plan-name"
-        ).textContent =
-            plan.name;
-
-        document.getElementById(
-            "purchase-amount"
-        ).textContent =
-            formatMoney(
-                currentPayment.amount
-            );
-
-        document.getElementById(
-            "purchase-order-code"
-        ).textContent =
-            currentOrder.orderCode;
-
-        show("purchase-modal");
-    } catch (error) {
-        showError(
-            formatApiError(error)
-        );
-    }
-}
-
-async function simulateSuccess() {
-    if (!currentPayment) {
-        return;
-    }
-
-    setPaymentButtons(true);
-
-    try {
-        const payment =
-            await Api.post(
-                `/api/v1/payments/${currentPayment.id}/simulate-success`,
-                {}
-            );
-
-        if (
-            payment.status
-            !== "SUCCEEDED"
-        ) {
-            throw new Error(
-                "Thanh toán chưa thành công"
+        if (result.status === "PAID") {
+            showSuccess(
+                "Thanh toán thành công. Gói tập đã được kích hoạt."
             );
         }
 
-        hide("purchase-modal");
-
-        showSuccess(
-            "Mua gói thành công. Membership mới đã được kích hoạt."
-        );
-
-        currentOrder = null;
-        currentPayment = null;
-        selectedPlan = null;
+        await loadPurchaseHistory();
     } catch (error) {
-        showPurchaseError(
-            formatApiError(error)
-        );
+        showError(formatApiError(error));
     } finally {
-        setPaymentButtons(false);
+        purchasing = false;
+
+        document.querySelectorAll("#member-plan-grid button")
+            .forEach(button => {
+                button.disabled = false;
+            });
     }
 }
 
-async function simulateFailure() {
-    if (!currentPayment) {
-        return;
+async function loadPurchaseHistory() {
+    let section = document.getElementById("purchase-history");
+
+    if (!section) {
+        section = document.createElement("section");
+        section.id = "purchase-history";
+        section.className = "panel member-section";
+
+        document.querySelector(".member-main").appendChild(section);
     }
 
-    setPaymentButtons(true);
+    const orders = await Api.get("/api/v1/orders");
 
-    try {
-        await Api.post(
-            `/api/v1/payments/${currentPayment.id}/simulate-failure`,
-            {}
+    section.replaceChildren();
+
+    const title = document.createElement("h2");
+    title.textContent = "Đơn hàng / Hóa đơn";
+
+    section.appendChild(title);
+
+    orders.slice(0, 20).forEach(order => {
+        const row = document.createElement("div");
+
+        row.style.cssText = `
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 0;
+            flex-wrap: wrap;
+        `;
+
+        const text = document.createElement("span");
+
+        text.textContent =
+            `${order.orderCode} · ${formatMoney(order.total)} · `
+            + (order.status === "PAID"
+                ? "Đã thanh toán"
+                : "Chưa thanh toán");
+
+        row.appendChild(text);
+
+        if (["PAID", "PENDING_PAYMENT"].includes(order.status)) {
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className = "button button-primary button-small";
+
+            button.textContent = order.status === "PAID"
+                ? "Hóa đơn / In"
+                : "Tiếp tục thanh toán";
+
+            button.addEventListener("click", async () => {
+                button.disabled = true;
+
+                try {
+                    await Invoice.checkout(order);
+                    await loadPurchaseHistory();
+                } catch (error) {
+                    showError(formatApiError(error));
+                } finally {
+                    button.disabled = false;
+                }
+            });
+
+            row.appendChild(button);
+        }
+
+        section.appendChild(row);
+    });
+
+    if (!orders.length) {
+        section.appendChild(
+            document.createTextNode("Chưa có đơn hàng.")
         );
-
-        hide("purchase-modal");
-
-        showError(
-            "Thanh toán thất bại"
-        );
-
-        currentOrder = null;
-        currentPayment = null;
-        selectedPlan = null;
-    } catch (error) {
-        showPurchaseError(
-            formatApiError(error)
-        );
-    } finally {
-        setPaymentButtons(false);
     }
 }
 
 function tierClass(tier) {
-    if (tier === "PREMIUM") {
-        return "badge badge-premium";
-    }
-
-    if (tier === "STANDARD") {
-        return "badge badge-standard";
-    }
-
+    if (tier === "PREMIUM") return "badge badge-premium";
+    if (tier === "STANDARD") return "badge badge-standard";
     return "badge badge-basic";
 }
 
-function createIdempotencyKey(
-    orderId
-) {
-    if (window.crypto?.randomUUID) {
-        return `member-${orderId}-${crypto.randomUUID()}`;
-    }
-
-    return `member-${orderId}-${Date.now()}`;
-}
-
-function setPaymentButtons(
-    disabled
-) {
-    document.getElementById(
-        "purchase-success-button"
-    ).disabled = disabled;
-
-    document.getElementById(
-        "purchase-failure-button"
-    ).disabled = disabled;
-}
-
 function formatMoney(value) {
-    return new Intl.NumberFormat(
-        "vi-VN",
-        {
-            style: "currency",
-            currency: "VND"
-        }
-    ).format(
-        Number(value || 0)
-    );
+    return new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND"
+    }).format(Number(value || 0));
 }
 
 function show(id) {
-    document.getElementById(id)
-        .classList.remove("hidden");
+    document.getElementById(id).classList.remove("hidden");
 }
 
 function hide(id) {
-    document.getElementById(id)
-        .classList.add("hidden");
+    document.getElementById(id).classList.add("hidden");
 }
 
 function showError(message) {
-    const box =
-        document.getElementById(
-            "page-error"
-        );
+    const box = document.getElementById("page-error");
 
     box.textContent = message;
-
-    box.classList.remove(
-        "hidden"
-    );
+    box.classList.remove("hidden");
 }
 
 function showSuccess(message) {
-    const box =
-        document.getElementById(
-            "page-success"
-        );
+    const box = document.getElementById("page-success");
 
     box.textContent = message;
+    box.classList.remove("hidden");
 
-    box.classList.remove(
-        "hidden"
-    );
-
-    setTimeout(
-        () => box.classList.add(
-            "hidden"
-        ),
-        4000
-    );
-}
-
-function showPurchaseError(
-    message
-) {
-    const box =
-        document.getElementById(
-            "purchase-error"
-        );
-
-    box.textContent = message;
-
-    box.classList.remove(
-        "hidden"
-    );
+    setTimeout(() => box.classList.add("hidden"), 4000);
 }
 
 function formatApiError(error) {
-    if (
-        error.errors
-        && Object.keys(
-            error.errors
-        ).length
-    ) {
-        return Object.values(
-            error.errors
-        ).join(". ");
+    if (error.errors && Object.keys(error.errors).length) {
+        return Object.values(error.errors).join(". ");
     }
 
-    return error.message
-        || "Có lỗi xảy ra";
+    return error.message || "Có lỗi xảy ra";
 }
