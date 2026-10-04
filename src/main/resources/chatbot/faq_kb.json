@@ -62,7 +62,7 @@
       "gói cũ còn hạn mà mua gói mới",
       "gói mới có thay gói cũ không"
     ],
-    "answer": "Khi bạn mua gói mới, gói cũ đang hiệu lực bị đánh dấu đã thay thế (REPLACED) ngay lúc kích hoạt — lịch sử vẫn giữ nhưng gói cũ không dùng được nữa. Nếu gói cũ đã qua ngày kết thúc thì nó chuyển thành hết hạn.",
+    "answer": "Mỗi lần mua chỉ chọn một gói. Khi thanh toán thành công, gói mới được kích hoạt độc lập; các gói đang hiệu lực khác vẫn giữ nguyên và có thể dùng đồng thời nếu đúng chi nhánh, thời hạn và loại hình thể thao. Gói đã qua ngày kết thúc sẽ hết hạn.",
     "link": "/member/history",
     "source": "MembershipService.activateFromPaidOrder",
     "tags": ["goi tap", "mua goi"]
@@ -79,7 +79,7 @@
       "gói hết hạn thì gia hạn ở đâu",
       "gia hạn gói trước khi hết hạn được không"
     ],
-    "answer": "Gia hạn bằng cách mua tiếp 1 gói mới tại trang Gói tập. Ngày bắt đầu luôn là hôm nay và ngày kết thúc bằng ngày bắt đầu cộng số ngày của gói trừ 1; số ngày còn lại của gói cũ KHÔNG được cộng dồn.",
+    "answer": "Gia hạn hoặc mua thêm bằng cách chọn một gói mới tại trang Gói tập. Mỗi lần mua chỉ tạo một gói; ngày bắt đầu là hôm nay và ngày kết thúc bằng ngày bắt đầu cộng số ngày của gói trừ 1. Các gói đang hoạt động khác không bị thay thế và không bị mất.",
     "link": "/member/plans",
     "source": "MembershipService.activateFromPaidOrder",
     "tags": ["gia han", "goi tap"]

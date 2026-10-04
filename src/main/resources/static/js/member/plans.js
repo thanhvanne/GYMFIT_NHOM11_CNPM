@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         await loadPurchaseHistory();
+        await loadActiveMemberships();
     } catch (error) {
         showError(formatApiError(error));
     }
@@ -190,6 +191,7 @@ async function purchasePlan(plan) {
         }
 
         await loadPurchaseHistory();
+        await loadActiveMemberships();
     } catch (error) {
         showError(formatApiError(error));
     } finally {
@@ -278,6 +280,76 @@ async function loadPurchaseHistory() {
             document.createTextNode("Chưa có đơn hàng.")
         );
     }
+}
+
+async function loadActiveMemberships() {
+    const section = document.getElementById("active-memberships");
+
+    try {
+        const memberships = await Api.get(
+            `/api/v1/members/${currentUser.memberId}/memberships/active`
+        );
+
+        section.replaceChildren();
+
+        if (!memberships.length) {
+            section.classList.add("hidden");
+            return;
+        }
+
+        section.classList.remove("hidden");
+
+        const title = document.createElement("h2");
+        title.textContent = "Các gói đang hoạt động";
+        section.appendChild(title);
+
+        const note = document.createElement("p");
+        note.className = "muted small";
+        note.textContent =
+            "Mua thêm gói mới không thay thế các gói hiện tại.";
+        section.appendChild(note);
+
+        const list = document.createElement("div");
+        list.className = "member-membership-list";
+
+        const planDetails = await Promise.all(
+            memberships.map(item =>
+                Api.get(`/api/v1/plans/${item.planId}`)
+            )
+        );
+
+        memberships.forEach((membership, index) => {
+            const card = document.createElement("article");
+            card.className = "active-plan-summary";
+
+            const name = document.createElement("strong");
+            name.textContent = planDetails[index]?.name
+                || `Gói #${membership.planId}`;
+
+            const dates = document.createElement("span");
+            dates.className = "muted small";
+            dates.textContent =
+                `${formatPlanDate(membership.startDate)} – `
+                + `${formatPlanDate(membership.endDate)}`;
+
+            const services = document.createElement("span");
+            services.className = "muted small";
+            services.textContent = membership.services.join(" · ");
+
+            card.append(name, dates, services);
+            list.appendChild(card);
+        });
+
+        section.appendChild(list);
+    } catch (error) {
+        section.classList.add("hidden");
+    }
+}
+
+function formatPlanDate(value) {
+    if (!value) return "—";
+    const [year, month, day] = value.split("-");
+    return `${day}/${month}/${year}`;
 }
 
 function tierClass(tier) {

@@ -24,43 +24,27 @@ document.addEventListener(
         );
 
         try {
-            const member =
-                await Api.get(
-                    `/api/v1/members/${user.memberId}`
-                );
-
-            const branch =
-                await Api.get(
-                    `/api/v1/branches/${member.homeBranchId}`
-                );
-
-            renderMember(
-                member,
-                branch
+            const member = await Api.get(
+                `/api/v1/members/${user.memberId}`
             );
 
-            try {
-                const membership =
-                    await Api.get(
-                        `/api/v1/members/${user.memberId}/memberships/current`
-                    );
+            const branch = await Api.get(
+                `/api/v1/branches/${member.homeBranchId}`
+            );
 
-                const plan =
-                    await Api.get(
-                        `/api/v1/plans/${membership.planId}`
-                    );
+            renderMember(member, branch);
 
-                renderMembership(
-                    membership,
-                    plan
-                );
-            } catch (error) {
-                if (error.status === 404) {
-                    renderNoMembership();
-                } else {
-                    throw error;
-                }
-            }
+            const memberships = await Api.get(
+                `/api/v1/members/${user.memberId}/memberships/active`
+            );
+
+            const plans = await Promise.all(
+                memberships.map(item =>
+                    Api.get(`/api/v1/plans/${item.planId}`)
+                )
+            );
+
+            renderMemberships(memberships, plans);
         } catch (error) {
             showError(
                 error.message
@@ -115,53 +99,87 @@ function renderMember(
         );
 }
 
-function renderMembership(
-    membership,
-    plan
-) {
-    document.getElementById(
-        "profile-membership-name"
-    ).textContent =
-        plan.name;
+function renderMemberships(memberships, plans) {
+    const container = document.getElementById("profile-memberships");
+    container.replaceChildren();
 
-    document.getElementById(
-        "profile-membership-status"
-    ).textContent =
-        membership.status;
+    if (!memberships.length) {
+        container.appendChild(
+            emptyElement("Chưa có gói tập đang hoạt động")
+        );
+        return;
+    }
 
-    document.getElementById(
-        "profile-start"
-    ).textContent =
-        formatDate(
-            membership.startDate
+    memberships.forEach((membership, index) => {
+        const plan = plans[index];
+        const card = document.createElement("article");
+        card.className = "member-membership-card";
+
+        const head = document.createElement("div");
+        head.className = "member-membership-head";
+
+        const title = document.createElement("div");
+        const eyebrow = document.createElement("div");
+        eyebrow.className = "member-membership-title";
+        eyebrow.textContent = "MEMBERSHIP";
+        const name = document.createElement("h3");
+        name.className = "member-membership-name";
+        name.textContent = plan?.name || `Gói #${membership.planId}`;
+        title.append(eyebrow, name);
+
+        const status = document.createElement("span");
+        status.className = "badge badge-success";
+        status.textContent = membership.status;
+        head.append(title, status);
+
+        const dates = document.createElement("div");
+        dates.className = "member-membership-dates";
+        dates.append(
+            dateCell("Bắt đầu", formatDate(membership.startDate)),
+            dateCell("Hết hạn", formatDate(membership.endDate))
         );
 
-    document.getElementById(
-        "profile-end"
-    ).textContent =
-        formatDate(
-            membership.endDate
-        );
+        const branch = document.createElement("div");
+        branch.className = "member-membership-branch";
+        branch.textContent = `Chi nhánh #${membership.branchId}`;
+
+        const services = document.createElement("div");
+        services.className = "member-services";
+        membership.services.forEach(service => {
+            const badge = document.createElement("span");
+            badge.className = "member-service-badge";
+            badge.textContent = serviceName(service);
+            services.appendChild(badge);
+        });
+
+        card.append(head, dates, branch, services);
+        container.appendChild(card);
+    });
 }
 
-function renderNoMembership() {
-    document.getElementById(
-        "profile-membership-name"
-    ).textContent =
-        "Chưa có gói tập";
+function dateCell(label, value) {
+    const cell = document.createElement("div");
+    const labelElement = document.createElement("span");
+    labelElement.textContent = label;
+    const valueElement = document.createElement("strong");
+    valueElement.textContent = value;
+    cell.append(labelElement, valueElement);
+    return cell;
+}
 
-    document.getElementById(
-        "profile-membership-status"
-    ).textContent =
-        "NONE";
+function serviceName(service) {
+    return {
+        GYM: "Gym",
+        BOXING: "Boxing",
+        PICKLEBALL: "Pickleball"
+    }[service] || service;
+}
 
-    document.getElementById(
-        "profile-start"
-    ).textContent = "—";
-
-    document.getElementById(
-        "profile-end"
-    ).textContent = "—";
+function emptyElement(text) {
+    const div = document.createElement("div");
+    div.className = "empty-state";
+    div.textContent = text;
+    return div;
 }
 
 function formatDate(value) {

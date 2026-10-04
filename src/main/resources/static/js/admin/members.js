@@ -530,7 +530,7 @@ async function openMembership(member) {
 
         try {
             const current = await Api.get(
-                `/api/v1/members/${member.id}/memberships/current`
+                `/api/v1/members/${member.id}/memberships/active`
             );
 
             renderCurrentMembership(current);
@@ -546,61 +546,46 @@ async function openMembership(member) {
     }
 }
 
-function renderCurrentMembership(membership) {
-    const container =
-        document.getElementById(
-            "current-membership"
-        );
-
+function renderCurrentMembership(memberships) {
+    const container = document.getElementById("current-membership");
     container.replaceChildren();
 
-    const card = document.createElement("div");
-    card.className = "membership-summary";
+    if (!memberships.length) {
+        renderNoCurrentMembership();
+        return;
+    }
 
-    const top = document.createElement("div");
-    top.className = "membership-summary-top";
+    memberships.forEach(membership => {
+        const card = document.createElement("div");
+        card.className = "membership-summary";
 
-    const title = document.createElement("div");
+        const top = document.createElement("div");
+        top.className = "membership-summary-top";
 
-    const strong =
-        document.createElement("strong");
+        const title = document.createElement("div");
+        const strong = document.createElement("strong");
+        strong.textContent = `Membership #${membership.id}`;
 
-    strong.textContent =
-        `Membership #${membership.id}`;
+        const dates = document.createElement("div");
+        dates.className = "muted";
+        dates.textContent = `${formatDate(membership.startDate)} - `
+            + `${formatDate(membership.endDate)}`;
+        title.append(strong, dates);
 
-    const dates =
-        document.createElement("div");
+        top.append(title, createStatusBadge(membership.status));
 
-    dates.className = "muted";
+        const services = document.createElement("div");
+        services.className = "service-badges";
+        membership.services.forEach(service => {
+            const badge = document.createElement("span");
+            badge.className = "badge badge-yellow";
+            badge.textContent = service;
+            services.appendChild(badge);
+        });
 
-    dates.textContent =
-        `${formatDate(membership.startDate)} - `
-        + `${formatDate(membership.endDate)}`;
-
-    title.append(strong, dates);
-
-    top.append(
-        title,
-        createStatusBadge(membership.status)
-    );
-
-    const services =
-        document.createElement("div");
-
-    services.className = "service-badges";
-
-    membership.services.forEach(service => {
-        const badge =
-            document.createElement("span");
-
-        badge.className = "badge badge-yellow";
-        badge.textContent = service;
-
-        services.appendChild(badge);
+        card.append(top, services);
+        container.appendChild(card);
     });
-
-    card.append(top, services);
-    container.appendChild(card);
 }
 
 function renderNoCurrentMembership() {

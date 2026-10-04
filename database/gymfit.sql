@@ -667,10 +667,8 @@ CREATE TABLE membership (
 );
 GO
 
-CREATE UNIQUE INDEX UX_membership_one_active_per_member
-    ON membership(member_id)
-    WHERE status = 'ACTIVE';
-GO
+-- Một hội viên được phép có nhiều membership ACTIVE cùng lúc.
+-- Không tạo unique index theo member_id ở đây.
 
 CREATE INDEX IX_membership_member_history
     ON membership(member_id, created_at_utc DESC);

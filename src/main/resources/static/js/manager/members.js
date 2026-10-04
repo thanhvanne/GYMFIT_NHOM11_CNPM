@@ -464,7 +464,7 @@ async function openMembership(member) {
 
         try {
             const current = await Api.get(
-                `/api/v1/members/${member.id}/memberships/current`
+                `/api/v1/members/${member.id}/memberships/active`
             );
 
             renderCurrentMembership(
@@ -488,58 +488,39 @@ async function openMembership(member) {
     }
 }
 
-function renderCurrentMembership(item) {
-    const container =
-        document.getElementById(
-            "current-membership"
-        );
-
+function renderCurrentMembership(memberships) {
+    const container = document.getElementById("current-membership");
     container.replaceChildren();
 
-    const summary =
-        document.createElement("div");
+    if (!memberships.length) {
+        container.textContent = "Chưa có membership đang hoạt động";
+        return;
+    }
 
-    summary.className =
-        "membership-summary";
+    memberships.forEach(item => {
+        const summary = document.createElement("div");
+        summary.className = "membership-summary";
 
-    const title =
-        document.createElement("strong");
+        const title = document.createElement("strong");
+        title.textContent = `Membership #${item.id}`;
 
-    title.textContent =
-        `Membership #${item.id}`;
+        const date = document.createElement("div");
+        date.className = "muted";
+        date.textContent = `${formatDate(item.startDate)} - `
+            + `${formatDate(item.endDate)}`;
 
-    const date =
-        document.createElement("div");
+        const services = document.createElement("div");
+        services.className = "service-badges";
+        item.services.forEach(service => {
+            const badge = document.createElement("span");
+            badge.className = "badge badge-yellow";
+            badge.textContent = service;
+            services.appendChild(badge);
+        });
 
-    date.textContent =
-        `${formatDate(item.startDate)}`
-        + ` - ${formatDate(item.endDate)}`;
-
-    const services =
-        document.createElement("div");
-
-    services.className =
-        "service-badges";
-
-    item.services.forEach(service => {
-        const badge =
-            document.createElement("span");
-
-        badge.className =
-            "badge badge-yellow";
-
-        badge.textContent = service;
-
-        services.appendChild(badge);
+        summary.append(title, date, services);
+        container.appendChild(summary);
     });
-
-    summary.append(
-        title,
-        date,
-        services
-    );
-
-    container.appendChild(summary);
 }
 
 function renderMembershipHistory(items) {

@@ -136,12 +136,6 @@ public class BookingService {
             );
         }
 
-        Membership membership = membershipService.requireEligible(
-                memberId,
-                branch.getId(),
-                request.serviceCode()
-        );
-
         Instant now = TimeUtil.now();
 
         if (!request.startsAt().isAfter(now)) {
@@ -160,6 +154,17 @@ public class BookingService {
                 branch,
                 request.startsAt(),
                 endsAt
+        );
+
+        LocalDate bookingDate = request.startsAt()
+                .atZone(ZoneId.of(branch.getTimezone()))
+                .toLocalDate();
+
+        Membership membership = membershipService.requireEligible(
+                memberId,
+                branch.getId(),
+                request.serviceCode(),
+                bookingDate
         );
 
         if (bookingRepository.countMemberOverlap(
@@ -394,18 +399,18 @@ public class BookingService {
 
             boolean activeMembershipAtBranch =
                     membershipRepository
-                            .findByMemberIdAndStatus(
+                            .findAllByMemberIdAndStatusOrderByEndDateAscCreatedAtUtcDesc(
                                     member.getId(),
                                     MembershipStatus.ACTIVE
                             )
-                            .map(membership ->
+                            .stream()
+                            .anyMatch(membership ->
                                     membership
                                             .getBranchId()
                                             .equals(
                                                     principal.getBranchId()
                                             )
-                            )
-                            .orElse(false);
+                            );
 
             if (!activeMembershipAtBranch) {
                 throw new ForbiddenException(
@@ -590,7 +595,8 @@ public class BookingService {
             membershipService.requireEligible(
                     principal.getMemberId(),
                     facility.getBranchId(),
-                    facility.getServiceCode()
+                    facility.getServiceCode(),
+                    date
             );
         }
 

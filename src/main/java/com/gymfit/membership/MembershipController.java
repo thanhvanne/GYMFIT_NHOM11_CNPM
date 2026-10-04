@@ -27,6 +27,21 @@ public class MembershipController {
         );
     }
 
+    /**
+     * Danh sách tất cả gói đang có hiệu lực. Endpoint này dùng cho giao diện
+     * hội viên; /current được giữ để tương thích với các luồng cũ.
+     */
+    @GetMapping("/active")
+    @PreAuthorize("isAuthenticated()")
+    public List<MembershipResponse> active(
+            @PathVariable Long memberId
+    ) {
+        return membershipService.active(
+                securityContextService.principal(),
+                memberId
+        );
+    }
+
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public List<MembershipResponse> history(

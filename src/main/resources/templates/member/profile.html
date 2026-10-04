@@ -92,31 +92,20 @@
 
             <div class="panel-header">
                 <div>
-                    <h2>Membership</h2>
-                    <p id="profile-membership-name"
-                       class="muted">
-                        —
+                    <h2>Gói đang hoạt động</h2>
+                    <p class="muted">
+                        Tất cả gói hiện có của bạn
                     </p>
                 </div>
 
-                <span id="profile-membership-status"
-                      class="badge badge-success">
-                    —
-                </span>
+                <a href="/member/plans"
+                   class="button button-primary button-small">
+                    Mua thêm
+                </a>
             </div>
 
-            <div class="member-profile-grid">
-
-                <div class="member-profile-row">
-                    <span>Bắt đầu</span>
-                    <strong id="profile-start">—</strong>
-                </div>
-
-                <div class="member-profile-row">
-                    <span>Hết hạn</span>
-                    <strong id="profile-end">—</strong>
-                </div>
-
+            <div id="profile-memberships"
+                 class="member-membership-list">
             </div>
 
         </section>
@@ -189,23 +178,7 @@
 
     </main>
 
-    <nav class="member-bottom-nav">
-        <a class="member-nav-item" href="/member/home">
-            <span class="member-nav-icon">⌂</span><span>Trang chủ</span>
-        </a>
-        <a class="member-nav-item" href="/member/booking">
-            <span class="member-nav-icon">＋</span><span>Đặt lịch</span>
-        </a>
-        <a class="member-nav-item member-qr-nav" href="/member/qr">
-            <span class="member-nav-icon">▦</span><span>QR</span>
-        </a>
-        <a class="member-nav-item" href="/member/history">
-            <span class="member-nav-icon">◷</span><span>Lịch sử</span>
-        </a>
-        <a class="member-nav-item active" href="/member/profile">
-            <span class="member-nav-icon">○</span><span>Hồ sơ</span>
-        </a>
-    </nav>
+    <div th:replace="~{fragments/member-nav :: nav(activePage='profile')}"></div>
 
 </div>
 

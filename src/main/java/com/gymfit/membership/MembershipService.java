@@ -40,36 +40,48 @@ public class MembershipService {
     private final BranchScopeGuard branchScopeGuard;
     private final AuditService auditService;
 
+    /**
+     * Trả về toàn bộ gói đang có hiệu lực trong ngày hôm nay.
+     * Một hội viên có thể có nhiều membership ACTIVE cùng lúc.
+     */
     @Transactional(readOnly = true)
-    public MembershipResponse current(
+    public List<MembershipResponse> active(
             AppPrincipal principal,
             Long memberId
     ) {
         Member member = requireMember(memberId);
         requireScope(principal, member);
 
-        Membership membership = membershipRepository
-                .findByMemberIdAndStatus(
+        LocalDate today = LocalDate.now(TimeUtil.VIETNAM);
+
+        return membershipRepository
+                .findAllByMemberIdAndStatusOrderByEndDateAscCreatedAtUtcDesc(
                         memberId,
                         MembershipStatus.ACTIVE
                 )
+                .stream()
+                .filter(membership -> isEffectiveOn(membership, today))
+                .map(this::toResponse)
+                .toList();
+    }
+
+    /**
+     * API tương thích cho các luồng cũ (chatbot/quản trị). Khi có nhiều gói,
+     * phương thức này trả về gói sắp hết hạn nhất; giao diện hội viên dùng
+     * {@link #active(AppPrincipal, Long)} để hiển thị đầy đủ tất cả gói.
+     */
+    @Transactional(readOnly = true)
+    public MembershipResponse current(
+            AppPrincipal principal,
+            Long memberId
+    ) {
+        return active(principal, memberId)
+                .stream()
+                .findFirst()
                 .orElseThrow(() -> new NotFoundException(
                         "active_membership_not_found",
                         "Hội viên chưa có gói tập đang hoạt động"
                 ));
-
-        LocalDate today =
-                LocalDate.now(TimeUtil.VIETNAM);
-
-        if (today.isBefore(membership.getStartDate())
-                || today.isAfter(membership.getEndDate())) {
-            throw new NotFoundException(
-                    "active_membership_not_found",
-                    "Hội viên chưa có gói tập đang hoạt động"
-            );
-        }
-
-        return toResponse(membership);
     }
 
     @Transactional(readOnly = true)
@@ -122,32 +134,22 @@ public class MembershipService {
             );
         }
 
-        Membership oldMembership = membershipRepository
-                .findActiveForUpdate(memberId)
-                .orElse(null);
+        /*
+         * Chỉ dọn các membership đã quá hạn. Các gói còn hiệu lực không bị
+         * REPLACED: mua gói mới là cộng thêm quyền sử dụng, không làm mất gói
+         * cũ.
+         */
+        LocalDate startDate = LocalDate.now(TimeUtil.VIETNAM);
+        List<Membership> existingActive = membershipRepository
+                .findActiveForUpdate(memberId);
 
-        if (oldMembership != null) {
-            LocalDate today = LocalDate.now(TimeUtil.VIETNAM);
-
-            if (today.isAfter(oldMembership.getEndDate())) {
-                oldMembership.setStatus(
-                        MembershipStatus.EXPIRED
-                );
-            } else {
-                oldMembership.setStatus(
-                        MembershipStatus.REPLACED
-                );
-            }
-
-            oldMembership.setEndedAtUtc(TimeUtil.now());
-
-            membershipRepository.saveAndFlush(
-                    oldMembership
-            );
-        }
-
-        LocalDate startDate =
-                LocalDate.now(TimeUtil.VIETNAM);
+        existingActive.stream()
+                .filter(existing -> existing.getEndDate().isBefore(startDate))
+                .forEach(existing -> {
+                    existing.setStatus(MembershipStatus.EXPIRED);
+                    existing.setEndedAtUtc(TimeUtil.now());
+                    membershipRepository.save(existing);
+                });
 
         LocalDate endDate = startDate.plusDays(
                 plan.getDurationDays() - 1L
@@ -190,29 +192,6 @@ public class MembershipService {
 
         accessRepository.saveAll(accesses);
 
-        if (oldMembership != null
-                && oldMembership.getStatus()
-                == MembershipStatus.REPLACED) {
-
-            oldMembership.setReplacedByMembershipId(
-                    saved.getId()
-            );
-
-            membershipRepository.save(oldMembership);
-
-            auditService.record(
-                    actorUserId,
-                    "MEMBERSHIP_REPLACED",
-                    "MEMBERSHIP",
-                    oldMembership.getId(),
-                    oldMembership.getBranchId(),
-                    Map.of(
-                            "replacedByMembershipId",
-                            saved.getId()
-                    )
-            );
-        }
-
         auditService.record(
                 actorUserId,
                 "MEMBERSHIP_ACTIVATED",
@@ -222,58 +201,107 @@ public class MembershipService {
                 Map.of(
                         "memberId", memberId,
                         "planId", planId,
-                        "orderId", orderId
+                        "orderId", orderId,
+                        "coexistsWithActiveMemberships", !existingActive.isEmpty()
                 )
         );
 
         return saved;
     }
 
+    /**
+     * Kiểm tra quyền đặt lịch/check-in theo ngày sử dụng cụ thể. Không dùng
+     * một membership duy nhất nữa: chỉ cần một gói còn hiệu lực, đúng chi
+     * nhánh và có đúng loại hình thể thao là đủ điều kiện.
+     */
     @Transactional(readOnly = true)
     public Membership requireEligible(
             Long memberId,
             Long branchId,
             ServiceCode serviceCode
     ) {
-        Membership membership = membershipRepository
-                .findByMemberIdAndStatus(
+        return requireEligible(
+                memberId,
+                branchId,
+                serviceCode,
+                LocalDate.now(TimeUtil.VIETNAM)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Membership requireEligible(
+            Long memberId,
+            Long branchId,
+            ServiceCode serviceCode,
+            LocalDate usageDate
+    ) {
+        List<Membership> memberships = membershipRepository
+                .findAllByMemberIdAndStatusOrderByEndDateAscCreatedAtUtcDesc(
                         memberId,
                         MembershipStatus.ACTIVE
-                )
-                .orElseThrow(() -> new ConflictException(
-                        "no_active_membership",
-                        "Hội viên chưa có gói tập đang hoạt động"
-                ));
+                );
 
-        LocalDate today = LocalDate.now(TimeUtil.VIETNAM);
-
-        if (today.isBefore(membership.getStartDate())
-                || today.isAfter(membership.getEndDate())) {
+        if (memberships.isEmpty()) {
             throw new ConflictException(
-                    "membership_not_effective",
-                    "Gói tập không còn hiệu lực"
+                    "no_active_membership",
+                    "Hội viên chưa có gói tập đang hoạt động"
             );
         }
 
-        if (!membership.getBranchId().equals(branchId)) {
+        boolean hasMembershipAtBranch = false;
+        boolean hasServiceAtBranch = false;
+
+        for (Membership membership : memberships) {
+            if (!membership.getBranchId().equals(branchId)) {
+                continue;
+            }
+
+            hasMembershipAtBranch = true;
+
+            if (!isEffectiveOn(membership, usageDate)) {
+                continue;
+            }
+
+            if (accessRepository.existsByIdMembershipIdAndIdServiceCode(
+                    membership.getId(),
+                    serviceCode
+            )) {
+                hasServiceAtBranch = true;
+                return membership;
+            }
+        }
+
+        if (!hasMembershipAtBranch) {
             throw new ConflictException(
                     "membership_branch_mismatch",
                     "Gói tập không áp dụng tại chi nhánh này"
             );
         }
 
-        if (!accessRepository
-                .existsByIdMembershipIdAndIdServiceCode(
-                        membership.getId(),
-                        serviceCode
-                )) {
+        if (!hasServiceAtBranch) {
+            if (memberships.stream()
+                    .filter(membership ->
+                            membership.getBranchId().equals(branchId)
+                    )
+                    .noneMatch(membership ->
+                            isEffectiveOn(membership, usageDate)
+                    )) {
+                throw new ConflictException(
+                        "membership_not_effective",
+                        "Gói tập không còn hiệu lực trong ngày đặt lịch"
+                );
+            }
+
             throw new ConflictException(
                     "membership_service_not_allowed",
-                    "Gói tập không bao gồm dịch vụ này"
+                    "Gói tập không bao gồm loại hình thể thao này"
             );
         }
 
-        return membership;
+        throw new ConflictException(
+                "membership_not_effective",
+                "Gói tập không còn hiệu lực trong ngày đặt lịch"
+        );
     }
 
     public MembershipResponse toResponse(
@@ -310,16 +338,22 @@ public class MembershipService {
         );
     }
 
+    private boolean isEffectiveOn(
+            Membership membership,
+            LocalDate date
+    ) {
+        return !date.isBefore(membership.getStartDate())
+                && !date.isAfter(membership.getEndDate());
+    }
+
     private MembershipStatus effectiveStatus(
             Membership membership
     ) {
-        if (membership.getStatus()
-                != MembershipStatus.ACTIVE) {
+        if (membership.getStatus() != MembershipStatus.ACTIVE) {
             return membership.getStatus();
         }
 
-        LocalDate today =
-                LocalDate.now(TimeUtil.VIETNAM);
+        LocalDate today = LocalDate.now(TimeUtil.VIETNAM);
 
         if (today.isAfter(membership.getEndDate())) {
             return MembershipStatus.EXPIRED;
@@ -345,9 +379,7 @@ public class MembershipService {
             return;
         }
 
-        if (principal.getRole()
-                == RoleCode.BRANCH_MANAGER) {
-
+        if (principal.getRole() == RoleCode.BRANCH_MANAGER) {
             if (principal.getBranchId() == null) {
                 throw new ForbiddenException(
                         "manager_branch_missing",
@@ -362,18 +394,16 @@ public class MembershipService {
 
             boolean currentMembershipAtManagerBranch =
                     membershipRepository
-                            .findByMemberIdAndStatus(
+                            .findAllByMemberIdAndStatusOrderByEndDateAscCreatedAtUtcDesc(
                                     member.getId(),
                                     MembershipStatus.ACTIVE
                             )
-                            .map(currentMembership ->
+                            .stream()
+                            .anyMatch(currentMembership ->
                                     currentMembership
                                             .getBranchId()
-                                            .equals(
-                                                    principal.getBranchId()
-                                            )
-                            )
-                            .orElse(false);
+                                            .equals(principal.getBranchId())
+                            );
 
             if (!currentMembershipAtManagerBranch) {
                 throw new ForbiddenException(

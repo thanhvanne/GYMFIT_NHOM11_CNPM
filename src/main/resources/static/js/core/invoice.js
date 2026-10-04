@@ -203,8 +203,8 @@
 
                 ${!paid && order.items.some(item => item.itemType === "PLAN")
             ? `<p class="note">
-                           Thanh toán thành công sẽ kích hoạt gói mới
-                           và thay thế gói hiện tại nếu có.
+                           Thanh toán thành công sẽ kích hoạt gói mới.
+                           Các gói đang hoạt động khác vẫn được giữ nguyên.
                        </p>`
             : ""}
 

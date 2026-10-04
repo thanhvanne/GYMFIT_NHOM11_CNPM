@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav class="member-bottom-nav"
+     th:fragment="nav(activePage)"
+     aria-label="Điều hướng hội viên">
+
+    <a class="member-nav-item"
+       th:classappend="${activePage == 'home'} ? ' active' : ''"
+       href="/member/home">
+        <svg class="member-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/>
+        </svg>
+        <span>Trang chủ</span>
+    </a>
+
+    <a class="member-nav-item"
+       th:classappend="${activePage == 'booking'} ? ' active' : ''"
+       href="/member/booking">
+        <svg class="member-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2"/>
+            <path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h5"/>
+        </svg>
+        <span>Đặt lịch</span>
+    </a>
+
+    <a class="member-nav-item member-plan-nav"
+       th:classappend="${activePage == 'plans'} ? ' active' : ''"
+       href="/member/plans">
+        <svg class="member-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z"/>
+            <path d="M4 9h13a3 3 0 0 0 3-3M8 14h3"/>
+        </svg>
+        <span>Gói tập</span>
+    </a>
+
+    <a class="member-nav-item member-qr-nav"
+       th:classappend="${activePage == 'qr'} ? ' active' : ''"
+       href="/member/qr">
+        <svg class="member-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z"/>
+        </svg>
+        <span>QR</span>
+    </a>
+
+    <a class="member-nav-item"
+       th:classappend="${activePage == 'history'} ? ' active' : ''"
+       href="/member/history">
+        <svg class="member-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.5"/>
+            <path d="M12 7v5l3.5 2"/>
+        </svg>
+        <span>Lịch sử</span>
+    </a>
+
+    <a class="member-nav-item"
+       th:classappend="${activePage == 'profile'} ? ' active' : ''"
+       href="/member/profile">
+        <svg class="member-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.5"/>
+            <path d="M5 20a7 7 0 0 1 14 0"/>
+        </svg>
+        <span>Hồ sơ</span>
+    </a>
+</nav>
+</body>
+</html>

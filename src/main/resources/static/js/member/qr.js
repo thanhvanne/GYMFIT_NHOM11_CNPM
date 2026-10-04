@@ -28,30 +28,25 @@ document.addEventListener(
             ).textContent =
                 member.memberCode;
 
-            try {
-                const membership =
-                    await Api.get(
-                        `/api/v1/members/${currentUser.memberId}/memberships/current`
-                    );
+            const memberships = await Api.get(
+                `/api/v1/members/${currentUser.memberId}/memberships/active`
+            );
 
-                document.getElementById(
-                    "qr-membership"
-                ).textContent =
-                    `Membership #${membership.id}`
-                    + ` · Hết hạn `
-                    + formatDate(
-                        membership.endDate
-                    );
-            } catch (error) {
-                if (error.status !== 404) {
-                    throw error;
-                }
+            const plans = await Promise.all(
+                memberships.map(item =>
+                    Api.get(`/api/v1/plans/${item.planId}`)
+                )
+            );
 
-                document.getElementById(
-                    "qr-membership"
-                ).textContent =
-                    "Chưa có membership đang hoạt động";
-            }
+            const membershipText = memberships.length
+                ? memberships.map((item, index) =>
+                    `${plans[index]?.name || `Gói #${item.planId}`}`
+                    + ` · Hết hạn ${formatDate(item.endDate)}`
+                ).join(" | ")
+                : "Chưa có membership đang hoạt động";
+
+            document.getElementById("qr-membership").textContent =
+                membershipText;
 
             await refreshQr();
         } catch (error) {

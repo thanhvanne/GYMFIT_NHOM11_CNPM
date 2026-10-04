@@ -59,6 +59,10 @@
 
         </section>
 
+        <section id="active-memberships"
+                 class="panel member-section hidden">
+        </section>
+
         <section class="member-section">
 
             <div id="member-plan-grid"
@@ -69,39 +73,7 @@
 
     </main>
 
-    <nav class="member-bottom-nav">
-
-        <a class="member-nav-item"
-           href="/member/home">
-            <span class="member-nav-icon">⌂</span>
-            <span>Trang chủ</span>
-        </a>
-
-        <a class="member-nav-item"
-           href="/member/booking">
-            <span class="member-nav-icon">＋</span>
-            <span>Đặt lịch</span>
-        </a>
-
-        <a class="member-nav-item member-qr-nav"
-           href="/member/qr">
-            <span class="member-nav-icon">▦</span>
-            <span>QR</span>
-        </a>
-
-        <a class="member-nav-item"
-           href="/member/history">
-            <span class="member-nav-icon">◷</span>
-            <span>Lịch sử</span>
-        </a>
-
-        <a class="member-nav-item"
-           href="/member/profile">
-            <span class="member-nav-icon">○</span>
-            <span>Hồ sơ</span>
-        </a>
-
-    </nav>
+    <div th:replace="~{fragments/member-nav :: nav(activePage='plans')}"></div>
 
 </div>
 
@@ -119,8 +91,8 @@
         </h2>
 
         <p class="muted">
-            Thanh toán thành công sẽ kích hoạt gói mới ngay.
-            Gói hiện tại sẽ chuyển sang REPLACED.
+            Mỗi lần mua chỉ chọn một gói. Thanh toán thành công sẽ kích hoạt
+            gói mới ngay; các gói đang hoạt động khác vẫn được giữ nguyên.
         </p>
 
         <dl class="payment-details">
